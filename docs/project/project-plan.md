@@ -12,7 +12,7 @@
 | **Tên dự án** | EduVerse |
 | **Thời gian** | ~2 tháng (09/2026 – 11/2026) |
 | **Số thành viên** | 4–5 người |
-| **Repository** | _Cập nhật sau khi push lên GitHub_ |
+| **Repository** | [github.com/dunghvd79/eduverse](https://github.com/dunghvd79/eduverse) |
 
 ---
 
