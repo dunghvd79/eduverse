@@ -11,6 +11,7 @@
 
 ### 🎯 Use Cases
 - [Use Case Diagram — Tổng quan](use-cases/use-case-diagram.md)
+- [Tổng hợp quyết định Use Case](use-cases/use-case-decisions.md)
 - [UC: Xác thực](use-cases/uc-auth.md)
 - [UC: Quản lý khóa học](use-cases/uc-course.md)
 - [UC: Quản lý lớp học](use-cases/uc-class.md)
@@ -22,6 +23,7 @@
 - [UC: Quản lý người dùng](use-cases/uc-user.md)
 
 ### 🏗️ Kiến trúc
+- [Tổng hợp quyết định thiết kế](architecture/design-decisions.md)
 - [Kiến trúc tổng thể](architecture/system-architecture.md)
 - [Tech Stack](architecture/tech-stack.md)
 - [Deployment](architecture/deployment.md)
@@ -55,6 +57,7 @@
 
 ### 📅 Quản lý Dự án
 - [Kế hoạch dự án](project/project-plan.md)
+- [Quy ước tài liệu & cấu trúc](project/docs-conventions.md)
 - [Git Workflow](project/git-workflow.md)
 - [Coding Conventions](project/coding-conventions.md)
 - [Biên bản họp](project/meeting-notes/)
