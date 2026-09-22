@@ -10,17 +10,13 @@
 - [Thuật ngữ nghiệp vụ](requirements/glossary.md)
 
 ### 🎯 Use Cases
-- [Use Case Diagram — Tổng quan](use-cases/use-case-diagram.md)
+- [Use Case Diagram — Tổng quan (Level-0)](use-cases/use-case-diagram.md)
+- [Quy chuẩn thiết kế Use Case chuẩn Doanh nghiệp](use-cases/use-case-guidelines.md)
+- [Actor: Học viên (Student)](use-cases/actor-student.md)
+- [Actor: Giảng viên (Teacher)](use-cases/actor-teacher.md)
+- [Actor: Quản lý Đào tạo (Training Manager)](use-cases/actor-manager.md)
+- [Actor: Quản trị viên (Admin)](use-cases/actor-admin.md)
 - [Tổng hợp quyết định Use Case](use-cases/use-case-decisions.md)
-- [UC: Xác thực](use-cases/uc-auth.md)
-- [UC: Quản lý khóa học](use-cases/uc-course.md)
-- [UC: Quản lý lớp học](use-cases/uc-class.md)
-- [UC: Quản lý bài học](use-cases/uc-lesson.md)
-- [UC: Bài kiểm tra](use-cases/uc-quiz.md)
-- [UC: Bài tập](use-cases/uc-assignment.md)
-- [UC: Điểm số & phản hồi](use-cases/uc-grade.md)
-- [UC: Tiến độ học tập](use-cases/uc-progress.md)
-- [UC: Quản lý người dùng](use-cases/uc-user.md)
 
 ### 🏗️ Kiến trúc
 - [Tổng hợp quyết định thiết kế](architecture/design-decisions.md)
