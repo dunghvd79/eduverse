@@ -18,15 +18,16 @@ Dự án đã hoàn thành giai đoạn thu thập yêu cầu, chốt tech stack
 - [x] Thiết lập hệ thống lưu ngữ cảnh tự động cho AI (`AGENTS.md`, `state.md`, `context-local.md`).
 - [x] **Vẽ Use Case Diagram Tổng quan hệ thống (Level-0 Package Diagram)** chuẩn doanh nghiệp, xóa bỏ hiện tượng đè dây (`docs/use-cases/use-case-diagram.md`).
 - [x] **Biên soạn Bộ Quy chuẩn thiết kế Use Case chuẩn Doanh nghiệp** (`docs/use-cases/use-case-guidelines.md`).
-- [x] **Hoàn thành trọn bộ 4 Actor Use Case:**
-  - `docs/use-cases/actor-student.md` (Học viên)
-  - `docs/use-cases/actor-teacher.md` (Giảng viên)
-  - `docs/use-cases/actor-manager.md` (Quản lý Đào tạo)
-  - `docs/use-cases/actor-admin.md` (Quản trị viên)
+- [x] **Hoàn thành trọn bộ Thiết kế Cơ sở Dữ liệu (Database Design):**
+  - `docs/database/database-decisions.md`: Quyết định PK UUID, Soft Delete, Naming Conventions.
+  - `docs/database/erd.md`: Sơ đồ ERD 15 thực thể chuẩn 3NF, phân tách mối quan hệ rõ ràng.
+  - `docs/database/schema.md`: Đặc tả chi tiết từng bảng, kiểu dữ liệu PostgreSQL, Constraints, Indexes.
+  - `docs/database/seed-data.md`: Dữ liệu mẫu (Users mặc định, Khóa học mẫu, Lớp học mẫu).
 
 ## 3. Việc Đang Làm / Chuẩn Bị Làm Ngay ⏳
-1. **Chuyển sang thiết kế Cơ sở dữ liệu (ERD Diagram & Database Schema).**
-2. **Thiết kế Kiến trúc Chi tiết & Đặc tả API (OpenAPI/Swagger).**
+1. **Thiết kế Kiến trúc Chi tiết Hệ thống (System Architecture & Component Diagram).**
+2. **Thiết kế Đặc tả API (API Specifications: Auth, Courses, Classes, Quizzes, Assignments, Upload).**
+3. **Thiết kế Sơ đồ Tuần tự (Sequence Diagrams) cho các luồng nghiệp vụ phức tạp.**
 
 ## 4. Ghi Chú Kỹ Thuật Quan Trọng
 - Toàn bộ diagram chỉ dùng các loại Mermaid phổ biến (`flowchart`, `sequenceDiagram`, `erDiagram`). Tránh dùng `gitgraph`.
