@@ -26,9 +26,10 @@
 - [Bảo mật](architecture/security.md)
 
 ### 🗃️ Cơ sở Dữ liệu
+- [Tổng hợp quyết định thiết kế CSDL](database/database-decisions.md)
 - [ERD Diagram](database/erd.md)
 - [Chi tiết Schema](database/schema.md)
-- [Dữ liệu mẫu](database/seed-data.md)
+- [Dữ liệu mẫu (Seed Data)](database/seed-data.md)
 
 ### 🔌 API
 - [Tổng quan API](api/api-overview.md)
