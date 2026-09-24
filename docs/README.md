@@ -32,15 +32,14 @@
 - [Dữ liệu mẫu (Seed Data)](database/seed-data.md)
 
 ### 🔌 API
-- [Tổng quan API](api/api-overview.md)
-- [API: Xác thực](api/api-auth.md)
-- [API: Người dùng](api/api-users.md)
-- [API: Khóa học](api/api-courses.md)
-- [API: Lớp học](api/api-classes.md)
-- [API: Bài học](api/api-lessons.md)
-- [API: Bài kiểm tra](api/api-quizzes.md)
-- [API: Bài tập](api/api-assignments.md)
-- [API: Upload file](api/api-upload.md)
+- [Quy chuẩn thiết kế API (API Conventions)](api/api-conventions.md)
+- [API: Xác thực (Auth)](api/api-auth.md)
+- [API: Người dùng (Users)](api/api-users.md)
+- [API: Khóa học, Chương & Bài học (Courses)](api/api-courses.md)
+- [API: Lớp học (Classes)](api/api-classes.md)
+- [API: Bài kiểm tra (Quizzes)](api/api-quizzes.md)
+- [API: Bài tập (Assignments)](api/api-assignments.md)
+- [API: Upload & Đa phương tiện (Uploads)](api/api-uploads.md)
 
 ### 🎨 Giao diện
 - [Sitemap](ui/sitemap.md)

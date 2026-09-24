@@ -44,9 +44,13 @@ Lưu trữ thông tin xác thực và hồ sơ của mọi người dùng trong 
 | `password_hash` | `varchar(255)` | ❌ | | Mật khẩu mã hóa bằng bcrypt |
 | `full_name` | `varchar(150)` | ❌ | | Họ và tên hiển thị của người dùng |
 | `avatar_url` | `varchar(500)` | ✔️ | `NULL` | Đường dẫn ảnh đại diện trên AWS S3 |
+| `phone_number` | `varchar(20)` | ✔️ | `NULL` | Số điện thoại liên hệ |
+| `bio` | `text` | ✔️ | `NULL` | Giới thiệu ngắn về bản thân hoặc học vị |
 | `role` | `varchar(30)` | ❌ | `'student'` | `student`, `teacher`, `training_manager`, `admin` |
 | `is_active` | `boolean` | ❌ | `true` | Cờ khóa tài khoản (`false`: bị khóa) |
+| `block_reason` | `text` | ✔️ | `NULL` | Lý do Admin khóa tài khoản |
 | `email_verified`| `boolean` | ❌ | `false` | Trạng thái đã kích hoạt email |
+| `must_change_password` | `boolean` | ❌ | `false` | Buộc đổi mật khẩu trong lần đăng nhập đầu tiên (tài khoản do Admin cấp) |
 | `created_at` | `timestamptz` | ❌ | `now()` | Thời điểm tạo bản ghi |
 | `updated_at` | `timestamptz` | ❌ | `now()` | Thời điểm cập nhật cuối cùng |
 | `deleted_at` | `timestamptz` | ✔️ | `NULL` | Hỗ trợ xóa mềm (Soft Delete) |
@@ -66,7 +70,7 @@ Quản lý vòng đời của mã kích hoạt email (`email_verification`) và 
 | `id` | `uuid` | ❌ | `gen_random_uuid()` | Khóa chính (PK) |
 | `user_id` | `uuid` | ❌ | | Khóa ngoại $\rightarrow$ `users(id)` (`ON DELETE CASCADE`) |
 | `token_hash` | `varchar(255)` | ❌ | | Mã token băm SHA-256 (bảo mật trong database) |
-| `token_type` | `varchar(50)` | ❌ | | `email_verification`, `password_reset` |
+| `token_type` | `varchar(50)` | ❌ | | `email_verification`, `password_reset`, `refresh_token` |
 | `expires_at` | `timestamptz` | ❌ | | Thời điểm hết hạn của token |
 | `is_used` | `boolean` | ❌ | `false` | Đã sử dụng mã hay chưa |
 | `created_at` | `timestamptz` | ❌ | `now()` | Thời điểm sinh mã |
@@ -94,6 +98,7 @@ Khung nội dung đào tạo tổng thể do Giảng viên tạo và Quản lý 
 | `status` | `varchar(30)` | ❌ | `'draft'` | `draft`, `pending`, `published`, `rejected`, `archived` |
 | `approved_by` | `uuid` | ✔️ | `NULL` | Khóa ngoại $\rightarrow$ `users(id)` (Quản lý duyệt) |
 | `approved_at` | `timestamptz` | ✔️ | `NULL` | Thời điểm phê duyệt |
+| `rejection_reason`| `text` | ✔️ | `NULL` | Lý do từ chối phê duyệt từ Quản lý đào tạo |
 | `created_at` | `timestamptz` | ❌ | `now()` | Thời điểm tạo |
 | `updated_at` | `timestamptz` | ❌ | `now()` | Thời điểm sửa |
 | `deleted_at` | `timestamptz` | ✔️ | `NULL` | Xóa mềm |
@@ -154,10 +159,12 @@ Tài liệu đính kèm (Slide bài giảng, source code mẫu, sách PDF).
 | `id` | `uuid` | ❌ | `gen_random_uuid()` | Khóa chính (PK) |
 | `lesson_id` | `uuid` | ❌ | | Khóa ngoại $\rightarrow$ `lessons(id)` (`ON DELETE CASCADE`) |
 | `title` | `varchar(255)` | ❌ | | Tên tài liệu |
-| `file_url` | `varchar(500)` | ❌ | | Đường dẫn lưu trữ an toàn trên AWS S3 |
-| `file_type` | `varchar(50)` | ❌ | | Định dạng file (`pdf`, `zip`, `docx`, `pptx`) |
+| `file_url` | `varchar(500)` | ❌ | | Đường dẫn / S3 Object Key của tệp trên AWS S3 |
+| `file_name` | `varchar(255)` | ❌ | | Tên tệp gốc khi tải lên (dùng đặt tên khi download) |
+| `file_type` | `varchar(50)` | ❌ | | Định dạng file (`pdf`, `zip`, `docx`, `pptx`, `rar`) |
 | `file_size` | `bigint` | ❌ | `0` | Kích thước file (bytes) |
 | `created_at` | `timestamptz` | ❌ | `now()` | Thời điểm tải lên |
+| `updated_at` | `timestamptz` | ❌ | `now()` | Thời điểm cập nhật cuối cùng |
 
 ---
 
@@ -220,8 +227,11 @@ Khung bài kiểm tra trắc nghiệm gắn với một bài học trong khóa h
 | `duration_minutes`| `int` | ❌ | `15` | Thời gian làm bài tính bằng phút |
 | `max_attempts` | `int` | ❌ | `1` | Số lần tối đa được phép làm bài |
 | `pass_score` | `decimal(4,2)` | ❌ | `5.00` | Điểm đạt yêu cầu (thang 10) |
+| `is_published` | `boolean` | ❌ | `false` | Cờ công khai đề thi |
+| `show_answers_after_submit` | `boolean` | ❌ | `true` | Cho phép học viên xem đáp án sau khi nộp |
 | `created_at` | `timestamptz` | ❌ | `now()` | Thời điểm tạo |
 | `updated_at` | `timestamptz` | ❌ | `now()` | Thời điểm sửa |
+| `deleted_at` | `timestamptz` | ✔️ | `NULL` | Hỗ trợ xóa mềm (Soft Delete) |
 
 **Ràng buộc Unique:**
 - `uq_quizzes_lesson` UNIQUE (`lesson_id`) *(Mỗi bài học chỉ có tối đa 1 bài kiểm tra)*
@@ -255,8 +265,9 @@ Ngân hàng câu hỏi của đề thi trắc nghiệm.
 | `id` | `uuid` | ❌ | `gen_random_uuid()` | Khóa chính (PK) |
 | `quiz_id` | `uuid` | ❌ | | Khóa ngoại $\rightarrow$ `quizzes(id)` (`ON DELETE CASCADE`) |
 | `prompt` | `text` | ❌ | | Nội dung câu hỏi |
-| `question_type`| `varchar(30)` | ❌ | `'multiple_choice'` | `multiple_choice`, `true_false` |
+| `question_type`| `varchar(30)` | ❌ | `'multiple_choice'` | `single_choice`, `multiple_choice`, `true_false` |
 | `points` | `decimal(4,2)` | ❌ | `1.00` | Điểm số của câu hỏi |
+| `explanation` | `text` | ✔️ | `NULL` | Lời giải thích vì sao đáp án đúng |
 | `order_index` | `int` | ❌ | `0` | Thứ tự câu hỏi |
 
 ---
@@ -326,6 +337,7 @@ Khung bài tập lớn/bài tập về nhà yêu cầu nộp file đính kèm (Q
 | `max_file_size_mb` | `int` | ❌ | `25` | Dung lượng file tối đa (MB) |
 | `created_at` | `timestamptz` | ❌ | `now()` | Thời điểm tạo |
 | `updated_at` | `timestamptz` | ❌ | `now()` | Thời điểm sửa |
+| `deleted_at` | `timestamptz` | ✔️ | `NULL` | Hỗ trợ xóa mềm (Soft Delete) |
 
 **Ràng buộc Unique:**
 - `uq_assignments_lesson` UNIQUE (`lesson_id`) *(Mỗi bài học chỉ có tối đa 1 bài tập nộp file)*
@@ -344,6 +356,7 @@ Cấu hình thời gian bắt đầu nhận bài và Deadline của bài tập t
 | `open_time` | `timestamptz` | ✔️ | `NULL` | Thời điểm bắt đầu nhận bài |
 | `deadline` | `timestamptz` | ❌ | | Hạn chót nộp bài (Deadline) |
 | `allow_late_submission`| `boolean`| ❌ | `true` | Cho phép nộp muộn sau deadline hay không |
+| `cutoff_time` | `timestamptz` | ✔️ | `NULL` | Hạn chót tuyệt đối đóng hoàn toàn nhận bài nộp muộn |
 
 **Ràng buộc Unique:**
 - `uq_class_assignments` UNIQUE (`class_id`, `assignment_id`)
@@ -359,12 +372,12 @@ Lưu file bài làm học viên upload lên AWS S3 và điểm chấm kèm nhậ
 | `id` | `uuid` | ❌ | `gen_random_uuid()` | Khóa chính (PK) |
 | `class_assignment_id`| `uuid` | ❌ | | Khóa ngoại $\rightarrow$ `class_assignments(id)` |
 | `student_id` | `uuid` | ❌ | | Khóa ngoại $\rightarrow$ `users(id)` |
-| `file_url` | `varchar(500)` | ❌ | | Đường dẫn file trên AWS S3 |
+| `file_url` | `varchar(500)` | ❌ | | Đường dẫn / S3 Object Key của file trên AWS S3 |
 | `file_name` | `varchar(255)` | ❌ | | Tên file gốc lúc tải lên |
 | `file_size` | `bigint` | ❌ | | Dung lượng file (bytes) |
 | `student_note` | `text` | ✔️ | `NULL` | Lời nhắn / Ghi chú của học viên khi nộp bài |
 | `submitted_at` | `timestamptz` | ❌ | `now()` | Thời điểm nộp bài |
-| `status` | `varchar(30)` | ❌ | `'submitted'` | `submitted`, `late_submitted`, `graded` |
+| `status` | `varchar(30)` | ❌ | `'submitted'` | `submitted`, `late_submitted`, `graded`, `resubmission_requested` |
 | `grade` | `decimal(4,2)` | ✔️ | `NULL` | Điểm do Giảng viên chấm (thang 10) |
 | `feedback` | `text` | ✔️ | `NULL` | Lời phê, góp ý chi tiết của Giảng viên |
 | `graded_by` | `uuid` | ✔️ | `NULL` | Khóa ngoại $\rightarrow$ `users(id)` (Giảng viên chấm) |
