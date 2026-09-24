@@ -98,7 +98,7 @@ flowchart LR
 | **UC-CLASS-003** | Mời học viên vào lớp | Lớp học | ⭐⭐ Vắn tắt | Nhập danh sách email, hệ thống gửi thư mời tham gia |
 | **UC-CLASS-005** | Xem danh sách học viên | Lớp học | ⭐⭐ Vắn tắt | Xem thông tin học viên đã ghi danh, trạng thái học tập |
 | **UC-QUIZ-002** | Tạo & quản lý bài kiểm tra | Đánh giá | ⭐⭐⭐ Chi tiết | Cấu hình thời gian làm bài, số lượt thử, điểm đạt |
-| **UC-QUIZ-003** | Quản lý ngân hàng câu hỏi | Đánh giá | ⭐⭐ Vắn tắt | Tạo câu hỏi trắc nghiệm (Single/Multiple/True-False) |
+| **UC-QUIZ-003** | Quản lý ngân hàng câu hỏi | Đánh giá | ⭐⭐ Vắn tắt | Tạo & quản lý câu hỏi (Thêm/Sửa/Xóa hàng loạt, kéo thả thứ tự, Single/Multiple/True-False) |
 | **UC-AI-001** | Dùng AI sinh câu hỏi trắc nghiệm | Đánh giá | ⭐⭐⭐ Chi tiết | Nhập văn bản/tài liệu, AI tự động sinh câu hỏi + đáp án |
 | **UC-ASSIGN-002** | Giao bài tập về nhà | Đánh giá | ⭐⭐⭐ Chi tiết | Soạn đề bài, đặt hạn nộp (Deadline), cho phép nộp muộn |
 | **UC-GRADE-002** | Chấm bài tập & viết nhận xét | Đánh giá | ⭐⭐⭐ Chi tiết | Tải file bài làm, chấm điểm thang 10, gửi phản hồi |
@@ -196,6 +196,7 @@ flowchart LR
    - Thêm câu hỏi thủ công từng câu.
    - Chọn câu hỏi từ kho đề có sẵn.
    - Nhấn nút **"Tạo bằng AI (Gemini)"** (`UC-AI-001`).
+   - Thao tác hàng loạt (Batch Operations): Sắp xếp kéo thả thứ tự, cập nhật nhanh nội dung/gán điểm hàng loạt (Bulk Update), hoặc chọn xóa nhiều câu hỏi cùng lúc (Bulk Delete).
 5. Sau khi đã có danh sách câu hỏi, giảng viên nhấn **"Hoàn tất & Xuất bản Quiz"**.
 6. Hệ thống kiểm tra bài quiz phải có tối thiểu 1 câu hỏi hợp lệ $\rightarrow$ cập nhật trạng thái Quiz sang `active`.
 
@@ -225,7 +226,7 @@ flowchart LR
    - Có thể nhấn nút xóa các câu hỏi không ưng ý.
    - Có thể nhấn nút "Tạo lại câu này" nếu muốn AI sinh phương án khác.
 8. Giảng viên nhấn **"Chấp nhận & Thêm vào bài Quiz"**.
-9. Hệ thống lưu toàn bộ các câu hỏi đã chọn vào bảng `QuizQuestion` và `QuizChoice` của bài kiểm tra.
+9. Hệ thống lưu toàn bộ các câu hỏi đã chọn vào bảng `questions` và `question_options` của bài kiểm tra (áp dụng cơ chế lưu hàng loạt Bulk Insert trong 1 transaction CSDL).
 10. Hệ thống thông báo: *"Đã thêm thành công [X] câu hỏi do AI sinh vào bài kiểm tra!"*.
 
 #### Luồng phụ / Ngoại lệ:
