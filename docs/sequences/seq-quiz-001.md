@@ -164,5 +164,5 @@ sequenceDiagram
   - Hỗ trợ lưu bản nháp câu trả lời định kỳ vào `LocalStorage` của trình duyệt phòng trường hợp học viên vô tình bị mất kết nối mạng.
 
 - **Phụ thuộc kỹ thuật (Dependencies):**
-  - Backend: `@nestjs/common`, TypeORM, PostgreSQL.
-  - Database: Bảng `quizzes` (`id`, `title`, `duration_minutes`, `max_attempts`, `pass_score`), bảng `quiz_questions` (`id`, `quiz_id`, `content`, `points`), bảng `quiz_choices` (`id`, `question_id`, `content`, `is_correct`), bảng `quiz_attempts` (`id`, `student_id`, `quiz_id`, `started_at`, `submitted_at`, `score`, `status: IN_PROGRESS | COMPLETED | TIMEOUT_SUBMITTED`).
+  - Backend: `express`, `sequelize`, `joi`, `ioredis`, PostgreSQL.
+  - Database: Bảng `quizzes` (`id`, `title`, `duration_minutes`, `max_attempts`, `pass_score`), bảng `questions` (`id`, `quiz_id`, `content`, `points`), bảng `question_options` (`id`, `question_id`, `content`, `is_correct`), bảng `quiz_attempts` (`id`, `student_id`, `quiz_id`, `started_at`, `submitted_at`, `score`, `status`).

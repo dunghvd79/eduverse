@@ -2,7 +2,7 @@
 
 > **Tài liệu tham chiếu:** [`api-conventions.md`](api-conventions.md), [`schema.md`](../database/schema.md), [`seq-assign-001.md`](../sequences/seq-assign-001.md), [`actor-student.md`](../use-cases/actor-student.md#uc-doc-001), [`actor-teacher.md`](../use-cases/actor-teacher.md#uc-doc-002)  
 > **Base Path:** `/api/v1/uploads`, `/api/v1/lessons/:lessonId/materials`  
-> **Mục đích:** Đặc tả chi tiết toàn bộ các endpoint phục vụ cấp phép tải tệp trực tiếp lên cloud AWS S3 bằng cơ chế **Presigned PUT URL** (chống nghẽn băng thông và I/O server NestJS), phân loại rành mạch tài nguyên Công khai (Public Assets: Avatar, Thumbnail khóa học) và tài nguyên Bảo mật (Private Assets: Tài liệu học tập, Video bài giảng trực tuyến), quản lý danh mục tài liệu đính kèm bài học (`course_materials`), cấp phát link stream/download an toàn có thời hạn và chính sách dọn dẹp file rác tự động.
+> **Mục đích:** Đặc tả chi tiết toàn bộ các endpoint phục vụ cấp phép tải tệp trực tiếp lên cloud AWS S3 bằng cơ chế **Presigned PUT URL** (chống nghẽn băng thông và I/O server Express.js), phân loại rành mạch tài nguyên Công khai (Public Assets: Avatar, Thumbnail khóa học) và tài nguyên Bảo mật (Private Assets: Tài liệu học tập, Video bài giảng trực tuyến), quản lý danh mục tài liệu đính kèm bài học (`course_materials`), cấp phát link stream/download an toàn có thời hạn và chính sách dọn dẹp file rác tự động.
 
 ---
 
@@ -51,7 +51,7 @@ Hệ thống phân định rõ ràng 4 mục đích sử dụng tệp với các
 ### 3.1. Sinh AWS S3 Presigned URL để tải file trực tiếp
 
 #### `POST /api/v1/uploads/presigned-url`
-* **Mô tả chức năng:** Client gửi yêu cầu cấp đường dẫn tải tệp lên AWS S3 kèm chữ ký xác thực tạm thời (**S3 Presigned PUT URL**, hạn dùng 15 phút). Trình duyệt Frontend sẽ tải dữ liệu nhị phân trực tiếp lên cloud mà không đi qua NestJS server, ngăn chặn hoàn toàn việc làm nghẽn CPU và băng thông máy chủ.
+* **Mô tả chức năng:** Client gửi yêu cầu cấp đường dẫn tải tệp lên AWS S3 kèm chữ ký xác thực tạm thời (**S3 Presigned PUT URL**, hạn dùng 15 phút). Trình duyệt Frontend sẽ tải dữ liệu nhị phân trực tiếp lên cloud mà không đi qua Express.js server, ngăn chặn hoàn toàn việc làm nghẽn CPU và băng thông máy chủ.
 * **Quyền hạn:** `[Authenticated]`
   * `avatar`: Mọi người dùng đã đăng nhập đều có thể xin URL upload avatar cho chính mình.
   * `course_thumbnail`: Chỉ Giảng viên sở hữu khóa học hoặc Quản trị viên (Admin).
@@ -64,7 +64,7 @@ Hệ thống phân định rõ ràng 4 mục đích sử dụng tệp với các
 ```json
 {
   "purpose": "lesson_material",
-  "fileName": "Slide_Chuong_1_Tong_Quan_NestJS.pdf",
+  "fileName": "Slide_Chuong_1_Tong_Quan_ExpressJS.pdf",
   "fileSize": 18450000,
   "contentType": "application/pdf",
   "contextId": "ls1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c"
@@ -130,7 +130,7 @@ Hệ thống phân định rõ ràng 4 mục đích sử dụng tệp với các
       {
         "id": "mt1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
         "lessonId": "ls1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
-        "title": "Slide Bài Giảng Chương 1 - Tổng quan NestJS & TypeScript",
+        "title": "Slide Bài Giảng Chương 1 - Tổng quan Node.js & Express.js",
         "fileType": "pdf",
         "fileSize": 18450000,
         "createdAt": "2026-09-24T08:30:00.000Z"
@@ -175,8 +175,8 @@ Hệ thống phân định rõ ràng 4 mục đích sử dụng tệp với các
 #### Request Body (`CreateCourseMaterialDto`):
 ```json
 {
-  "title": "Slide Bài Giảng Chương 1 - Tổng quan NestJS & TypeScript",
-  "fileName": "Slide_Chuong_1_Tong_Quan_NestJS.pdf",
+  "title": "Slide Bài Giảng Chương 1 - Tổng quan Node.js & Express.js",
+  "fileName": "Slide_Chuong_1_Tong_Quan_ExpressJS.pdf",
   "fileKey": "private/materials/c1/ls1/1727211000_Slide_Chuong_1.pdf",
   "fileType": "pdf",
   "fileSize": 18450000
@@ -198,8 +198,8 @@ Hệ thống phân định rõ ràng 4 mục đích sử dụng tệp với các
   "data": {
     "id": "mt1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
     "lessonId": "ls1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
-    "title": "Slide Bài Giảng Chương 1 - Tổng quan NestJS & TypeScript",
-    "fileName": "Slide_Chuong_1_Tong_Quan_NestJS.pdf",
+    "title": "Slide Bài Giảng Chương 1 - Tổng quan Node.js & Express.js",
+    "fileName": "Slide_Chuong_1_Tong_Quan_ExpressJS.pdf",
     "fileType": "pdf",
     "fileSize": 18450000,
     "createdAt": "2026-09-24T20:47:00.000Z"
@@ -323,7 +323,7 @@ Hệ thống phân định rõ ràng 4 mục đích sử dụng tệp với các
   "message": "Khởi tạo liên kết tải tài liệu thành công",
   "data": {
     "downloadUrl": "https://eduverse-storage.s3.ap-southeast-1.amazonaws.com/private/materials/c1/ls1/1727211000_Slide_Chuong_1.pdf?response-content-disposition=attachment%3B%20filename%3D...&X-Amz-Signature=...",
-    "fileName": "Slide_Chuong_1_Tong_Quan_NestJS.pdf",
+    "fileName": "Slide_Chuong_1_Tong_Quan_ExpressJS.pdf",
     "fileType": "pdf",
     "fileSize": 18450000,
     "expiresInSeconds": 1800

@@ -1,21 +1,21 @@
 # 📐 Quy Chuẩn Thiết Kế API — EduVerse API Conventions
 
 > **Tài liệu quy chuẩn kỹ thuật:** Hướng dẫn tiêu chuẩn thiết kế kiến trúc RESTful API thống nhất cho toàn bộ hệ thống EduVerse.  
-> **Áp dụng cho:** Đội ngũ phát triển Backend (NestJS), Frontend (React) và Kiểm thử (QA).  
+> **Áp dụng cho:** Đội ngũ phát triển Backend (Express.js), Frontend (React) và Kiểm thử (QA).  
 > **Phiên bản:** v1.0.0 — Cập nhật lần cuối: 24/09/2026.
 
 ---
 
 ## 1. Nguyên Tắc Thiết Kế Chung (General Principles)
 
-Hệ thống API của EduVerse được thiết kế tuân thủ nghiêm ngặt các nguyên tắc **RESTful API**, tối ưu cho ứng dụng Single Page Application (React) và kiến trúc module hóa của NestJS.
+Hệ thống API của EduVerse được thiết kế tuân thủ nghiêm ngặt các nguyên tắc **RESTful API**, tối ưu cho ứng dụng Single Page Application (React) và kiến trúc 3 lớp của Express.js.
 
 ### 1.1. Giao thức & Địa chỉ cơ sở (Base URL)
 * Mọi giao tiếp môi trường sản xuất (Production) đều bắt buộc qua **HTTPS**.
 * Định dạng Base URL có tiền tố phiên bản:
   * **Production:** `https://api.eduverse.edu.vn/api/v1`
   * **Local Development:** `http://localhost:3000/api/v1`
-* Quy chuẩn trong NestJS: `app.setGlobalPrefix('api/v1')`.
+* Quy chuẩn trong Express.js: `app.use('/api/v1', router)`.
 
 ### 1.2. Quy tắc đặt tên (Naming Conventions)
 * **Resource URLs:** 
@@ -44,11 +44,11 @@ Hệ thống API của EduVerse được thiết kế tuân thủ nghiêm ngặt
 | `POST` | Tạo mới / Tác vụ nghiệp vụ | Tạo bản ghi mới hoặc thực thi tác vụ xử lý (Login, Submit Quiz, Presigned URL). |
 | `PUT` | Cập nhật toàn phần | Thay thế toàn bộ thực thể bằng dữ liệu mới. |
 | `PATCH` | Cập nhật từng phần | Cập nhật một số trường cụ thể của thực thể (khuyên dùng trong EduVerse). |
-| `DELETE` | Xóa dữ liệu | Xóa bản ghi (thực tế hệ thống áp dụng Soft Delete qua TypeORM). |
+| `DELETE` | Xóa dữ liệu | Xóa bản ghi (thực tế hệ thống áp dụng Soft Delete qua Sequelize paranoid). |
 
 ### 1.4. Chính sách CORS & Cookie (Cross-Origin & Credentials)
 * **CORS (Cross-Origin Resource Sharing):**
-  * Backend NestJS cấu hình `enableCors`:
+  * Backend Express.js cấu hình qua middleware `cors`:
     * **Origins cho phép:** `http://localhost:5173` (Vite dev server) và `https://eduverse.edu.vn` (Production).
     * **Credentials:** `credentials: true` (bắt buộc để trình duyệt nhận và gửi cookie an toàn).
 * **Cookie Policy (Refresh Token):**
@@ -67,7 +67,7 @@ Hệ thống API của EduVerse được thiết kế tuân thủ nghiêm ngặt
 
 ### 2.1. Phản hồi thành công (Success Response Envelope)
 
-Áp dụng thông qua NestJS `TransformInterceptor`:
+Áp dụng thông qua Express response helper (hoặc middleware format chuẩn):
 
 ```json
 {
@@ -88,7 +88,7 @@ Hệ thống API của EduVerse được thiết kế tuân thủ nghiêm ngặt
 
 ### 2.2. Phản hồi thất bại / Lỗi (Error Response Envelope)
 
-Áp dụng thông qua NestJS `HttpExceptionFilter`:
+Áp dụng thông qua Express Centralized Error Handling Middleware (`errorHandler.js`):
 
 ```json
 {
@@ -141,7 +141,7 @@ Khối `data` sẽ gồm danh sách `items` và khối thông tin `meta`:
     "items": [
       {
         "id": "c1f7a2d4-3a21-4f9e-8c3b-7f1a2b3c4d5e",
-        "title": "Lập trình Web với React & NestJS",
+        "title": "Lập trình Web với React & ExpressJS",
         "code": "WEB2026",
         "createdAt": "2026-09-20T08:00:00.000Z"
       }
@@ -183,7 +183,7 @@ Hệ thống quản lý 4 vai trò độc lập theo đúng tài liệu Use Case
 | `[Roles: admin]` | Quản trị viên hệ thống | Quản lý tài khoản người dùng, cấu hình tham số hệ thống, xem log audit. |
 
 ### 4.3. Nguyên tắc bảo vệ thông tin (Security Best Practices)
-1. **Tuyệt đối không rò rỉ Password:** Cột mật khẩu băm (`password`) và Refresh Token băm (`token_hash`) phải được cấu hình `select: false` trong Entity TypeORM, không bao giờ xuất hiện trong response JSON.
+1. **Tuyệt đối không rò rỉ Password:** Cột mật khẩu băm (`password_hash`) và token nhạy cảm phải được cấu hình loại trừ (`defaultScope` hoặc `toJSON` exclude) trong Model Sequelize, không bao giờ xuất hiện trong response JSON.
 2. **Ẩn đáp án đúng khi thi:** API làm bài thi trắc nghiệm (`GET /attempts/:id/questions`) **tuyệt đối không trả về trường `isCorrect`**.
 3. **Thông báo lỗi mơ hồ khi đăng nhập sai:** Trả về câu chung: *"Email hoặc mật khẩu không chính xác"* để tránh tấn công dò quét tài khoản (User Enumeration).
 4. **Không đưa AWS Credentials về Client:** Tải file lên Cloud bắt buộc dùng **S3 Presigned URL**.

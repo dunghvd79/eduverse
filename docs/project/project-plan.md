@@ -21,7 +21,7 @@
 ### Phase 0: Thiết kế (Tuần 1–2)
 
 - [x] Phân tích yêu cầu từ đề bài
-- [x] Chốt tech stack (NestJS + React/Vite + PostgreSQL + AWS S3 + Gemini AI)
+- [x] Chốt tech stack (Express.js + React/Vite JavaScript + PostgreSQL/Sequelize + AWS S3 + Gemini AI)
 - [x] Chốt quy tắc nghiệp vụ & mô hình phân quyền RBAC 4 vai trò
 - [x] Tạo cấu trúc thư mục dự án theo chuẩn Docs-as-Code
 - [x] Thiết lập Git repository & kết nối GitHub remote
@@ -35,7 +35,7 @@
 
 ### Phase 1: MVP Development (Tuần 3–7)
 
-- [ ] Sprint 1: Khởi tạo Project & Cài đặt môi trường (NestJS Backend + React Vite Frontend + Docker)
+- [ ] Sprint 1: Khởi tạo Project & Cài đặt môi trường (Express.js Backend + React Vite Frontend + Docker)
 - [ ] Sprint 2: Module Auth + Quản lý Người dùng (Users & RBAC)
 - [ ] Sprint 3: Module Khóa học + Chương học + Bài học (Courses, Chapters, Lessons)
 - [ ] Sprint 4: Module Lớp học + Ghi danh + Upload tài liệu đa phương tiện (Classes, Enrollments, Uploads)

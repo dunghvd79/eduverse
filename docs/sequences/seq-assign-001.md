@@ -137,7 +137,7 @@ sequenceDiagram
   - **Sanitize File Key:** Tên file lưu trên S3 được sinh dưới dạng: `assignments/{assignmentId}/{studentId}/{uuid}_{sanitizedOriginalName}` để tránh trùng lặp và bảo vệ cấu trúc thư mục.
 
 - **Hiệu năng & Tối ưu Băng thông (Offloading):**
-  - **Bỏ qua tải trọng máy chủ API (Server Bypass):** Bằng cách dùng Presigned URL, luồng truyền tải dữ liệu nặng (15MB - 50MB) đi thẳng từ trình duyệt học viên đến máy chủ AWS S3, giúp máy chủ NestJS không bị chiếm dụng RAM và CPU.
+  - **Bỏ qua tải trọng máy chủ API (Server Bypass):** Bằng cách dùng Presigned URL, luồng truyền tải dữ liệu nặng (15MB - 50MB) đi thẳng từ trình duyệt học viên đến máy chủ AWS S3, giúp máy chủ Express.js không bị chiếm dụng RAM và CPU.
   - **Tối ưu chi phí lưu trữ:** Khi học viên nộp lại bài (`Resubmit`), hệ thống tự động xóa object cũ trên S3 để tránh lãng phí dung lượng lưu trữ đám mây.
 
 - **Phụ thuộc kỹ thuật (Dependencies):**

@@ -1,7 +1,7 @@
 # 🗃️ Quyết Định Thiết Kế Cơ Sở Dữ Liệu (Database Decisions)
 
 > **Hệ quản trị CSDL:** PostgreSQL 16+  
-> **ORM tương thích:** TypeORM (NestJS)  
+> **ORM tương thích:** Sequelize v6 (Express.js)  
 > **Áp dụng cho:** Hệ thống EduVerse (LMS)
 
 ---
@@ -19,7 +19,7 @@
 - **Xóa mềm (Soft Delete):** Áp dụng cho toàn bộ các thực thể nghiệp vụ cốt lõi:
   - `users`, `courses`, `chapters`, `lessons`, `classes`, `enrollments`, `quizzes`, `assignments`.
   - Cột nhận diện: `deleted_at timestamptz NULL`.
-  - Trong TypeORM sử dụng decorator `@DeleteDateColumn()`.
+  - Trong Sequelize kích hoạt tùy chọn `paranoid: true` (tự động mapping sang cột `deleted_at`).
 - **Xóa cứng (Hard Delete + Cascade):** Áp dụng cho các bảng dữ liệu phụ thuộc vòng đời cấp con (khi câu hỏi bị xóa thì các đáp án con trong `question_options` bị xóa theo `ON DELETE CASCADE`).
 
 ### 1.3. Quy Chuẩn Đặt Tên (Naming Conventions)

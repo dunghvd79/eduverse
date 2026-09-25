@@ -1,4 +1,4 @@
-# 🏫 Đặc Tả API: Module Lớp Học & Ghi Danh — api-classes.md
+﻿# 🏫 Đặc Tả API: Module Lớp Học & Ghi Danh — api-classes.md
 
 > **Tài liệu tham chiếu:** [`api-conventions.md`](api-conventions.md), [`schema.md`](../database/schema.md), [`actor-student.md`](../use-cases/actor-student.md#uc-class-001), [`actor-teacher.md`](../use-cases/actor-teacher.md)  
 > **Base Path:** `/api/v1/classes`  
@@ -61,7 +61,7 @@
     "items": [
       {
         "id": "cl1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
-        "name": "Lập trình Web React & NestJS - Khóa K2026A",
+        "name": "Lập trình Web React & ExpressJS - Khóa K2026A",
         "classCode": "WEB2026A",
         "status": "active",
         "startDate": "2026-10-01",
@@ -69,7 +69,7 @@
         "totalStudents": 35,
         "course": {
           "id": "c1f7a2d4-3a21-4f9e-8c3b-7f1a2b3c4d5e",
-          "title": "Lập trình Web với React & NestJS",
+          "title": "Lập trình Web với React & ExpressJS",
           "thumbnailUrl": "https://s3.ap-southeast-1.amazonaws.com/eduverse/thumbnails/course-web.jpg"
         },
         "teacher": {
@@ -118,14 +118,14 @@
   "data": [
     {
       "id": "cl1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
-      "name": "Lập trình Web React & NestJS - Khóa K2026A",
+      "name": "Lập trình Web React & ExpressJS - Khóa K2026A",
       "classCode": "WEB2026A",
       "status": "active",
       "startDate": "2026-10-01",
       "endDate": "2026-12-31",
       "course": {
         "id": "c1f7a2d4-3a21-4f9e-8c3b-7f1a2b3c4d5e",
-        "title": "Lập trình Web với React & NestJS",
+        "title": "Lập trình Web với React & ExpressJS",
         "thumbnailUrl": "https://s3.ap-southeast-1.amazonaws.com/eduverse/thumbnails/course-web.jpg"
       },
       "teacher": {
@@ -161,7 +161,7 @@
   "message": "Lấy thông tin lớp học thành công",
   "data": {
     "id": "cl1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
-    "name": "Lập trình Web React & NestJS - Khóa K2026A",
+    "name": "Lập trình Web React & ExpressJS - Khóa K2026A",
     "classCode": "WEB2026A",
     "status": "active",
     "startDate": "2026-10-01",
@@ -169,8 +169,8 @@
     "totalStudents": 35,
     "course": {
       "id": "c1f7a2d4-3a21-4f9e-8c3b-7f1a2b3c4d5e",
-      "title": "Lập trình Web với React & NestJS",
-      "slug": "lap-trinh-web-voi-react-nestjs"
+      "title": "Lập trình Web với React & ExpressJS",
+      "slug": "lap-trinh-web-voi-react-ExpressJS"
     },
     "teacher": {
       "id": "u2b3c4d5-6e7f-8a9b-0c1d-2e3f4a5b6c7d",
@@ -204,7 +204,7 @@
 ```json
 {
   "courseId": "c1f7a2d4-3a21-4f9e-8c3b-7f1a2b3c4d5e",
-  "name": "Lập trình Web React & NestJS - Khóa K2026A",
+  "name": "Lập trình Web React & ExpressJS - Khóa K2026A",
   "classCode": "WEB2026A",
   "teacherId": "u2b3c4d5-6e7f-8a9b-0c1d-2e3f4a5b6c7d",
   "startDate": "2026-10-01",
@@ -226,7 +226,7 @@
   "message": "Tạo lớp học thành công",
   "data": {
     "id": "cl1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
-    "name": "Lập trình Web React & NestJS - Khóa K2026A",
+    "name": "Lập trình Web React & ExpressJS - Khóa K2026A",
     "classCode": "WEB2026A",
     "status": "active",
     "createdAt": "2026-09-24T11:18:00.000Z"
@@ -257,7 +257,7 @@
 #### Request Body (`UpdateClassDto`):
 ```json
 {
-  "name": "Lập trình Web React & NestJS - Khóa K2026A (Mở rộng)",
+  "name": "Lập trình Web React & ExpressJS - Khóa K2026A (Mở rộng)",
   "status": "active",
   "endDate": "2027-01-15"
 }
@@ -275,7 +275,7 @@
   "message": "Cập nhật lớp học thành công",
   "data": {
     "id": "cl1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
-    "name": "Lập trình Web React & NestJS - Khóa K2026A (Mở rộng)",
+    "name": "Lập trình Web React & ExpressJS - Khóa K2026A (Mở rộng)",
     "status": "active",
     "endDate": "2027-01-15",
     "updatedAt": "2026-09-24T11:20:00.000Z"
@@ -390,9 +390,9 @@
   "message": "Ghi danh thành công vào lớp học!",
   "data": {
     "classId": "cl1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
-    "className": "Lập trình Web React & NestJS - Khóa K2026A",
+    "className": "Lập trình Web React & ExpressJS - Khóa K2026A",
     "enrolledAt": "2026-09-24T11:25:00.000Z",
-    "courseTitle": "Lập trình Web với React & NestJS"
+    "courseTitle": "Lập trình Web với React & ExpressJS"
   },
   "timestamp": "2026-09-24T11:25:00.000Z"
 }
@@ -554,7 +554,7 @@
   "data": {
     "summary": {
       "classId": "cl1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
-      "className": "Lập trình Web React & NestJS - Khóa K2026A",
+      "className": "Lập trình Web React & ExpressJS - Khóa K2026A",
       "totalLessons": 24,
       "totalStudents": 35,
       "completedCount": 12,
@@ -659,3 +659,4 @@
   - Nếu học viên từng bị xóa khỏi lớp (`dropped`), sau này vẫn có thể được thêm lại mà không vi phạm ràng buộc Unique trong Database.
 - **Bảo mật Quyền xem Thành viên:**
   - Danh sách học viên (`GET /members`) chỉ cho phép thành viên thuộc lớp đó hoặc giảng viên đứng lớp xem, tránh tình trạng người ngoài lớp dò quét danh sách sinh viên.
+

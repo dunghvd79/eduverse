@@ -1,4 +1,4 @@
-﻿# 🏗️ System Architecture — EduVerse
+# 🏗️ System Architecture — EduVerse
 
 > **Phiên bản:** 1.0  
 > **Cập nhật lần cuối:** 25/09/2026  
@@ -46,26 +46,26 @@ C4Context
 C4Container
     title Container Diagram — EduVerse
 
-    Person(user, "Người dùng", "Student / Teacher / Manager / Admin")
+    Person(user, "Người dùng", "Student / Teacher / Training Manager / Admin")
 
     System_Boundary(eduverse, "EduVerse") {
-        Container(frontend, "Frontend App", "React + Vite + Tailwind CSS", "Giao diện web responsive. Người dùng tương tác qua trình duyệt.")
-        Container(backend, "Backend API", "NestJS + TypeScript", "REST API server. Xử lý toàn bộ business logic, xác thực, phân quyền.")
-        Container(db, "PostgreSQL Database", "PostgreSQL 16", "Lưu trữ toàn bộ dữ liệu quan hệ: người dùng, khóa học, bài thi, điểm số.")
-        Container(redis, "Redis Cache", "Redis 7", "Cache session, rate limiting, lưu Refresh Token blacklist.")
-        ContainerDb(s3vol, "AWS S3 Bucket", "AWS S3", "Lưu trữ file: tài liệu đính kèm, ảnh bài nộp, avatar người dùng.")
+        Container(frontend, "Frontend App", "React 18 + Vite (JavaScript .jsx)", "Giao diện web SPA responsive. Chạy trên trình duyệt người dùng.")
+        Container(backend, "Backend API", "Express.js + Node.js (JavaScript)", "REST API server & Socket.IO. Xử lý toàn bộ business logic, xác thực, phân quyền.")
+        Container(db, "PostgreSQL Database", "PostgreSQL 16", "Lưu trữ toàn bộ dữ liệu quan hệ: người dùng, khóa học, bài thi, điểm số, và vòng đời user_tokens.")
+        Container(redis, "Redis Cache", "Redis 7", "Cache tốc độ cao O(1): Rate Limiting, tra cứu nhanh Refresh Token Blacklist.")
     }
 
-    System_Ext(gmail, "Gmail SMTP", "Dịch vụ gửi email")
-    System_Ext(gemini, "Google Gemini API", "AI sinh câu hỏi")
+    System_Ext(s3vol, "AWS S3 Bucket", "AWS S3 Cloud Object Storage: Lưu trữ tài liệu đính kèm, ảnh bài nộp, avatar qua Presigned URL.")
+    System_Ext(gmail, "Gmail SMTP", "Dịch vụ gửi email thông báo và mã OTP kích hoạt tài khoản")
+    System_Ext(gemini, "Google Gemini API", "AI sinh câu hỏi trắc nghiệm tự động (Phase 2)")
 
-    Rel(user, frontend, "Truy cập qua trình duyệt", "HTTPS / port 80")
-    Rel(frontend, backend, "Gọi REST API (JSON)", "HTTPS / port 3000")
-    Rel(backend, db, "Đọc/Ghi dữ liệu qua TypeORM", "TCP / port 5432 (internal)")
-    Rel(backend, redis, "Cache & Token Blacklist", "TCP / port 6379 (internal)")
-    Rel(backend, s3vol, "Upload/Download file", "HTTPS / AWS SDK")
-    Rel(backend, gmail, "Gửi email qua Nodemailer", "SMTP+TLS / port 587")
-    Rel(backend, gemini, "Sinh câu hỏi AI", "HTTPS / REST")
+    Rel(user, frontend, "Tương tác giao diện người dùng", "HTTPS / trình duyệt")
+    Rel(frontend, backend, "Gọi REST API qua Nginx Reverse Proxy", "JSON / HTTPS")
+    Rel(backend, db, "Đọc/Ghi dữ liệu qua Sequelize ORM", "TCP / port 5432 (internal)")
+    Rel(backend, redis, "Tra cứu Blacklist & Bộ đếm Rate Limit", "TCP / port 6379 (internal)")
+    Rel(backend, s3vol, "Sinh Presigned URL upload/download", "HTTPS / AWS SDK v3")
+    Rel(backend, gmail, "Gửi email kích hoạt OTP, thông báo", "SMTP+TLS / port 587")
+    Rel(backend, gemini, "Gửi prompt sinh câu hỏi trắc nghiệm", "HTTPS / REST")
 ```
 
 ---
@@ -74,40 +74,52 @@ C4Container
 
 | Container | Công nghệ | Port | Vai trò |
 |---|---|---|---|
-| **Frontend App** | React 18 + Vite + Tailwind CSS + shadcn/ui | `80` (prod), `5173` (dev) | Giao diện web SPA, responsive |
-| **Backend API** | NestJS 10 + TypeScript + TypeORM | `3000` | REST API, Business Logic, Auth/RBAC |
-| **PostgreSQL** | PostgreSQL 16 | `5432` (internal) | Lưu trữ dữ liệu quan hệ chính |
-| **Redis** | Redis 7 | `6379` (internal) | Cache, Refresh Token blacklist |
-| **AWS S3** | AWS S3 (external) | — | File storage dài hạn |
+| **Frontend App** | React 18 + Vite (JavaScript) + Tailwind CSS + shadcn/ui | `80`/`443` (prod qua Nginx), `5173` (dev) | Giao diện web SPA, responsive, xử lý client state |
+| **Backend API** | Express.js 4 + Node.js (ES Modules) + Sequelize | `3000` (internal prod, exposed dev) | REST API, Socket.IO Server, Business Logic, Auth/RBAC |
+| **PostgreSQL** | PostgreSQL 16 | `5432` (internal network) | Nguồn dữ liệu quan hệ chính & lưu trữ bền vững `user_tokens` (audit log) |
+| **Redis** | Redis 7 | `6379` (internal network) | Cache tốc độ cao $O(1)$: tra cứu Token Blacklist, bộ đếm Rate Limiting |
+| **AWS S3** (External) | AWS S3 SDK v3 | Cloud HTTPS | Lưu trữ tài liệu học tập, ảnh avatar, file nộp bài tập |
 
 ---
 
 ## 4. Các Luồng Kết nối Chính
 
-### 4.1. REST API — Frontend ↔ Backend
+### 4.1. REST API — Frontend ↔ Backend & Cơ chế Reverse Proxy
+
+React là ứng dụng SPA (Single Page Application) thực thi hoàn toàn trên trình duyệt người dùng. Luồng giao tiếp API được phân tách rõ ràng theo môi trường:
 
 ```
-Browser  →  [HTTPS :443]   →  Frontend (React/Vite)
-Frontend →  [HTTPS :3000]  →  Backend (NestJS)
+[Development]:
+Trình duyệt  ──>  localhost:5173 (Vite HMR Dev Server)
+Trình duyệt  ──>  localhost:3000/api/v1/* (Express.js API - bật CORS cho localhost:5173)
+
+[Production - Docker Compose]:
+Trình duyệt  ──>  [HTTPS :80/443]  ──>  Nginx (Frontend Container)
+                                          │
+                                          ├── Phục vụ Static SPA Assets (HTML, JS, CSS)
+                                          └── Reverse Proxy `/api/v1/*` ──> http://backend:3000
 ```
 
+- **Lợi ích kiến trúc Production:**
+  - Trình duyệt chỉ cần kết nối đến 1 cổng duy nhất (80/443).
+  - Triệt tiêu vấn đề CORS (Cross-Origin Resource Sharing) trong môi trường triển khai thực tế.
+  - Port `3000` của Backend được bảo vệ an toàn trong mạng nội bộ Docker, không expose ra ngoài Internet.
 - **Format:** JSON over HTTP/HTTPS
 - **Auth header:** `Authorization: Bearer <access_token>`
-- **Timeout:** 30 giây
-- **CORS:** Backend chỉ chấp nhận origin từ Frontend domain
+- **Refresh flow:** Tự động gửi kèm `Cookie: refreshToken=...` (HttpOnly, Secure, SameSite=Strict)
 
-### 4.2. WebSocket — Real-time Notifications
+### 4.2. Real-time Notifications (Socket.IO)
 
 ```
-Frontend  ←→  [WS / wss://]  ←→  Backend (NestJS Gateway)
+Frontend  ←→  [WS / wss://]  ←→  Backend (Socket.IO Server)
 ```
 
-- **Thư viện:** NestJS WebSocket Gateway (`@nestjs/websockets`)
+- **Thư viện:** `socket.io` (Backend) và `socket.io-client` (Frontend)
 - **Mục đích:** Push thông báo real-time (Phase 2)
 - **Events:** `notification.new`, `grade.updated`
 
 > [!NOTE]
-> WebSocket được thiết kế sẵn cho Phase 2. Phase 1 MVP dùng HTTP polling đơn giản.
+> Socket.IO được thiết kế sẵn cho Phase 2. Phase 1 MVP dùng HTTP polling đơn giản qua TanStack Query.
 
 ### 4.3. Docker Internal Network — Backend ↔ Database/Redis
 
@@ -120,24 +132,40 @@ backend-container  →  [Docker bridge network]  →  redis-container
 - **Hostname:** `postgres`, `redis` (tên service trong `docker-compose.yml`)
 - **Không expose ra ngoài** — chỉ accessible trong Docker network
 
-### 4.4. Redis — Cache & Session
+### 4.4. Kiến trúc Quản lý Token & Cache 2 Lớp (PostgreSQL + Redis)
+
+Hệ thống kết hợp sức mạnh của **PostgreSQL** (lưu trữ bền vững, toàn vẹn quan hệ) và **Redis** (truy xuất bộ nhớ $O(1)$) để tối ưu hóa hiệu năng và bảo mật:
 
 ```
-Backend  →  [SET/GET/DEL]  →  Redis
+                      ┌───────────────────────────────────────────────┐
+                      │              Express.js Backend               │
+                      └───────┬───────────────────────────────┬───────┘
+                              │ Kiểm tra nhanh O(1)           │ Ghi nhận trạng thái / Audit
+                              ▼                               ▼
+                 ┌─────────────────────────┐     ┌─────────────────────────┐
+                 │       Redis Cache       │     │  PostgreSQL user_tokens │
+                 │                         │     │                         │
+                 │ • Blacklist kiểm tra    │     │ • Single Source of Truth│
+                 │   tức thì mỗi request   │     │ • Lưu trữ OTP kích hoạt │
+                 │ • Rate Limit Counters   │     │ • Quản lý token rotation│
+                 │ • Cache dữ liệu tạm     │     │ • Audit log lịch sử     │
+                 └─────────────────────────┘     └─────────────────────────┘
 ```
 
-| Dữ liệu | Key Pattern | TTL |
-|---|---|---|
-| Refresh Token Blacklist | `rt_blacklist:<token_hash>` | 7 ngày |
-| Rate Limit Counter | `rl:<ip>:<endpoint>` | 1 phút |
-| Email OTP | `otp:<user_id>` | 15 phút |
+| Thành phần | Dữ liệu | Cơ chế & Key Pattern | Thời gian sống (TTL) | Mục đích |
+|---|---|---|---|---|
+| **Redis** | Refresh Token Blacklist | `rt_blacklist:<token_hash>` | 7 ngày | Chặn ngay Refresh Token bị thu hồi mà không cần query DB |
+| **Redis** | Rate Limit Counter | `rl:<ip>:<endpoint>` | 1 phút – 1 giờ | Chống brute-force đăng nhập, spam gửi OTP |
+| **PostgreSQL** | Token Kích hoạt Email | Bảng `user_tokens` (`email_verification`) | 10 phút | Lưu mã OTP 6 số hash SHA-256 phục vụ kích hoạt tài khoản |
+| **PostgreSQL** | Token Đặt lại Mật khẩu | Bảng `user_tokens` (`password_reset`) | 15 phút | Chuỗi ngẫu nhiên hash SHA-256 phục vụ đổi mật khẩu an toàn |
+| **PostgreSQL** | Refresh Token Lifecycle | Bảng `user_tokens` (`refresh_token`) | 7 ngày | Lưu phiên làm việc hợp lệ, hỗ trợ thu hồi đa thiết bị (`allDevices`) |
 
 ### 4.5. External Services
 
 | Service | Giao thức | Mục đích |
 |---|---|---|
 | **Gmail SMTP** | SMTP+TLS (port 587) | Gửi email xác thực, reset mật khẩu |
-| **AWS S3** | HTTPS (AWS SDK) | Upload tài liệu, ảnh bài nộp, avatar |
+| **AWS S3** | HTTPS (AWS SDK v3) | Upload tài liệu, ảnh bài nộp, avatar qua Presigned URL |
 | **Google Gemini API** | HTTPS (REST) | AI sinh câu hỏi trắc nghiệm (Phase 2) |
 
 ---
@@ -147,35 +175,39 @@ Backend  →  [SET/GET/DEL]  →  Redis
 ### Development (Local)
 
 ```
-docker-compose up -d
+docker-compose up -d postgres redis
+npm run dev (Backend Express.js)
+npm run dev (Frontend Vite)
 ```
 
 ```
 localhost:5173  →  Frontend (Vite dev server)
-localhost:3000  →  Backend (NestJS)
-localhost:5432  →  PostgreSQL (exposed for dev tools)
-localhost:6379  →  Redis (exposed for dev tools)
+localhost:3000  →  Backend (Express.js API)
+localhost:5432  →  PostgreSQL (exposed for GUI tools: DBeaver, pgAdmin)
+localhost:6379  →  Redis (exposed for RedisInsight)
 ```
 
 ### Production (Docker Compose)
 
 ```
-                    ┌─────────────────────────────────┐
-                    │          Docker Host             │
-                    │                                  │
-Internet ──:80/443──│── [Frontend: Nginx]              │
-                    │         │                        │
-                    │         │ REST API :3000         │
-                    │         ▼                        │
-                    │   [Backend: NestJS]              │
-                    │     │         │                  │
-                    │  :5432     :6379                 │
-                    │     ▼         ▼                  │
-                    │ [PostgreSQL] [Redis]             │
-                    └─────────────────────────────────┘
-                              │           │
-                          AWS S3     Gmail SMTP
-                        (external)  (external)
+                    ┌────────────────────────────────────────────────────────┐
+                    │                      Docker Host                       │
+                    │                                                        │
+Internet ──:80/443──│──> [Frontend: Nginx]                                   │
+                    │         │                                              │
+                    │         ├── Phục vụ Static React SPA                   │
+                    │         └── Proxy `/api/v1/*` (nội bộ Docker)          │
+                    │                  │                                     │
+                    │                  ▼                                     │
+                    │         [Backend: Express.js :3000]                    │
+                    │            │         │                                 │
+                    │        :5432         :6379                             │
+                    │            ▼         ▼                                 │
+                    │     [PostgreSQL] [Redis]                               │
+                    └────────────────────────────────────────────────────────┘
+                                 │           │
+                             AWS S3     Gmail SMTP
+                           (external)  (external)
 ```
 
 ---
@@ -187,12 +219,13 @@ Internet ──:80/443──│── [Frontend: Nginx]              │
 services:
   frontend:
     image: eduverse-frontend
-    ports: ["80:80"]
+    ports: ["80:80", "443:443"]
     depends_on: [backend]
 
   backend:
     image: eduverse-backend
-    ports: ["3000:3000"]
+    expose: ["3000"] # Nội bộ mạng Docker, Nginx kết nối trực tiếp
+    # ports: ["3000:3000"]  # Chỉ mở khi dev/debug
     depends_on: [postgres, redis]
     environment:
       - DATABASE_URL=postgresql://...
@@ -219,12 +252,15 @@ networks:
 
 | Quyết định | Xem chi tiết |
 |---|---|
-| Tại sao chọn NestJS | [design-decisions.md — ADR-001](./design-decisions.md#adr-001) |
+| Tại sao chọn Express.js (JavaScript) | [design-decisions.md — ADR-001](./design-decisions.md#adr-001) |
 | Tại sao chọn PostgreSQL | [design-decisions.md — ADR-002](./design-decisions.md#adr-002) |
-| Tại sao dùng JWT | [design-decisions.md — ADR-003](./design-decisions.md#adr-003) |
+| Tại sao dùng JWT & Cơ chế Token 2 Lớp | [design-decisions.md — ADR-003](./design-decisions.md#adr-003) |
 | Tại sao dùng Monolith | [design-decisions.md — ADR-004](./design-decisions.md#adr-004) |
-| Tại sao chọn Vite + React | [design-decisions.md — ADR-005](./design-decisions.md#adr-005) |
+| Tại sao chọn Vite + React (JavaScript) | [design-decisions.md — ADR-005](./design-decisions.md#adr-005) |
 | Tại sao dùng Docker Compose | [design-decisions.md — ADR-006](./design-decisions.md#adr-006) |
+| Tại sao chọn AWS S3 (Presigned URL) | [design-decisions.md — ADR-007](./design-decisions.md#adr-007) |
+| Tại sao chọn Google Gemini Flash | [design-decisions.md — ADR-008](./design-decisions.md#adr-008) |
+| Chiến lược Real-time: Polling & Socket.IO | [design-decisions.md — ADR-009](./design-decisions.md#adr-009) |
 
 ---
 

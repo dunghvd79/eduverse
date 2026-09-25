@@ -126,12 +126,12 @@ sequenceDiagram
     - **Access Token:** Hạn ngắn (**15 phút**), mang payload `{sub: userId, email, role}`, ký bằng secret key `JWT_ACCESS_SECRET`.
     - **Refresh Token:** Hạn dài (**7 ngày**), lưu dưới dạng mã hóa `SHA-256` hoặc `bcrypt` trong bảng `refresh_tokens`, trả về qua `httpOnly`, `Secure`, `SameSite=Strict` Cookie nhằm chống tấn công XSS.
   - **Thu hồi phiên đăng nhập (Token Revocation / Logout):** Xóa bản ghi Refresh Token trong DB khi người dùng bấm Đăng xuất hoặc khi phát hiện Refresh Token bị dùng lại bất thường (Refresh Token Rotation).
-  - **Chống Brute-force Login:** Áp dụng Rate Limiting qua `@nestjs/throttler` — tối đa **5 lần thử đăng nhập sai liên tiếp trong 5 phút** cho mỗi IP/Email.
+  - **Chống Brute-force Login:** Áp dụng Rate Limiting qua `express-rate-limit` hoặc Redis — tối đa **5 lần thử đăng nhập sai liên tiếp trong 5 phút** cho mỗi IP/Email.
 
 - **Hiệu năng & Khả năng mở rộng:**
   - Bản ghi Refresh Token có thể lưu trữ trong **Redis** với TTL tự động để tối ưu tốc độ đọc/ghi và giảm tải cho PostgreSQL.
   - Phía Frontend dùng **Axios Interceptor** để tự động bắt mã `401 Unauthorized` khi Access Token hết hạn, âm thầm gọi `/api/auth/refresh-token` lấy token mới mà không làm gián đoạn trải nghiệm người dùng.
 
 - **Phụ thuộc kỹ thuật (Dependencies):**
-  - Backend: `@nestjs/jwt`, `@nestjs/passport`, `passport-jwt`, `bcrypt`, `cookie-parser`.
-  - Database: Bảng `users` (`id`, `email`, `password`, `role`, `status`), bảng `refresh_tokens` (`id`, `user_id`, `token_hash`, `expires_at`, `is_revoked`).
+  - Backend: `jsonwebtoken`, `bcrypt`, `cookie-parser`, `joi`, `express-rate-limit`, `ioredis`.
+  - Database: Bảng `users` (`id`, `email`, `password_hash`, `role`, `status`), bảng `user_tokens` (`id`, `user_id`, `token`, `type: REFRESH_TOKEN`, `expires_at`).
