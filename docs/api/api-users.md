@@ -631,22 +631,16 @@
   2. Batch Insert các bản ghi người dùng hợp lệ vào Database bằng một Transaction duy nhất (`chunkSize: 100`).
   3. Bắn các Task gửi email chứa mật khẩu khởi tạo qua Mail Worker có giới hạn tốc độ (Rate Limiting SMTP) để không bị nhà cung cấp email chặn thư rác (Spam Filter).
 
-### 3.4. Thứ tự Khai báo Route trong NestJS Controller (Route Precedence)
-- **Lưu ý sống còn khi code Backend NestJS:** Do cơ chế Route Matching từ trên xuống dưới, các route tĩnh phải được định nghĩa **TRƯỚC** các route có path parameter `:id`:
-  ```typescript
+### 3.4. Thứ tự Khai báo Route trong Express Router (Route Precedence)
+- **Lưu ý sống còn khi code Backend Express.js:** Do cơ chế Route Matching từ trên xuống dưới theo thứ tự đăng ký middleware, các route tĩnh phải được định nghĩa **TRƯỚC** các route có path parameter `:id`:
+  ```javascript
   // ✅ ĐÚNG: Khai báo route tĩnh trước
-  @Get('me')
-  getProfile(@CurrentUser() user: User) { ... }
-
-  @Patch('me/password')
-  changePassword(...) { ... }
-
-  @Post('bulk-import')
-  bulkImport(...) { ... }
+  router.get('/me', authMiddleware, userController.getProfile);
+  router.patch('/me/password', authMiddleware, validateChangePassword, userController.changePassword);
+  router.post('/bulk-import', authMiddleware, requireRole('ADMIN'), upload.single('file'), userController.bulkImport);
 
   // Sau đó mới đến route động :id
-  @Get(':id')
-  getUserById(@Param('id', ParseUUIDPipe) id: string) { ... }
+  router.get('/:id', authMiddleware, validateUUIDParam, userController.getUserById);
   ```
-  Nếu đặt ngược lại (`@Get(':id')` lên trước), NestJS sẽ bắt chuỗi `"me"` làm `:id` và ném lỗi `400 Bad Request: Validation failed (uuid is expected)`.
+  Nếu đặt ngược lại (`router.get('/:id', ...)` lên trước), Express sẽ bắt chuỗi `"me"` làm giá trị `:id` (`req.params.id = 'me'`) và ném lỗi `400 Bad Request: Validation failed (UUID is expected)`.
 

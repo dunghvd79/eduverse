@@ -1,4 +1,4 @@
-# 📝 Đặc Tả API: Module Bài Tập Tự Luận & Nộp File S3 — api-assignments.md
+﻿# 📝 Đặc Tả API: Module Bài Tập Tự Luận & Nộp File S3 — api-assignments.md
 
 > **Tài liệu tham chiếu:** [`api-conventions.md`](api-conventions.md), [`schema.md`](../database/schema.md), [`seq-assign-001.md`](../sequences/seq-assign-001.md), [`actor-student.md`](../use-cases/actor-student.md#uc-assign-001), [`actor-teacher.md`](../use-cases/actor-teacher.md#uc-assign-002)  
 > **Base Path:** `/api/v1/assignments`, `/api/v1/classes/:classId/assignments`, `/api/v1/assignment-submissions`  
@@ -70,7 +70,7 @@
       {
         "id": "as1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
         "lessonId": "ls1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
-        "title": "Xây dựng RESTful API CRUD Người dùng với NestJS & TypeORM",
+        "title": "Xây dựng RESTful API CRUD Người dùng với Express.js & Sequelize",
         "allowedFileTypes": "pdf,zip,docx",
         "maxFileSizeMb": 25,
         "createdAt": "2026-09-24T08:00:00.000Z"
@@ -114,8 +114,8 @@
   "data": {
     "id": "as1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
     "lessonId": "ls1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
-    "title": "Xây dựng RESTful API CRUD Người dùng với NestJS & TypeORM",
-    "instruction": "### Yêu cầu bài tập:\n1. Khởi tạo module `users` trong NestJS.\n2. Cấu hình kết nối PostgreSQL qua TypeORM.\n3. Viết đầy đủ các endpoint CRUD có phân trang và validate DTO bằng class-validator.\n\n**Quy cách nộp bài:** Nén toàn bộ mã nguồn vào file `.zip` (loại bỏ thư mục `node_modules`) kèm báo cáo định dạng `.pdf`.",
+    "title": "Xây dựng RESTful API CRUD Người dùng với Express.js & Sequelize",
+    "instruction": "### Yêu cầu bài tập:\n1. Khởi tạo router và controller `users` trong Express.js.\n2. Cấu hình kết nối PostgreSQL qua Sequelize.\n3. Viết đầy đủ các endpoint CRUD có phân trang và validate DTO bằng class-validator.\n\n**Quy cách nộp bài:** Nén toàn bộ mã nguồn vào file `.zip` (loại bỏ thư mục `node_modules`) kèm báo cáo định dạng `.pdf`.",
     "allowedFileTypes": "pdf,zip,docx",
     "maxFileSizeMb": 25,
     "createdAt": "2026-09-24T08:00:00.000Z",
@@ -146,7 +146,7 @@
 ```json
 {
   "lessonId": "ls1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
-  "title": "Xây dựng RESTful API CRUD Người dùng với NestJS & TypeORM",
+  "title": "Xây dựng RESTful API CRUD Người dùng với Express.js & Sequelize",
   "instruction": "Yêu cầu hoàn thành các API Users theo tài liệu hướng dẫn và nộp file nén mã nguồn.",
   "allowedFileTypes": "pdf,zip,docx",
   "maxFileSizeMb": 25
@@ -168,7 +168,7 @@
   "data": {
     "id": "as1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
     "lessonId": "ls1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
-    "title": "Xây dựng RESTful API CRUD Người dùng với NestJS & TypeORM",
+    "title": "Xây dựng RESTful API CRUD Người dùng với Express.js & Sequelize",
     "allowedFileTypes": "pdf,zip,docx",
     "maxFileSizeMb": 25,
     "createdAt": "2026-09-24T20:12:00.000Z"
@@ -285,7 +285,7 @@
       {
         "id": "as1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
         "classAssignmentId": "ca1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
-        "title": "Xây dựng RESTful API CRUD Người dùng với NestJS & TypeORM",
+        "title": "Xây dựng RESTful API CRUD Người dùng với Express.js & Sequelize",
         "openTime": "2026-09-20T00:00:00.000Z",
         "deadline": "2026-09-30T23:59:59.000Z",
         "cutoffTime": "2026-10-02T23:59:59.000Z",
@@ -336,8 +336,8 @@
   "data": {
     "id": "as1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
     "classAssignmentId": "ca1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
-    "title": "Xây dựng RESTful API CRUD Người dùng với NestJS & TypeORM",
-    "instruction": "### Yêu cầu bài tập:\n1. Khởi tạo module users trong NestJS...\n2. Nộp file nén .zip.",
+    "title": "Xây dựng RESTful API CRUD Người dùng với Express.js & Sequelize",
+    "instruction": "### Yêu cầu bài tập:\n1. Khởi tạo router và controller users trong Express.js...\n2. Nộp file nén .zip.",
     "allowedFileTypes": "pdf,zip,docx",
     "maxFileSizeMb": 25,
     "openTime": "2026-09-20T00:00:00.000Z",
@@ -422,7 +422,7 @@
 ### 2.9. Sinh S3 Presigned URL để tải file bài làm trực tiếp
 
 #### `POST /api/v1/classes/:classId/assignments/:assignmentId/submissions/presigned-url`
-* **Mô tả chức năng:** Học viên yêu cầu hệ thống cấp một đường dẫn tải lên AWS S3 an toàn có gắn chữ ký tạm thời (**S3 Presigned PUT URL**, hạn dùng 15 phút). Trình duyệt frontend sẽ tải file binary trực tiếp lên AWS S3 mà không đi qua backend, ngăn chặn hoàn toàn việc làm nghẽn CPU và băng thông của NestJS server ([`SEQ-ASSIGN-001`](../sequences/seq-assign-001.md)).
+* **Mô tả chức năng:** Học viên yêu cầu hệ thống cấp một đường dẫn tải lên AWS S3 an toàn có gắn chữ ký tạm thời (**S3 Presigned PUT URL**, hạn dùng 15 phút). Trình duyệt frontend sẽ tải file binary trực tiếp lên AWS S3 mà không đi qua backend, ngăn chặn hoàn toàn việc làm nghẽn CPU và băng thông của Express.js server ([`SEQ-ASSIGN-001`](../sequences/seq-assign-001.md)).
 * **Quy chuẩn bảo mật chữ ký S3 (Security Requirements):**
   * Backend **bắt buộc** ràng buộc `ContentType` và `ContentLength` ngay trong lệnh ký URL (`PutObjectCommand({ ContentType: dto.contentType, ContentLength: dto.fileSize })`).
   * **Yêu cầu đối với Frontend:** Khi gọi lệnh HTTP `PUT` tải file lên S3 theo `uploadUrl`, Request Header `Content-Type` gửi lên S3 **phải khớp chính xác 100%** với `contentType` đã đăng ký khi xin chữ ký. Nếu sai khác, AWS S3 sẽ từ chối tải tệp với mã lỗi `403 SignatureDoesNotMatch`.
@@ -579,7 +579,7 @@
       "submittedAt": "2026-09-24T20:20:00.000Z",
       "status": "graded",
       "grade": "9.50",
-      "feedback": "Báo cáo trình bày rất sạch đẹp, cấu trúc NestJS module chuẩn chỉ, có validation đầy đủ. Rất tốt!",
+      "feedback": "Báo cáo trình bày rất sạch đẹp, cấu trúc Express 3 lớp chuẩn chỉ, có validation đầy đủ. Rất tốt!",
       "gradedAt": "2026-09-25T09:00:00.000Z",
       "canResubmit": false,
       "resubmissionReason": null
@@ -1036,8 +1036,8 @@
 ## 3. Ghi Chú Kỹ Thuật & Nghiệp Vụ Module Assignments
 
 - **Kiến trúc Tải lên trực tiếp AWS S3 (S3 Direct Upload qua Presigned URL):**
-  - **Vấn đề nghẽn cổ chai (Bottleneck):** Nếu học viên upload file 25–50MB qua server NestJS, server sẽ chịu tải I/O cực lớn và nghẽn băng thông khi 50–100 học viên nộp bài cùng lúc trước giờ deadline.
-  - **Giải pháp:** Client chỉ gửi metadata (`fileName`, `fileSize`, `contentType`) lên NestJS để nhận **S3 Presigned PUT URL** (TTL 15 phút). Trình duyệt sẽ thực hiện HTTP `PUT` đẩy nhị phân trực tiếp lên AWS S3. Sau khi upload thành công, client gọi API Confirm để backend ghi nhận CSDL ([`SEQ-ASSIGN-001`](../sequences/seq-assign-001.md)).
+  - **Vấn đề nghẽn cổ chai (Bottleneck):** Nếu học viên upload file 25–50MB qua server Express.js, server sẽ chịu tải I/O cực lớn và nghẽn băng thông khi 50–100 học viên nộp bài cùng lúc trước giờ deadline.
+  - **Giải pháp:** Client chỉ gửi metadata (`fileName`, `fileSize`, `contentType`) lên Express.js để nhận **S3 Presigned PUT URL** (TTL 15 phút). Trình duyệt sẽ thực hiện HTTP `PUT` đẩy nhị phân trực tiếp lên AWS S3. Sau khi upload thành công, client gọi API Confirm để backend ghi nhận CSDL ([`SEQ-ASSIGN-001`](../sequences/seq-assign-001.md)).
 - **Bảo mật File trên AWS S3 (Private Bucket Security):**
   - Toàn bộ S3 Bucket chứa bài nộp của học viên bắt buộc để chế độ **Private**, chặn truy cập Public toàn bộ (`Block Public Access: ON`).
   - Khi Giảng viên hoặc Học viên xem/tải bài làm, Backend sử dụng AWS SDK v3 (`@aws-sdk/s3-request-presigner`) để sinh **Presigned GET URL** có hạn dùng 15–30 phút. Học viên không thể đoán link để xem trộm bài làm của người khác.
@@ -1060,3 +1060,4 @@
 - **Xử lý Nén tệp ZIP cho cả lớp qua Hàng đợi nền (BullMQ Queue):**
   - Với tệp nén lớn (> 50MB), tác vụ được tách khỏi luồng HTTP chính, đưa vào Queue `zip-submissions-queue` do Redis quản lý. 
   - Worker tiến hành stream từng file từ S3 qua thư viện `archiver`, nén trực tiếp lên S3 multipart upload. Sau khi nén xong, hệ thống gửi thông báo WebSocket/Email thông báo file ZIP đã sẵn sàng cho Giảng viên tải về.
+

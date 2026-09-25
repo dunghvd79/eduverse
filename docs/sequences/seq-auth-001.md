@@ -234,9 +234,9 @@ sequenceDiagram
 
 - **Hiệu năng & Khả năng mở rộng:**
   - Tác vụ gửi email nên được đẩy vào hàng đợi **Bull / BullMQ (Redis)** để xử lý bất đồng bộ (async background job), tránh nghẽn thread request của API server.
-  - Đánh Index trên cột `email` của bảng `users` và `otp_records`.
+  - Đánh Index trên cột `email` của bảng `users` và `user_tokens`.
 
 - **Phụ thuộc kỹ thuật (Dependencies):**
-  - Backend: `@nestjs/mailer` + Nodemailer, `@nestjs/jwt`, `@nestjs/passport`, `bcrypt`, `class-validator`, `class-transformer`.
-  - Database: Bảng `users` (`id`, `email`, `password`, `fullName`, `status: PENDING | ACTIVE | BANNED`, `role`), bảng `otp_records` (`id`, `email`, `otp`, `expiresAt`, `attempts`).
+  - Backend: `nodemailer`, `jsonwebtoken`, `bcrypt`, `joi`, `ioredis`.
+  - Database: Bảng `users` (`id`, `email`, `password_hash`, `full_name`, `status`, `role`), bảng `user_tokens` (`id`, `user_id`, `token`, `type: EMAIL_VERIFICATION`, `expires_at`).
 

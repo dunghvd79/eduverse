@@ -1,6 +1,6 @@
 # 🌱 Dữ Liệu Khởi Tạo Mẫu (Seed Data Specification)
 
-> **Mục đích:** Cung cấp bộ dữ liệu mẫu chuẩn nghiệp vụ để phục vụ viết Seed Script trong NestJS/TypeORM, kiểm thử API và demo đồ án.
+> **Mục đích:** Cung cấp bộ dữ liệu mẫu chuẩn nghiệp vụ để phục vụ viết Seed Script trong Express.js/Sequelize, kiểm thử API và demo đồ án.
 
 ---
 
@@ -22,20 +22,20 @@
 
 ## 2. Khóa Học Mẫu (Sample Course)
 
-- **Tiêu đề:** `Lập trình Ứng dụng Web Hiện đại với NestJS và React`
-- **Slug:** `lap-trinh-web-nestjs-react`
+- **Tiêu đề:** `Lập trình Ứng dụng Web Hiện đại với Node.js, Express và React`
+- **Slug:** `lap-trinh-web-nodejs-express-react`
 - **Giảng viên chủ nhiệm:** `ThS. Nguyễn Văn An` (`teacher.an@eduverse.com`)
 - **Giá tiền:** `0.00` VND
 - **Trạng thái:** `published` (Đã được `manager@eduverse.com` phê duyệt)
-- **Mô tả:** Khóa học toàn diện trang bị kỹ năng xây dựng hệ thống web chuẩn doanh nghiệp từ Backend NestJS (TypeScript, TypeORM, PostgreSQL) đến Frontend React (Vite, Tailwind CSS).
+- **Mô tả:** Khóa học toàn diện trang bị kỹ năng xây dựng hệ thống web chuẩn doanh nghiệp từ Backend Express.js (Node.js ES Modules, Sequelize ORM, PostgreSQL) đến Frontend React (Vite, Tailwind CSS, TanStack Query).
 
 ### Cấu Trúc Khung Nội Dung:
-1. **Chương 1: Kiến trúc Backend & NestJS Căn bản**
-   - *Bài 1.1 (Theory):* Tổng quan về NestJS, Modules, Controllers và Services.
-   - *Bài 1.2 (Theory & Video):* Tích hợp PostgreSQL và TypeORM Entity.
-   - *Bài 1.3 (Quiz):* Trắc nghiệm kiểm tra kiến thức NestJS & Dependency Injection (15 phút, 5 câu hỏi).
+1. **Chương 1: Kiến trúc Backend & Express.js Căn bản**
+   - *Bài 1.1 (Theory):* Tổng quan về Express.js, Kiến trúc 3 lớp (Controllers, Services, Models).
+   - *Bài 1.2 (Theory & Video):* Tích hợp PostgreSQL và Sequelize Model.
+   - *Bài 1.3 (Quiz):* Trắc nghiệm kiểm tra kiến thức Node.js & Express.js Middleware (15 phút, 5 câu hỏi).
 2. **Chương 2: Thiết kế RESTful API & Xác thực JWT**
-   - *Bài 2.1 (Theory):* Cơ chế Guards, JWT Strategy và Refresh Token.
+   - *Bài 2.1 (Theory):* Cơ chế JWT, Refresh Token qua Cookie HttpOnly và Middleware phân quyền RBAC.
    - *Bài 2.2 (Assignment):* Bài tập lớn số 1: Xây dựng Module Authentication & RBAC (Hạn nộp: 7 ngày, nộp file zip).
 
 ---

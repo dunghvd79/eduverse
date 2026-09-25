@@ -1,7 +1,7 @@
 # 📋 Đặc Tả Cơ Sở Dữ Liệu Chi Tiết (Database Physical Schema)
 
 > **Hệ quản trị CSDL:** PostgreSQL 16+  
-> **ORM:** TypeORM (NestJS)  
+> **ORM:** Sequelize v6 (Express.js)  
 > **Quy chuẩn:** Bảng số nhiều `snake_case`, PK `UUID v4`, Indexes tối ưu hóa tìm kiếm và liên kết khóa ngoại (FK Indexing).
 
 ---

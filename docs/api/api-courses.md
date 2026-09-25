@@ -1,4 +1,4 @@
-# 📚 Đặc Tả API: Module Khóa Học, Đề Cương & Tiến Độ Học Tập — api-courses.md
+﻿# 📚 Đặc Tả API: Module Khóa Học, Đề Cương & Tiến Độ Học Tập — api-courses.md
 
 > **Tài liệu tham chiếu:** [`api-conventions.md`](api-conventions.md), [`schema.md`](../database/schema.md), [`actor-teacher.md`](../use-cases/actor-teacher.md), [`actor-manager.md`](../use-cases/actor-manager.md), [`actor-student.md`](../use-cases/actor-student.md)  
 > **Base Path:** `/api/v1/courses`, `/api/v1/chapters`, `/api/v1/lessons`, `/api/v1/classes/:classId/lessons`  
@@ -77,8 +77,8 @@
     "items": [
       {
         "id": "c1f7a2d4-3a21-4f9e-8c3b-7f1a2b3c4d5e",
-        "title": "Lập trình Web với React & NestJS",
-        "slug": "lap-trinh-web-voi-react-nestjs",
+        "title": "Lập trình Web với React & ExpressJS",
+        "slug": "lap-trinh-web-voi-react-ExpressJS",
         "description": "Khóa học thực chiến xây dựng ứng dụng Fullstack từ cơ bản đến nâng cao.",
         "thumbnailUrl": "https://s3.ap-southeast-1.amazonaws.com/eduverse/thumbnails/course-web.jpg",
         "price": "0.00",
@@ -111,7 +111,7 @@
 * **Mô tả chức năng:** Trả về thông tin chi tiết của một khóa học (theo UUID hoặc slug SEO), bao gồm thông tin giảng viên, tổng số chương/bài học và lý do từ chối `rejectionReason` (nếu khóa học đang ở trạng thái `rejected`).
 * **Quyền hạn:** `[Public / Authenticated]`
 * **Path Parameters:**
-  * `id`: UUID của khóa học hoặc chuỗi `slug` (ví dụ: `lap-trinh-web-voi-react-nestjs`).
+  * `id`: UUID của khóa học hoặc chuỗi `slug` (ví dụ: `lap-trinh-web-voi-react-ExpressJS`).
 
 #### Response Thành Công (`200 OK`):
 ```json
@@ -121,8 +121,8 @@
   "message": "Lấy chi tiết khóa học thành công",
   "data": {
     "id": "c1f7a2d4-3a21-4f9e-8c3b-7f1a2b3c4d5e",
-    "title": "Lập trình Web với React & NestJS",
-    "slug": "lap-trinh-web-voi-react-nestjs",
+    "title": "Lập trình Web với React & ExpressJS",
+    "slug": "lap-trinh-web-voi-react-ExpressJS",
     "description": "Khóa học thực chiến xây dựng ứng dụng Fullstack từ cơ bản đến nâng cao.",
     "thumbnailUrl": "https://s3.ap-southeast-1.amazonaws.com/eduverse/thumbnails/course-web.jpg",
     "price": "0.00",
@@ -168,7 +168,7 @@
   "message": "Lấy cấu trúc đề cương khóa học thành công",
   "data": {
     "id": "c1f7a2d4-3a21-4f9e-8c3b-7f1a2b3c4d5e",
-    "title": "Lập trình Web với React & NestJS",
+    "title": "Lập trình Web với React & ExpressJS",
     "totalChapters": 2,
     "totalLessons": 4,
     "completedLessons": 2,
@@ -197,7 +197,7 @@
       },
       {
         "id": "ch2a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
-        "title": "Chương 2: Xây dựng Backend với NestJS",
+        "title": "Chương 2: Xây dựng Backend với ExpressJS",
         "orderIndex": 2,
         "lessons": [
           {
@@ -244,7 +244,7 @@
 
 ```json
 {
-  "title": "Lập trình Web với React & NestJS",
+  "title": "Lập trình Web với React & ExpressJS",
   "description": "Khóa học thực chiến xây dựng ứng dụng Fullstack từ cơ bản đến nâng cao.",
   "thumbnailUrl": "https://s3.ap-southeast-1.amazonaws.com/eduverse/thumbnails/course-web.jpg",
   "price": 0
@@ -259,8 +259,8 @@
   "message": "Tạo khóa học thành công",
   "data": {
     "id": "c1f7a2d4-3a21-4f9e-8c3b-7f1a2b3c4d5e",
-    "title": "Lập trình Web với React & NestJS",
-    "slug": "lap-trinh-web-voi-react-nestjs",
+    "title": "Lập trình Web với React & ExpressJS",
+    "slug": "lap-trinh-web-voi-react-ExpressJS",
     "status": "draft",
     "ownerId": "u2b3c4d5-6e7f-8a9b-0c1d-2e3f4a5b6c7d",
     "createdAt": "2026-09-24T10:48:00.000Z"
@@ -283,7 +283,7 @@
 #### Request Body (`UpdateCourseDto`):
 ```json
 {
-  "title": "Lập trình Web Fullstack với React & NestJS (2026)",
+  "title": "Lập trình Web Fullstack với React & ExpressJS (2026)",
   "description": "Nội dung cập nhật mới nhất cho năm 2026...",
   "thumbnailUrl": "https://s3.ap-southeast-1.amazonaws.com/eduverse/thumbnails/course-web-v2.jpg"
 }
@@ -297,8 +297,8 @@
   "message": "Cập nhật khóa học thành công",
   "data": {
     "id": "c1f7a2d4-3a21-4f9e-8c3b-7f1a2b3c4d5e",
-    "title": "Lập trình Web Fullstack với React & NestJS (2026)",
-    "slug": "lap-trinh-web-fullstack-voi-react-nestjs-2026",
+    "title": "Lập trình Web Fullstack với React & ExpressJS (2026)",
+    "slug": "lap-trinh-web-fullstack-voi-react-ExpressJS-2026",
     "status": "draft",
     "updatedAt": "2026-09-24T10:49:00.000Z"
   },
@@ -467,7 +467,7 @@
 #### Request Body (`CreateChapterDto`):
 ```json
 {
-  "title": "Chương 3: Làm việc với Cơ sở dữ liệu TypeORM & PostgreSQL",
+  "title": "Chương 3: Làm việc với Cơ sở dữ liệu Sequelize & PostgreSQL",
   "orderIndex": 3
 }
 ```
@@ -481,7 +481,7 @@
   "data": {
     "id": "ch3a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
     "courseId": "c1f7a2d4-3a21-4f9e-8c3b-7f1a2b3c4d5e",
-    "title": "Chương 3: Làm việc với Cơ sở dữ liệu TypeORM & PostgreSQL",
+    "title": "Chương 3: Làm việc với Cơ sở dữ liệu Sequelize & PostgreSQL",
     "orderIndex": 3,
     "createdAt": "2026-09-24T10:58:00.000Z"
   },
@@ -503,7 +503,7 @@
 #### Request Body (`UpdateChapterDto`):
 ```json
 {
-  "title": "Chương 3: Thiết kế CSDL & TypeORM Nâng cao"
+  "title": "Chương 3: Thiết kế CSDL & Sequelize Nâng cao"
 }
 ```
 
@@ -515,7 +515,7 @@
   "message": "Cập nhật chương học thành công",
   "data": {
     "id": "ch3a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
-    "title": "Chương 3: Thiết kế CSDL & TypeORM Nâng cao",
+    "title": "Chương 3: Thiết kế CSDL & Sequelize Nâng cao",
     "orderIndex": 3,
     "updatedAt": "2026-09-24T10:59:00.000Z"
   },
@@ -631,10 +631,10 @@
 
 ```json
 {
-  "title": "Bài 1: Cài đặt và cấu hình TypeORM trong NestJS",
+  "title": "Bài 1: Cài đặt và cấu hình Sequelize trong ExpressJS",
   "lessonType": "video",
-  "videoUrl": "https://s3.ap-southeast-1.amazonaws.com/eduverse/videos/nest-typeorm-setup.mp4",
-  "contentText": "Trong bài học này chúng ta sẽ tìm hiểu cách kết nối NestJS với PostgreSQL qua TypeORM...",
+  "videoUrl": "https://s3.ap-southeast-1.amazonaws.com/eduverse/videos/express-sequelize-setup.mp4",
+  "contentText": "Trong bài học này chúng ta sẽ tìm hiểu cách kết nối ExpressJS với PostgreSQL qua Sequelize...",
   "orderIndex": 1
 }
 ```
@@ -648,9 +648,9 @@
   "data": {
     "id": "l5a2b3c4-5d6e-7f8a-9b0c-1d2e3f4a5b6c",
     "chapterId": "ch3a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
-    "title": "Bài 1: Cài đặt và cấu hình TypeORM trong NestJS",
+    "title": "Bài 1: Cài đặt và cấu hình Sequelize trong ExpressJS",
     "lessonType": "video",
-    "videoUrl": "https://s3.ap-southeast-1.amazonaws.com/eduverse/videos/nest-typeorm-setup.mp4",
+    "videoUrl": "https://s3.ap-southeast-1.amazonaws.com/eduverse/videos/express-sequelize-setup.mp4",
     "orderIndex": 1,
     "createdAt": "2026-09-24T11:00:00.000Z"
   },
@@ -676,10 +676,10 @@
   "data": {
     "id": "l5a2b3c4-5d6e-7f8a-9b0c-1d2e3f4a5b6c",
     "chapterId": "ch3a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
-    "title": "Bài 1: Cài đặt và cấu hình TypeORM trong NestJS",
+    "title": "Bài 1: Cài đặt và cấu hình Sequelize trong ExpressJS",
     "lessonType": "video",
-    "videoUrl": "https://s3.ap-southeast-1.amazonaws.com/eduverse/videos/nest-typeorm-setup.mp4",
-    "contentText": "# Hướng dẫn cài đặt TypeORM\n\nBước 1: Chạy lệnh `npm install @nestjs/typeorm typeorm pg`...",
+    "videoUrl": "https://s3.ap-southeast-1.amazonaws.com/eduverse/videos/express-sequelize-setup.mp4",
+    "contentText": "# Hướng dẫn cài đặt Sequelize\n\nBước 1: Chạy lệnh `npm install @ExpressJS/Sequelize Sequelize pg`...",
     "orderIndex": 1,
     "updatedAt": "2026-09-24T11:00:00.000Z"
   },
@@ -707,7 +707,7 @@
 #### Request Body (`UpdateLessonDto`):
 ```json
 {
-  "title": "Bài 1: Cài đặt và cấu hình TypeORM (Bản sửa đổi)",
+  "title": "Bài 1: Cài đặt và cấu hình Sequelize (Bản sửa đổi)",
   "contentText": "Nội dung cập nhật mới..."
 }
 ```
@@ -720,7 +720,7 @@
   "message": "Cập nhật bài học thành công",
   "data": {
     "id": "l5a2b3c4-5d6e-7f8a-9b0c-1d2e3f4a5b6c",
-    "title": "Bài 1: Cài đặt và cấu hình TypeORM (Bản sửa đổi)",
+    "title": "Bài 1: Cài đặt và cấu hình Sequelize (Bản sửa đổi)",
     "updatedAt": "2026-09-24T11:03:00.000Z"
   },
   "timestamp": "2026-09-24T11:03:00.000Z"
@@ -845,7 +845,7 @@
 - Khi xóa một Chương (`DELETE /chapters/:id`), các bài học con bên trong sẽ được xóa cascade theo cấu hình CSDL `ON DELETE CASCADE`.
 
 ### 3.2. Đường dẫn SEO (Slug Generation)
-- Cột `slug` được sinh tự động bằng hàm `slugify(title)` chuyển tiếng Việt có dấu thành không dấu (ví dụ: `lap-trinh-web-voi-react-nestjs`).
+- Cột `slug` được sinh tự động bằng hàm `slugify(title)` chuyển tiếng Việt có dấu thành không dấu (ví dụ: `lap-trinh-web-voi-react-ExpressJS`).
 - Đảm bảo tính duy nhất qua Partial Unique Index:
   ```sql
   CREATE UNIQUE INDEX uq_courses_slug_active ON courses (slug) WHERE deleted_at IS NULL;
@@ -855,5 +855,6 @@
 - Khi Quản lý đào tạo từ chối duyệt (`PATCH /courses/:id/reject`), lý do giải trình được lưu trực tiếp vào cột `rejection_reason` trong bảng `courses`.
 - Khi Giảng viên gửi duyệt lại (`POST /courses/:id/publish-request`), trường `rejection_reason` vẫn được lưu vết cho tới khi Quản lý phê duyệt chính thức (`PATCH /courses/:id/approve`), lúc đó trường này mới được xóa về `NULL`.
 
-### 3.4. Thứ tự Ưu tiên Route trong NestJS Controller
-- Các route tĩnh và route hành động (`/curriculum`, `/publish-request`, `/approve`, `/reject`) bắt buộc phải được khai báo **TRƯỚC** các route tham số động `@Get(':id')` trong NestJS CourseController để tránh bị bắt nhầm tham số URL.
+### 3.4. Thứ tự Ưu tiên Route trong Express Router (Route Precedence)
+- Các route tĩnh và route hành động (`/curriculum`, `/publish-request`, `/approve`, `/reject`) bắt buộc phải được khai báo **TRƯỚC** các route có tham số động `router.get('/:id', ...)` trong Express CourseRouter để tránh bị bắt nhầm tham số URL (Route shadowing).
+

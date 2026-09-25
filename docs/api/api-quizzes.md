@@ -73,7 +73,7 @@
     "items": [
       {
         "id": "q1a2b3c4-5d6e-7f8a-9b0c-1d2e3f4a5b6c",
-        "title": "Kiểm tra kiến thức TypeScript & NestJS cơ bản",
+        "title": "Kiểm tra kiến thức Node.js & Express.js cơ bản",
         "durationMinutes": 15,
         "maxAttempts": 3,
         "passScore": "6.0",
@@ -117,7 +117,7 @@
   "message": "Lấy thông tin bài kiểm tra thành công",
   "data": {
     "id": "q1a2b3c4-5d6e-7f8a-9b0c-1d2e3f4a5b6c",
-    "title": "Kiểm tra kiến thức TypeScript & NestJS cơ bản",
+    "title": "Kiểm tra kiến thức Node.js & Express.js cơ bản",
     "description": "Bài thi gồm 10 câu trắc nghiệm 4 lựa chọn, thời gian 15 phút. Bạn có tối đa 3 lần làm bài.",
     "durationMinutes": 15,
     "maxAttempts": 3,
@@ -153,7 +153,7 @@
 ```json
 {
   "lessonId": "l4a2b3c4-5d6e-7f8a-9b0c-1d2e3f4a5b6c",
-  "title": "Kiểm tra kiến thức TypeScript & NestJS cơ bản",
+  "title": "Kiểm tra kiến thức Node.js & Express.js cơ bản",
   "description": "Bài thi trắc nghiệm đánh giá kiến thức sau chương 2.",
   "durationMinutes": 15,
   "maxAttempts": 3,
@@ -177,7 +177,7 @@
   "message": "Tạo bài kiểm tra thành công",
   "data": {
     "id": "q1a2b3c4-5d6e-7f8a-9b0c-1d2e3f4a5b6c",
-    "title": "Kiểm tra kiến thức TypeScript & NestJS cơ bản",
+    "title": "Kiểm tra kiến thức Node.js & Express.js cơ bản",
     "durationMinutes": 15,
     "maxAttempts": 3,
     "passScore": "6.0",
@@ -211,7 +211,7 @@
 #### Request Body (`UpdateQuizDto`):
 ```json
 {
-  "title": "Kiểm tra kiến thức NestJS (Mở rộng)",
+  "title": "Kiểm tra kiến thức Express.js (Mở rộng)",
   "durationMinutes": 20,
   "showAnswersAfterSubmit": false
 }
@@ -225,7 +225,7 @@
   "message": "Cập nhật bài kiểm tra thành công",
   "data": {
     "id": "q1a2b3c4-5d6e-7f8a-9b0c-1d2e3f4a5b6c",
-    "title": "Kiểm tra kiến thức NestJS (Mở rộng)",
+    "title": "Kiểm tra kiến thức Express.js (Mở rộng)",
     "durationMinutes": 20,
     "showAnswersAfterSubmit": false,
     "updatedAt": "2026-09-24T13:57:00.000Z"
@@ -290,10 +290,10 @@
   "data": [
     {
       "id": "qs1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
-      "content": "Trong NestJS, Decorator nào được sử dụng để định nghĩa một Controller?",
+      "content": "Trong Express.js, hàm nào được sử dụng để tạo một router instance phân tách modular routes?",
       "questionType": "single_choice",
       "points": 1,
-      "explanation": "@Controller() được sử dụng để khai báo controller class.",
+      "explanation": "express.Router() được sử dụng để tạo router instance trong Express.js.",
       "orderIndex": 1,
       "choices": [
         { "id": "ch1", "content": "@Injectable()", "isCorrect": false },
@@ -330,10 +330,10 @@
 #### Request Body (`CreateQuestionDto`):
 ```json
 {
-  "content": "Trong NestJS, Decorator nào được sử dụng để định nghĩa một Controller?",
+  "content": "Trong Express.js, hàm nào được sử dụng để tạo một router instance phân tách modular routes?",
   "questionType": "single_choice",
   "points": 1,
-  "explanation": "@Controller() được sử dụng để khai báo một controller class trong NestJS.",
+  "explanation": "express.Router() được sử dụng để tạo router instance trong Express.js.",
   "orderIndex": 1,
   "choices": [
     { "content": "@Injectable()", "isCorrect": false },
@@ -358,7 +358,7 @@
   "data": {
     "id": "qs1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
     "quizId": "q1a2b3c4-5d6e-7f8a-9b0c-1d2e3f4a5b6c",
-    "content": "Trong NestJS, Decorator nào được sử dụng để định nghĩa một Controller?",
+    "content": "Trong Express.js, hàm nào được sử dụng để tạo một router instance phân tách modular routes?",
     "points": 1,
     "choicesCount": 4,
     "createdAt": "2026-09-24T14:00:00.000Z"
@@ -393,10 +393,10 @@
 {
   "questions": [
     {
-      "content": "NestJS được xây dựng dựa trên framework nền tảng nào mặc định?",
+      "content": "Trong Express.js, middleware nào được sử dụng mặc định để parse JSON request body?",
       "questionType": "single_choice",
       "points": 1,
-      "explanation": "Mặc định NestJS sử dụng Express framework làm HTTP server adapter.",
+      "explanation": "express.json() là built-in middleware trong Express để parse request body định dạng JSON.",
       "choices": [
         { "content": "Express", "isCorrect": true },
         { "content": "Fastify", "isCorrect": false },
@@ -513,8 +513,8 @@
     {
       "id": "qs1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
       "points": 2.0,
-      "content": "Trong NestJS, Decorator nào được sử dụng để định nghĩa Controller?",
-      "explanation": "@Controller() được sử dụng để khai báo controller class.",
+      "content": "Trong Express.js, hàm nào được sử dụng để tạo một router instance phân tách modular routes?",
+      "explanation": "express.Router() được sử dụng để tạo router instance trong Express.js.",
       "choices": [
         { "id": "ch1", "content": "@Injectable()", "isCorrect": false },
         { "id": "ch2", "content": "@Controller()", "isCorrect": true }
@@ -634,7 +634,7 @@
 #### Request Body (`UpdateQuestionDto`):
 ```json
 {
-  "content": "Trong NestJS, Decorator nào được sử dụng để định nghĩa một Controller?",
+  "content": "Trong Express.js, hàm nào được sử dụng để tạo một router instance phân tách modular routes?",
   "points": 2,
   "explanation": "@Controller() được sử dụng để khai báo một controller class tiếp nhận request.",
   "choices": [
@@ -659,7 +659,7 @@
   "data": {
     "id": "qs1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
     "quizId": "q1a2b3c4-5d6e-7f8a-9b0c-1d2e3f4a5b6c",
-    "content": "Trong NestJS, Decorator nào được sử dụng để định nghĩa một Controller?",
+    "content": "Trong Express.js, hàm nào được sử dụng để tạo một router instance phân tách modular routes?",
     "points": 2,
     "explanation": "@Controller() được sử dụng để khai báo một controller class tiếp nhận request.",
     "choices": [
@@ -738,7 +738,7 @@
     "questions": [
       {
         "id": "qs1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
-        "content": "Trong NestJS, Decorator nào được sử dụng để định nghĩa một Controller?",
+        "content": "Trong Express.js, hàm nào được sử dụng để tạo một router instance phân tách modular routes?",
         "questionType": "single_choice",
         "points": 1,
         "choices": [
@@ -916,12 +916,12 @@
     "questions": [
       {
         "id": "qs1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
-        "content": "Trong NestJS, Decorator nào được sử dụng để định nghĩa một Controller?",
+        "content": "Trong Express.js, hàm nào được sử dụng để tạo một router instance phân tách modular routes?",
         "questionType": "single_choice",
         "selectedChoiceIds": ["ch2"],
         "isCorrect": true,
         "correctChoiceIds": ["ch2"],
-        "explanation": "@Controller() được sử dụng để khai báo một controller class trong NestJS."
+        "explanation": "express.Router() được sử dụng để tạo router instance trong Express.js."
       }
     ]
   },
@@ -1010,7 +1010,7 @@
 #### Request Body (`GenerateAiQuestionsDto`):
 ```json
 {
-  "documentText": "TypeScript là một ngôn ngữ lập trình mã nguồn mở được phát triển bởi Microsoft. Nó là một superset cú pháp nghiêm ngặt của JavaScript và bổ sung tùy chọn kiểu tĩnh (static typing). NestJS là framework Node.js tiến bộ xây dựng ứng dụng phía server hiệu quả và dễ mở rộng, sử dụng TypeScript hiện đại theo mặc định và kết hợp OOP, FP và FRP...",
+  "documentText": "Node.js là một môi trường thực thi JavaScript đa nền tảng mã nguồn mở. Express.js là framework web tối giản và linh hoạt hàng đầu cho Node.js, cung cấp bộ tính năng mạnh mẽ để xây dựng ứng dụng web và RESTful API thông qua chuỗi xử lý Middleware Pipeline hiệu quả và dễ mở rộng...",
   "numQuestions": 5,
   "difficulty": "medium",
   "questionType": "single_choice"
@@ -1046,12 +1046,12 @@
       },
       {
         "tempId": "ai-gen-2",
-        "content": "NestJS hỗ trợ các mô hình lập trình nào sau đây?",
+        "content": "Express.js hoạt động dựa trên cơ chế cốt lõi nào sau đây?",
         "questionType": "single_choice",
         "points": 1,
-        "explanation": "NestJS kết hợp OOP (Lập trình hướng đối tượng), FP (Lập trình hàm) và FRP (Lập trình phản ứng hàm).",
+        "explanation": "Express.js hoạt động dựa trên chuỗi middleware pipeline tuần tự.",
         "choices": [
-          { "tempId": "opt-1", "content": "OOP, FP và FRP", "isCorrect": true },
+          { "tempId": "opt-1", "content": "Middleware Pipeline", "isCorrect": true },
           { "tempId": "opt-2", "content": "Chỉ duy nhất mô hình thủ tục Procedural", "isCorrect": false },
           { "tempId": "opt-3", "content": "Chỉ hướng sự kiện không có hướng đối tượng", "isCorrect": false },
           { "tempId": "opt-4", "content": "Chỉ hướng khía cạnh AOP", "isCorrect": false }
@@ -1103,10 +1103,10 @@
   "data": {
     "question": {
       "tempId": "ai-gen-single-new",
-      "content": "Framework nào thường được kết hợp với NestJS làm HTTP Server Adapter mặc định?",
+      "content": "Trong Express.js, middleware nào được sử dụng mặc định để parse JSON request body?",
       "questionType": "single_choice",
       "points": 1,
-      "explanation": "NestJS mặc định sử dụng Express làm nền tảng HTTP Server Adapter.",
+      "explanation": "express.json() là built-in middleware trong Express để parse request body định dạng JSON.",
       "choices": [
         { "tempId": "opt-1", "content": "Express", "isCorrect": true },
         { "tempId": "opt-2", "content": "Koa", "isCorrect": false },
@@ -1147,3 +1147,4 @@
   - Trong quá trình làm bài kéo dài, giao diện Frontend (React) tự động đồng bộ trạng thái các câu đã tick vào `LocalStorage`. Khi có sự cố refresh trình duyệt, học viên có thể tải lại trang làm bài mà không mất tiến trình. Toàn bộ mảng câu trả lời `answers` chỉ được gửi lên Server khi bấm Nộp bài.
 - **Hiệu năng Chấm điểm & Caching (Redis):**
   - Bộ đáp án chuẩn của đề thi (`answerKeys`) nên được lưu cache trong **Redis** trong thời gian diễn ra bài thi để tránh việc truy vấn nhiều lần vào PostgreSQL khi hàng trăm học viên cùng nộp bài một lúc.
+

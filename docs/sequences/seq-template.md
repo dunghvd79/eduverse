@@ -9,7 +9,7 @@
 
 | #   | Quyết định                | Lựa chọn                                                                        | Lý do                                               |
 | -----| ---------------------------| ---------------------------------------------------------------------------------| -----------------------------------------------------|
-| 1   | **Số lớp (Participants)** | 6 lớp: Actor → Frontend → Controller → Service → Repository → External Services | Phản ánh đúng kiến trúc NestJS + React của hệ thống |
+| 1   | **Số lớp (Participants)** | 6 lớp: Actor → Frontend → Controller → Service → Database (Sequelize) → External Services | Phản ánh đúng kiến trúc Express.js 3-tier + React của hệ thống |
 | 2   | **Error Handling**        | Có — hiển thị luồng ngoại lệ chính kèm HTTP Error Code                          | Chứng minh đã nghĩ đến các trường hợp lỗi           |
 | 3   | **Cấu trúc nội dung**     | Mermaid Diagram + Bảng mô tả bước                                               | Trực quan khi thuyết trình + chi tiết khi đọc       |
 | 4   | **Message Labels**        | HTTP Method + API Endpoint thực tế (ví dụ: `POST /api/auth/register`)           | Liên kết trực tiếp đến lớp API implementation       |
@@ -64,9 +64,9 @@ sequenceDiagram
 |---|---|---|---|
 | **Actor** | `User` | Người dùng thực tế (Student/Teacher/Manager/Admin) | 👤 |
 | **Frontend** | `FE` | React/Vite SPA chạy trên trình duyệt | 🌐 |
-| **Controller** | `CTRL` | NestJS `@Controller` — nhận HTTP request, validate DTO | 🎮 |
-| **Service** | `SVC` | NestJS `@Injectable Service` — xử lý business logic | ⚙️ |
-| **Repository/DB** | `DB` | TypeORM Repository + PostgreSQL database | 🗄️ |
+| **Controller** | `CTRL` | Express Controller — nhận HTTP request, validate schema qua Joi | 🎮 |
+| **Service** | `SVC` | Express Service — xử lý business logic | ⚙️ |
+| **Repository/DB** | `DB` | Sequelize Model + PostgreSQL database | 🗄️ |
 | **External** | `EXT` | Email SMTP (Nodemailer), AI API (Gemini), File Storage (AWS S3) | 📧/🤖/☁️ |
 
 
