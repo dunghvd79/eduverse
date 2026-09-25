@@ -1,13 +1,13 @@
 # 🧭 Trạng Thái Tiến Độ Dự Án (Project State)
 
-> **Cập nhật lần cuối:** 24/09/2026  
+> **Cập nhật lần cuối:** 25/09/2026  
 > **Người cập nhật:** dunghvd79 & AI Assistant  
-> **Giai đoạn hiện tại:** Phase 0 — Đặc Tả Kiến Trúc & Thiết Kế Hệ Thống (API Specs)
+> **Giai đoạn hiện tại:** Phase 0 — Đặc Tả Kiến Trúc & Thiết Kế Hệ Thống (Architecture Docs)
 
 ---
 
 ## 1. Tóm Tắt Trạng Thái Hiện Tại
-Dự án đã hoàn thành toàn bộ giai đoạn phân tích nghiệp vụ (Use Case), thiết kế CSDL (ERD & Schema vật lý 18 bảng), các biểu đồ tuần tự nghiệp vụ cốt lõi (Sequence Diagrams), và đã **hoàn thành 100% trọn bộ 8/8 tài liệu Đặc tả API (API Specifications — 101 Endpoints)** theo chuẩn Enterprise RESTful Envelope Pattern. Đã sẵn sàng nghiệm thu Phase 0 và bước vào triển khai code Phase 1 (NestJS + React).
+Dự án đã hoàn thành toàn bộ giai đoạn phân tích nghiệp vụ (Use Case), thiết kế CSDL (ERD & Schema vật lý 18 bảng), các biểu đồ tuần tự nghiệp vụ cốt lõi (Sequence Diagrams), đã **hoàn thành 100% trọn bộ 8/8 tài liệu Đặc tả API (API Specifications — 101 Endpoints)**, và đã **hoàn thành 3/3 tài liệu Kiến trúc Hệ thống (Architecture Docs)**. Đã sẵn sàng nghiệm thu Phase 0 và bước vào triển khai code Phase 1 (NestJS + React).
 
 ## 2. Các Việc Đã Hoàn Thành ✅
 - [x] Phân tích đặc tả bài toán từ tài liệu thầy gửi (`ĐẶC TẢ SƠ BỘ YÊU CẦU HỆ THỐNG.docx`).
@@ -46,9 +46,14 @@ Dự án đã hoàn thành toàn bộ giai đoạn phân tích nghiệp vụ (Us
   - [x] `docs/api/api-assignments.md`: 18 Endpoints hoàn chỉnh (Khung bài tập, Cấu hình lịch nộp theo lớp, Presigned URL S3 Direct Upload, Cơ chế nộp lại Resubmission & Yêu cầu nộp lại từ GV, Chấm đơn lẻ & Bulk Grade, Tải trọn gói ZIP cả lớp qua BullMQ Async Job, Kích hoạt tiến độ học tập).
   - [x] `docs/api/api-uploads.md`: 7 Endpoints hoàn chỉnh (Presigned PUT URL tập trung, phân loại Public/Private, quản lý CRUD tài liệu đính kèm `course_materials`, phát luồng video S3 HTTP Range/Embed ngoài, chính sách dọn dẹp rác S3).
 
+- [x] **Nhóm tài liệu Kiến trúc Hệ thống (Architecture Docs — Đã hoàn thành 3/3):**
+  - [x] `docs/architecture/system-architecture.md`: Sơ đồ C4 Level 1 (System Context) & Level 2 (Container), 5 luồng kết nối, cấu hình Docker Compose.
+  - [x] `docs/architecture/tech-stack.md`: Bảng quyết định kỹ thuật đầy đủ (có cột Version), bổ sung Redis, WebSocket.
+  - [x] `docs/architecture/design-decisions.md`: 6 ADR (Architecture Decision Records) chi tiết: NestJS, PostgreSQL, JWT, Monolith, Vite+React, Docker Compose.
+
 ## 3. Việc Đang Làm / Chuẩn Bị Làm Ngay ⏳
-1. **Thiết kế Kiến trúc Chi tiết Hệ thống & Sơ đồ Triển khai (System Architecture, Component & Deployment Diagrams).**
-2. **Nghiệm thu toàn diện Phase 0 (Đặc tả Kiến trúc & Thiết kế Hệ thống).**
+1. **Thiết kế UI Wireframes & Page Inventory (nhóm `docs/ui/`).**
+2. **Nghiệm thu toàn diện Phase 0.**
 3. **Chuyển sang Phase 1: Khởi tạo Project & Cài đặt môi trường (NestJS & React).**
 
 ## 4. Ghi Chú Kỹ Thuật Quan Trọng
