@@ -31,7 +31,7 @@
 - [x] Thiết kế Hệ thống Sơ đồ Tuần tự (Sequence Diagrams — 6 luồng nghiệp vụ cốt lõi)
 - [x] Thiết kế Trọn bộ Đặc tả API (API Specifications — 8/8 tài liệu, 101 Endpoints chuẩn RESTful)
 - [x] Quy ước tài liệu & cấu trúc Docs-as-Code (`docs-conventions.md`)
-- [ ] Phác thảo UI Wireframes & Sitemap
+- [x] Phác thảo UI Wireframes & Sitemap (sitemap.md, wireframes.md)
 
 ### Phase 1: MVP Development (Tuần 3–7)
 
@@ -73,8 +73,9 @@
 | Ngày | Nội dung |
 |---|---|
 | 21/09/2026 | Khởi tạo dự án, chốt tech stack, tạo cấu trúc thư mục |
-| 24/09/2026 | Hoàn thành 100% Phase 0: Use Cases, CSDL Schema 18 bảng, 6 Sequence Diagrams, trọn bộ 8/8 tài liệu API Specs (101 Endpoints) |
+| 24/09/2026 | Hoàn thành Use Cases, CSDL Schema 18 bảng, 6 Sequence Diagrams, trọn bộ 8/8 tài liệu API Specs (101 Endpoints) |
+| 26/09/2026 | Hoàn thành trọn vẹn 100% Phase 0 Thiết kế: Cập nhật Tech Stack (Express.js/Sequelize), Sửa C4 Level 2 Container Diagram, Hoàn thiện tài liệu UI (sitemap.md & wireframes.md 10 màn hình cốt lõi) |
 
 ---
 
-_Cập nhật lần cuối: 24/09/2026_
+_Cập nhật lần cuối: 26/09/2026_
