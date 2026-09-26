@@ -75,13 +75,13 @@ frontend/
     │   ├── assignment/              # FileDropzone, SubmissionStatusBadge, GradeFeedbackCard
     │   └── ai/                      # AIQuizPromptModal, AIQuestionReviewCard
     │
-    ├── pages/                       # ⭐ 25 Màn hình Giao diện Ứng dụng
-    │   ├── public/                  # HomePage, CourseCatalogPage, CourseDetailPage, NotFoundPage
-    │   ├── auth/                    # LoginPage, RegisterPage, VerifyOtpPage, ForgotPasswordPage, ResetPasswordPage
-    │   ├── student/                 # StudentDashboardPage, MyCoursesPage, ClassroomPage, QuizTakePage, QuizResultPage, AssignmentDetailPage, GradesPage, ProfilePage
-    │   ├── teacher/                 # TeacherDashboardPage, TeacherCoursesPage, CourseCurriculumBuilderPage, TeacherClassesPage, TeacherQuizzesPage, AIQuizGeneratorPage, TeacherAssignmentsPage, AssignmentGradingPage, GradebookPage
-    │   ├── manager/                 # ManagerDashboardPage, CourseApprovalQueuePage, CourseReviewDetailPage, CategoryManagementPage
-    │   └── admin/                   # AdminDashboardPage, UserManagementPage, CreateUserModalPage, AuditLogsPage, PlatformSettingsPage
+    ├── pages/                       # ⭐ 37 Màn hình Giao diện Ứng dụng (1:1 với SCR-01 đến SCR-37)
+    │   ├── public/                  # HomePage, CourseCatalogPage, CourseDetailPage, NotFoundPage (4 screens)
+    │   ├── auth/                    # LoginPage, RegisterPage, VerifyOtpPage, ForgotPasswordPage, ResetPasswordPage (5 screens)
+    │   ├── student/                 # StudentDashboardPage, MyCoursesPage, StudentClassDetailPage, ClassroomPage, QuizTakePage, QuizResultPage, AssignmentDetailPage, GradesPage, ProfilePage (9 screens)
+    │   ├── teacher/                 # TeacherDashboardPage, TeacherCoursesPage, CourseCurriculumBuilderPage, TeacherClassesPage, TeacherClassDetailPage, TeacherQuizzesPage, AIQuizGeneratorPage, TeacherAssignmentsPage, AssignmentGradingPage, GradebookPage (10 screens)
+    │   ├── manager/                 # ManagerDashboardPage, CourseApprovalQueuePage, CourseReviewDetailPage, CategoryManagementPage, ManagerReportsPage (5 screens)
+    │   └── admin/                   # AdminDashboardPage, UserManagementPage, AuditLogsPage, PlatformSettingsPage (4 screens)
     │
     ├── hooks/                       # Custom hooks (useDebounce, useQuizCountdown, usePagination)
     └── utils/                       # formatters.js, constants.js (ROLES, STATUSES), sanitize.js (DOMPurify)
@@ -394,11 +394,14 @@ Khi nhận yêu cầu code bất kỳ màn hình nào, AI cần thực hiện th
 
 ## 7. Tiêu Chuẩn Bảo Mật Frontend Bắt Buộc (Security Hardening)
 
-Mọi dòng code Frontend được sinh ra bắt buộc phải thỏa mãn 6 nguyên tắc bảo mật:
+Mọi dòng code Frontend được sinh ra bắt buộc phải thỏa mãn 7 nguyên tắc bảo mật:
 
-1. 🛡️ **Tuyệt đối KHÔNG lưu Token trong Web Storage (`localStorage` / `sessionStorage`):**
-   - Lưu trữ `accessToken` trong Web Storage sẽ khiến người dùng bị chiếm đoạt tài khoản ngay lập tức nếu xuất hiện lỗ hổng XSS từ thư viện bên thứ ba.
-   - Luôn lưu `accessToken` trong bộ nhớ ứng dụng (Zustand State) và lưu `refreshToken` trong Cookie `HttpOnly; Secure; SameSite=Strict`.
+1. 🛡️ **Tuyệt đối KHÔNG lưu Token trong Web Storage (`localStorage` / `sessionStorage`) & Cơ chế Remember Me:**
+   - **Chống XSS đánh cắp phiên:** Lưu trữ `accessToken` trong Web Storage sẽ khiến tài khoản bị chiếm đoạt ngay lập tức nếu xuất hiện lỗ hổng XSS. Do đó, `accessToken` **luôn luôn nằm trong Memory của Zustand State**, còn `refreshToken` nằm trong Cookie `HttpOnly; Secure; SameSite=Strict`.
+   - **Xử lý "Ghi nhớ đăng nhập" (Remember Me):** Tuyệt đối KHÔNG lưu token vào `localStorage` để Remember Me! Thay vào đó, checkbox *"Ghi nhớ đăng nhập"* trên form gửi kèm payload `{ email, password, rememberMe: boolean }` lên API `POST /api/v1/auth/login`. Nếu `rememberMe = true`, Backend cấp Cookie `refreshToken` có thời hạn dài (7 ngày); nếu `false`, Backend cấp Session Cookie (tự hủy khi người dùng đóng trình duyệt).
+   - **Phân định rõ phạm vi dùng `sessionStorage`:**
+     - ⛔ **CẤM:** Lưu `accessToken`, `refreshToken`, mật khẩu, thông tin thanh toán hay dữ liệu định danh nhạy cảm vào `localStorage` / `sessionStorage`.
+     -  **CHO PHÉP:** Chỉ sử dụng `sessionStorage` cho **Dữ liệu tạm thời của phiên thao tác (Transient UX State)** — cụ thể là: lưu tạm câu trả lời bài thi trắc nghiệm (`quiz_draft_${attemptId}`) để chống mất bài khi thí sinh vô tình reload hoặc rớt mạng. Dữ liệu này tự hủy khi tắt tab và không chứa bí mật xác thực.
 2. 🧹 **Chống tấn công XSS (Cross-Site Scripting - Stored & Reflected):**
    - Khi render nội dung bài học Markdown, bình luận hỏi đáp hoặc nhận xét bài tập, **bắt buộc bọc qua `DOMPurify.sanitize(dirtyContent)`**.
    - Cấm sử dụng `dangerouslySetInnerHTML` trực tiếp mà không qua bước làm sạch.
