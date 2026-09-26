@@ -3,11 +3,13 @@
 > **Phiên bản:** 1.0  
 > **Cập nhật lần cuối:** 26/09/2026  
 > **Trạng thái:** ✅ Đã phê duyệt  
-> **Công nghệ giao diện:** React 18 + Vite (JavaScript `.jsx`), Tailwind CSS, Radix UI / Lucide React Icons
+> **Công nghệ giao diện:** React 18 + Vite (JavaScript `.jsx`), Tailwind CSS, Radix UI Primitives, Lucide React Icons, Sonner Toast
 
 ---
 
 ## 1. Hệ thống Quy chuẩn Thiết kế (Design Foundations)
+
+Tài liệu này kế thừa 100% các giá trị từ **Design System** (`docs/ui/design-system.md`) — đóng vai trò Single Source of Truth của toàn bộ dự án EduVerse.
 
 ### 1.1. Grid & Breakpoints (Responsive)
 
@@ -15,29 +17,31 @@ Hệ thống tuân thủ nghiêm ngặt chuẩn responsive cho màn hình Web v�
 
 | Kích thước | Tên Breakpoint | Độ rộng tối thiểu | Bố cục Layout chính |
 |---|---|---|---|
-| **Mobile** | `sm` | `< 768px` | 1 cột đơn, Sidebar thu gọn thành Bottom Nav hoặc Drawer menu (Hamburger). |
+| **Mobile** | `sm` | `< 768px` | 1 cột đơn, Sidebar thu gọn thành Bottom Nav hoặc Drawer menu (Hamburger). Bảng dữ liệu có `overflow-x-auto`. |
 | **Tablet** | `md` | `768px – 1023px` | 2 cột linh hoạt, Sidebar dạng icon thu gọn (collapsed sidebar). |
-| **Desktop** | `lg` / `xl` | `≥ 1024px` | Bố cục chuẩn Dashboard: Sidebar cố định (260px) + Header (64px) + Main Content (12 cột). |
+| **Desktop** | `lg` / `xl` | `≥ 1024px` | Bố cục chuẩn Dashboard: Sidebar cố định (260px) + Header (64px) + Main Content (12 cột, max 1600px). |
 
 ### 1.2. Bảng màu & Kiểu chữ (Color Palette & Typography)
 
-- **Màu chủ đạo (Primary):** Xanh công nghệ C4 `#1168bd` (Tailwind: `blue-600`), Hover `#0d5396` (`blue-700`).
-- **Màu nền (Background):** Nền App Canvas `#f8f9ff` (`surface`), Khối Card `#ffffff` (`surface-card`), Viền `#c1c6d4` (`outline-variant`).
-- **Màu trạng thái:**
-  - Success: `#16a34a` (`green-600`) — Hoàn thành bài học, Đạt quiz, Phê duyệt.
-  - Warning: `#eab308` (`yellow-500`) — Chờ duyệt (Pending), Sắp đến hạn nộp bài.
-  - Danger: `#dc2626` (`red-600`) — Trễ hạn, Khóa tài khoản, Từ chối phê duyệt.
-- **Phông chữ:** `Inter`, `Roboto`, sans-serif.
+- **Màu chủ đạo (Primary):** Xanh công nghệ `#1168bd` (`primary`), Hover `#0e5aa5` (`primary-hover`), Active `#0b4782` (`primary-active`), Dark `#005096` (`primary-dark`).
+- **Màu phụ (Secondary):** Xanh than `#0c2d48` (`secondary`), Light `#143d5f` (`secondary-light`).
+- **Màu điểm xuyết (Tertiary):** Xanh băng dịu `#0ea5e9` (`tertiary`), Dark `#0284c7` (`tertiary-dark`).
+- **Màu nền (Background & Surfaces):** Nền App Canvas `#f8f9ff` (`surface`), Khối Card `#ffffff` (`surface-container-lowest`), Nền phụ `#eff4ff` (`surface-container-low`), Viền `#c1c6d4` (`outline-variant`).
+- **Màu trạng thái (Semantic Feedback):**
+  - **Success:** `#10b981` (`success`) / On-success `#ffffff` — Hoàn thành bài học, Đạt quiz, Phê duyệt.
+  - **Warning:** `#f59e0b` (`warning`) / On-warning `#ffffff` — Chờ duyệt (Pending), Sắp đến hạn nộp bài.
+  - **Error / Danger:** `#ba1a1a` (`error`), Hover `#93000a` / On-error `#ffffff` — Trễ hạn, Khóa tài khoản, Từ chối phê duyệt.
+- **Phông chữ:** Duy nhất `Inter, sans-serif` trên toàn bộ hệ thống. Các trường đồng hồ đếm ngược, điểm số, bảng dữ liệu tài chính/thống kê áp dụng class utility `.tabular-number` (`font-variant-numeric: tabular-nums`).
 
 ---
 
-## 2. Wireframes Chi tiết Các Màn hình Cốt lõi
+## 2. Wireframes Chi tiết Các Màn hình Cốt lõi (Khớp 1:1 SCR Blueprint)
 
 ---
 
-### WF-01: Public Landing Page & Khám phá Khóa học (`/`, `/courses`)
+### WF-01: Public Landing Page (SCR-01 — Route: `/`)
 
-Màn hình đón tiếp người dùng với thanh tìm kiếm nổi bật, danh mục phân loại và lưới thẻ khóa học.
+Màn hình trang chủ giới thiệu nền tảng, hero banner ấn tượng, các khối tính năng nổi bật, số liệu thống kê và danh mục khóa học tiêu biểu.
 
 ```
 +-----------------------------------------------------------------------------------------+
@@ -50,9 +54,9 @@ Màn hình đón tiếp người dùng với thanh tìm kiếm nổi bật, danh
 |       [ 🔍 Tìm kiếm khóa học, giảng viên...               ] [ Khám phá ngay ]           |
 |                                                                                         |
 +-----------------------------------------------------------------------------------------+
-|  DANH MỤC NỔI BẬT:  [ Tất cả ]  [ Lập trình ]  [ Trí tuệ nhân tạo ]  [ Thiết kế ]      |
+|  DANH MỤC NỔI BẬT:  [ Lập trình ]  [ Trí tuệ nhân tạo ]  [ Thiết kế ]  [ Kinh doanh ]   |
 +-----------------------------------------------------------------------------------------+
-|  KHÓA HỌC PHỔ BIẾN                                                                      |
+|  KHÓA HỌC NỔI BẬT ĐƯỢC ĐỀ XUẤT                                                          |
 |                                                                                         |
 |  +--------------------+  +--------------------+  +--------------------+  +------------+ |
 |  | [ Ảnh Thumbnail ]  |  | [ Ảnh Thumbnail ]  |  | [ Ảnh Thumbnail ]  |  | [ ... ]    | |
@@ -63,7 +67,7 @@ Màn hình đón tiếp người dùng với thanh tìm kiếm nổi bật, danh
 |  | [ Xem chi tiết -> ]|  | [ Xem chi tiết -> ]|  | [ Xem chi tiết -> ]|  |            | |
 |  +--------------------+  +--------------------+  +--------------------+  +------------+ |
 |                                                                                         |
-|  [ Trang trước ]   [ 1 ]  [ 2 ]  [ 3 ]  ...  [ 10 ]   [ Trang sau ]                     |
+|  [ Xem tất cả khóa học tại Thư viện -> ]                                                |
 +-----------------------------------------------------------------------------------------+
 | Footer: EduVerse © 2026 - Đồ án Liên ngành Đại học | Điều khoản | Chính sách bảo mật    |
 +-----------------------------------------------------------------------------------------+
@@ -71,9 +75,37 @@ Màn hình đón tiếp người dùng với thanh tìm kiếm nổi bật, danh
 
 ---
 
-### WF-02: Màn hình Xác thực & Kích hoạt OTP (`/auth/login`, `/auth/verify-email`)
+### WF-02: Khám phá Danh mục Khóa học (SCR-02 — Route: `/courses`)
 
-Bố cục cân đối 2 nửa (Split Layout): Trái là hình ảnh minh họa thương hiệu, Phải là Form nhập liệu có validation tức thì.
+Màn hình tìm kiếm, lọc đa tiêu chí (danh mục, cấp độ, miễn phí/có phí, sắp xếp) kết hợp lưới hiển thị thẻ khóa học và phân trang.
+
+```
++-----------------------------------------------------------------------------------------+
+| [Logo EduVerse]    Khám phá     Giới thiệu    Tính năng          [ Đăng nhập ] [ Đăng ký ]|
++-----------------------------------------------------------------------------------------+
+| BỘ LỌC TÌM KIẾM (Search & Filter)                                                       |
+| [ 🔍 Tìm kiếm tên khóa học, giảng viên...           ] [ Sắp xếp: Phổ biến nhất ▼ ]      |
+| Cấp độ: [ Tất cả ] [ Cơ bản ] [ Nâng cao ]   | Danh mục: [ Web ▼ ]  | Giá: [ Tất cả ▼ ]|
++-----------------------------------------------------------------------------------------+
+| KẾT QUẢ KHÓA HỌC (Hiển thị 12 / 120 khóa học)                                           |
+|                                                                                         |
+| +--------------------+  +--------------------+  +--------------------+  +-------------+ |
+| | [ Ảnh Thumbnail ]  |  | [ Ảnh Thumbnail ]  |  | [ Ảnh Thumbnail ]  |  | [ ... ]     | |
+| | Lập trình Web Full |  | Cấu trúc dữ liệu   |  | Học máy & Deep     |  |             | |
+| | ThS. Nguyễn Văn A  |  | TS. Trần Thị B     |  | ThS. Lê Văn C      |  |             | |
+| | ⭐ 4.9 (120 reviews)|  | ⭐ 4.8 (85 reviews)|  | ⭐ 5.0 (210 rev)   |  |             | |
+| | [ Xem chi tiết ]   |  | [ Xem chi tiết ]   |  | [ Xem chi tiết ]   |  |             | |
+| +--------------------+  +--------------------+  +--------------------+  +-------------+ |
+|                                                                                         |
+| [ Trang trước ]   [ 1 ]  [ 2 ]  [ 3 ]  ...  [ 10 ]   [ Trang sau ]                      |
++-----------------------------------------------------------------------------------------+
+```
+
+---
+
+### WF-03: Màn hình Đăng nhập Tài khoản (SCR-05 — Route: `/auth/login`)
+
+Bố cục cân đối 2 nửa (Split Layout): Trái là hình ảnh thương hiệu và tuyên ngôn sản phẩm, Phải là Form nhập liệu có validation tức thì, nút hiển thị mật khẩu và tùy chọn ghi nhớ đăng nhập.
 
 ```
 +---------------------------------------------------+-------------------------------------+
@@ -95,8 +127,15 @@ Bố cục cân đối 2 nửa (Split Layout): Trái là hình ảnh minh họa 
 |                                                   |                                     |
 |                                                   |   Chưa có tài khoản? [Đăng ký ngay] |
 +---------------------------------------------------+-------------------------------------+
+```
 
-Modal Xác thực OTP Email (/auth/verify-email):
+---
+
+### WF-04: Màn hình Xác thực Tài khoản Email OTP (SCR-07 — Route: `/auth/verify-email`)
+
+Màn hình chuyên biệt nhập 6 chữ số OTP với tự động chuyển ô (auto-focus next input), đồng hồ đếm ngược gửi lại mã và nút kích hoạt tài khoản.
+
+```
 +-----------------------------------------------------------------------------------------+
 |                                  XÁC THỰC TÀI KHOẢN EMAIL                               |
 |   Mã xác thực gồm 6 chữ số đã được gửi tới email: **u***@eduverse.edu.vn                |
@@ -112,9 +151,9 @@ Modal Xác thực OTP Email (/auth/verify-email):
 
 ---
 
-### WF-03: Không gian Học tập của Học viên — Classroom Player (`/student/courses/:id/learn/:lessonId`)
+### WF-05: Không gian Học tập của Học viên — Classroom Player (SCR-13 — Route: `/student/courses/:id/learn/:lessonId`)
 
-Giao diện học tập tối ưu sự tập trung: Trái/Giữa là nội dung bài học, Phải là cây đề cương chương hồi với trạng thái đã hoàn thành.
+Giao diện học tập tối ưu sự tập trung: Trái/Giữa là nội dung bài học (video stream hoặc markdown), Phải là cây đề cương chương hồi với trạng thái đã hoàn thành.
 
 ```
 +-----------------------------------------------------------------------------------------+
@@ -144,9 +183,9 @@ Giao diện học tập tối ưu sự tập trung: Trái/Giữa là nội dung 
 
 ---
 
-### WF-04: Giao diện Làm bài Kiểm tra Trắc nghiệm (`/student/quizzes/:id/take`)
+### WF-06: Giao diện Làm bài Kiểm tra Trắc nghiệm (SCR-14 — Route: `/student/quizzes/:id/take`)
 
-Giao diện khóa tập trung (Focus Mode): Đồng hồ đếm ngược gắn chặt trên đỉnh (Sticky Timer), ma trận câu hỏi hỗ trợ nhảy nhanh.
+Giao diện khóa tập trung (Focus Mode): Đồng hồ đếm ngược gắn chặt trên đỉnh (Sticky Timer), ma trận câu hỏi hỗ trợ nhảy nhanh, tự động lưu câu trả lời vào sessionStorage.
 
 ```
 +-----------------------------------------------------------------------------------------+
@@ -171,9 +210,9 @@ Giao diện khóa tập trung (Focus Mode): Đồng hồ đếm ngược gắn c
 
 ---
 
-### WF-05: Màn hình Nộp Bài tập của Học viên (`/student/assignments/:id`)
+### WF-07: Màn hình Nộp Bài tập của Học viên (SCR-16 — Route: `/student/assignments/:id`)
 
-Khu vực kéo thả nộp file bài làm kết nối trực tiếp S3 Presigned URL, hiển thị thời hạn và phản hồi của giảng viên.
+Khu vực kéo thả nộp file bài làm kết nối trực tiếp S3 Presigned URL, hiển thị thời hạn và phản hồi của giảng viên. Tuân thủ whitelist bảo mật tuyệt đối.
 
 ```
 +-----------------------------------------------------------------------------------------+
@@ -194,8 +233,9 @@ Khu vực kéo thả nộp file bài làm kết nối trực tiếp S3 Presigned
 | +-----------------------------------------------------+ | "Bài làm rất xuất sắc, code   |
 | |             ☁️ KÉO & THẢ FILE VÀO ĐÂY                | | chuẩn ES Modules, validation  |
 | |         hoặc [ Chọn file từ máy tính ]              | | Joi chặt chẽ. Cần chú ý thêm  |
-| |       (Hỗ trợ .zip, .rar, .pdf - Tối đa 25MB)       | | trường hợp phân trang API."   |
-| +-----------------------------------------------------+ | — ThS. Nguyễn Văn A           |
+| | (Hỗ trợ .pdf, .docx, .zip, .png, .jpg, .webp        | | trường hợp phân trang API."   |
+| |  Tối đa 25MB theo MAX_UPLOAD_SIZE)                  | | — ThS. Nguyễn Văn A           |
+| +-----------------------------------------------------+ |                               |
 | [ Ghi chú cho giảng viên: Nhóm em đã bổ sung Swagger ]  |                               |
 | [================== GỬI BÀI NỘP ==================]     |                               |
 +---------------------------------------------------------+-------------------------------+
@@ -203,9 +243,9 @@ Khu vực kéo thả nộp file bài làm kết nối trực tiếp S3 Presigned
 
 ---
 
-### WF-06: Trình Quản lý Đề cương Khóa học của Giảng viên (`/teacher/courses/:id/curriculum`)
+### WF-08: Trình Quản lý Đề cương Khóa học của Giảng viên (SCR-21 — Route: `/teacher/courses/:id/curriculum`)
 
-Giao diện quản lý cấu trúc cây 3 cấp (Khóa học $\rightarrow$ Chương $\rightarrow$ Bài học) hỗ trợ kéo thả và xuất bản.
+Giao diện quản lý cấu trúc cây 3 cấp (Khóa học $\rightarrow$ Chương $\rightarrow$ Bài học) hỗ trợ thêm, sửa, xóa bài học và xuất bản gửi duyệt.
 
 ```
 +-----------------------------------------------------------------------------------------+
@@ -230,9 +270,9 @@ Giao diện quản lý cấu trúc cây 3 cấp (Khóa học $\rightarrow$ Chư�
 
 ---
 
-### WF-07: Tính năng AI Sinh Câu hỏi Trắc nghiệm Tự động (`/teacher/quizzes/ai-generator`)
+### WF-09: Bộ Sinh Câu hỏi Trắc nghiệm Tự động bằng AI (SCR-25 — Route: `/teacher/quizzes/ai-generator`)
 
-Tích hợp Google Gemini API: Giảng viên chọn bài học $\rightarrow$ AI sinh trắc nghiệm $\rightarrow$ Giảng viên review và lưu.
+Tích hợp Google Gemini API: Giảng viên chọn bài học $\rightarrow$ AI sinh trắc nghiệm tự động $\rightarrow$ Giảng viên review và lưu vào đề thi.
 
 ```
 +-----------------------------------------------------------------------------------------+
@@ -269,7 +309,7 @@ Tích hợp Google Gemini API: Giảng viên chọn bài học $\rightarrow$ AI 
 
 ---
 
-### WF-08: Giao diện Chấm Bài tập của Giảng viên (`/teacher/assignments/:id/grade`)
+### WF-10: Giao diện Chấm Bài tập của Giảng viên (SCR-27 — Route: `/teacher/assignments/:id/grade`)
 
 Cột trái hiển thị danh sách sinh viên nộp bài; Cột phải mở tài liệu và form nhập điểm kèm lời phê trực quan.
 
@@ -303,9 +343,9 @@ Cột trái hiển thị danh sách sinh viên nộp bài; Cột phải mở tà
 
 ---
 
-### WF-09: Hàng đợi Phê duyệt Khóa học của Quản lý Đào tạo (`/manager/approvals`)
+### WF-11: Hàng đợi Phê duyệt & Modal Kiểm duyệt Khóa học của Quản lý Đào tạo (SCR-30, SCR-31 — Route: `/manager/approvals`, `/manager/approvals/:id/review`)
 
-Màn hình kiểm soát chất lượng nội dung trước khi xuất bản ra toàn hệ thống.
+Màn hình kiểm soát chất lượng nội dung trước khi xuất bản ra toàn hệ thống kèm Modal review chi tiết thông qua Radix UI Dialog.
 
 ```
 +-----------------------------------------------------------------------------------------+
@@ -320,7 +360,7 @@ Màn hình kiểm soát chất lượng nội dung trước khi xuất bản ra 
 | Thiết kế Đồ họa UI/UX      | GV. Phạm Hồng Nhung| 3 Chương, 12 Bài | 22/09    | [ Duyệt]|
 +-----------------------------------------------------------------------------------------+
 
-Modal Xem chi tiết & Phê duyệt (/manager/approvals/:id/review):
+Modal Xem chi tiết & Phê duyệt (/manager/approvals/:id/review) — Radix UI Dialog:
 +-----------------------------------------------------------------------------------------+
 | CHI TIẾT KIỂM DUYỆT: Khóa học "Lập trình Web Fullstack"                                 |
 | Giảng viên: ThS. Nguyễn Văn A | Danh mục: Lập trình CNTT | Dự kiến: Miễn phí            |
@@ -338,9 +378,9 @@ Modal Xem chi tiết & Phê duyệt (/manager/approvals/:id/review):
 
 ---
 
-### WF-10: Bảng Quản trị Người dùng & Phân quyền Admin (`/admin/users`)
+### WF-12: Bảng Quản trị Người dùng & Phân quyền Admin (SCR-35 — Route: `/admin/users`)
 
-Màn hình back-office dành cho Admin tối ưu tìm kiếm, lọc theo 4 vai trò, tạo tài khoản giảng viên/quản lý và khóa tài khoản vi phạm.
+Màn hình back-office dành cho Admin tối ưu tìm kiếm, lọc theo 4 vai trò, tạo tài khoản giảng viên/quản lý và khóa/mở khóa tài khoản vi phạm.
 
 ```
 +-----------------------------------------------------------------------------------------+
@@ -367,11 +407,11 @@ Màn hình back-office dành cho Admin tối ưu tìm kiếm, lọc theo 4 vai t
 
 Mọi màn hình trên Frontend EduVerse đều tuân thủ 4 trạng thái chuẩn trải nghiệm người dùng (UX):
 
-1. **Loading State (Skeleton Screens):** Khi đang fetching dữ liệu API qua TanStack Query, hiển thị các khối màu xám nhấp nháy (`animate-pulse`) mô phỏng hình dạng thực tế của thẻ khóa học hoặc bảng dữ liệu, không dùng màn hình trắng trơn.
+1. **Loading State (Skeleton Screens):** Khi đang fetching dữ liệu API qua TanStack Query, hiển thị các khối Shimmer Gradient (sử dụng component `<Skeleton />` với class `skeleton-shimmer` / `animate-shimmer` theo Design System). Tuyệt đối không dùng nhấp nháy làm mờ đục `animate-pulse` hay để màn hình trắng trơn.
 2. **Empty State:** Khi không có dữ liệu (ví dụ: Học viên chưa ghi danh khóa học nào, Giảng viên chưa có bài tập nào cần chấm), hiển thị hình ảnh minh họa nhẹ nhàng kèm nút kêu gọi hành động: *"Bạn chưa tham gia khóa học nào. [ Khám phá khóa học ngay ]"*.
-3. **Error State (Alert Toast):** Sử dụng Toast notification (thư viện Sonner hoặc Radix Toast) hiển thị góc trên bên phải màn hình khi gặp lỗi (ví dụ: *"Mã lớp học không chính xác"*, *"File tải lên vượt quá giới hạn 25MB"*).
-4. **Optimistic Updates:** Với các thao tác nhanh như bấm *"Đánh dấu đã hoàn thành bài học"*, UI cập nhật dấu tick xanh ngay lập tức trước khi server phản hồi để tạo trải nghiệm mượt mà không độ trễ.
+3. **Error State (Alert Toast):** Sử dụng Toast notification chuẩn hóa qua component nội bộ `components/common/Toast` (triển khai bên dưới bằng thư viện `sonner`) hiển thị góc trên bên phải màn hình khi gặp lỗi (ví dụ: *"Mã lớp học không chính xác"*, *"File tải lên vượt quá giới hạn 25MB"*).
+4. **Optimistic Updates & Rollback:** Với các thao tác tương tác nhanh như bấm *"Đánh dấu đã hoàn thành bài học"*, UI cập nhật dấu tick xanh ngay lập tức trước khi server phản hồi để tạo trải nghiệm mượt mà không độ trễ. **Quy tắc bắt buộc:** Nếu mutation thất bại (lỗi mạng hoặc server trả về mã lỗi 4xx/5xx), hệ thống lập tức rollback trạng thái UI về giá trị ban đầu và bắn thông báo `toast.error("Thao tác thất bại, vui lòng thử lại!")`.
 
 ---
 
-_Bộ tài liệu Wireframes đã được phê duyệt làm cơ sở xây dựng mã nguồn giao diện React SPA tại thư mục `frontend/`._
+_Bộ tài liệu Wireframes đã được chuẩn hóa và đồng bộ 100% với `docs/ui/design-system.md` và `docs/ui/frontend-blueprint.md`, làm cơ sở trực tiếp cho AI sinh mã nguồn React SPA tại thư mục `frontend/`._

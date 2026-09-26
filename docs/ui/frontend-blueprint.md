@@ -13,13 +13,13 @@
 
 BẠN LÀ SENIOR FRONTEND ARCHITECT & REACT SPECIALIST ĐƯỢC GIAO NHIỆM VỤ XÂY DỰNG TOÀN BỘ GIAO DIỆN FRONTEND CHO HỆ THỐNG EDUVERSE.
 DỰA TRÊN TÀI LIỆU MASTER BLUEPRINT DƯỚI ĐÂY, HÃY TUÂN THỦ NGHIÊM NGẶT CÁC QUY TẮC SAU:
-1. Tech Stack: React 18 + Vite (JavaScript .jsx) + Tailwind CSS + Lucide React Icons + DOMPurify (Chống XSS).
+1. Tech Stack: React 18 + Vite (JavaScript .jsx) + Tailwind CSS + Lucide React Icons + Radix UI Primitives (Dialog, Dropdown, Tabs) + Sonner (Toast Notifications) + DOMPurify (Chống XSS).
 2. Routing & Guard: React Router v6, phân tầng Route Guard theo 4 vai trò (student, teacher, training_manager, admin) và Public routes.
 3. State Management: Zustand quản lý Client State (Auth, UI Modals, Toast) + TanStack React Query v5 quản lý Server State/Cache.
 4. API Client & Auth Security: Axios instance với baseURL = "/api/v1", đính kèm Authorization: Bearer <accessToken> trong bộ nhớ (Zustand memory - KHÔNG lưu localStorage để chống XSS). Tự động phục hồi phiên khi F5 qua initializeAuth() và tự động bắt lỗi 401 để kích hoạt cơ chế Refresh Token qua cookie HttpOnly.
 5. Form & Validation: React Hook Form kết hợp Joi schemas.
-6. Thẩm mỹ & UX: Tuân thủ 100% bộ Design Tokens trong `docs/ui/design-system.md` (Primary `#1168bd`, Secondary `#0c2d48`, Tertiary `#0ea5e9`, Canvas `#f8f9ff`, Font `Inter` với `tabular-nums`), giao diện Corporate SaaS sạch sẽ, chuẩn responsive (Desktop, Tablet, Mobile), luôn có Loading Skeletons (Shimmer Gradient), Empty States và Toast Notifications.
-7. Bảo mật & Toàn vẹn: Bắt buộc sanitize toàn bộ Markdown/Rich-text qua DOMPurify; Client timer chỉ phục vụ UX (server timestamp là chốt chặn); Upload S3 phải validate MIME/size trước khi xin Presigned URL.
+6. Thẩm mỹ & UX: Tuân thủ 100% bộ Design Tokens trong `docs/ui/design-system.md` (Primary `#1168bd`, Secondary `#0c2d48`, Tertiary `#0ea5e9`, Canvas `#f8f9ff`, Font `Inter` với `tabular-nums`), giao diện Corporate SaaS sạch sẽ, chuẩn responsive (Desktop, Tablet, Mobile), luôn có Loading Skeletons (Shimmer Gradient), Empty States và Toast Notifications (Sonner).
+7. Bảo mật & Toàn vẹn: Bắt buộc sanitize toàn bộ Markdown/Rich-text qua DOMPurify; Client timer chỉ phục vụ UX (server timestamp là chốt chặn); Upload S3 phải validate MIME whitelist (.pdf, .docx, .zip, .png, .jpg, .webp) và giới hạn `MAX_UPLOAD_SIZE = 25MB` trước khi xin Presigned URL.
 8. Triển khai theo đúng danh mục 37 Màn hình độc lập (SCR-01 đến SCR-37) và 6 Master Layout Shells được đặc tả chi tiết trong tài liệu này.
 ```
 
@@ -379,16 +379,17 @@ export const useAuthStore = create((set) => ({
 
 ## 6. Checklist Sinh mã Dành cho AI Developer
 
-Khi nhận yêu cầu code bất kỳ màn hình nào, AI cần thực hiện theo 5 bước tuần tự:
+Khi nhận yêu cầu code bất kỳ màn hình nào, AI cần thực hiện theo 6 bước tuần tự:
 1. **Kiểm tra Route & Layout:** Đặt file đúng thư mục `pages/<role>/` và bọc trong đúng Layout Shell (`StudentLayout`, `TeacherLayout`...).
 2. **Khai báo State & Query:** Dùng TanStack Query (`useQuery`, `useMutation`) kết nối đúng service API trong `services/`.
 3. **Hiển thị Đầy đủ 4 Trạng thái:**
-   - Đang tải: Component `<Skeleton />` tương ứng.
+   - Đang tải: Component `<Skeleton />` với hiệu ứng Shimmer Gradient.
    - Trống dữ liệu: Component `<EmptyState />` kèm icon Lucide và nút hành động.
    - Có dữ liệu: Card, Bảng dữ liệu hoặc Form.
-   - Thông báo lỗi/thành công: Gọi `<Toast />`.
+   - Thông báo lỗi/thành công: Gọi Toast thông báo qua thư viện `sonner` (`toast.success()`, `toast.error()`).
 4. **Validation Dữ liệu:** Form nhập liệu luôn bọc qua React Hook Form + Joi validation trước khi gửi API.
 5. **Vệ sinh Dữ liệu Render:** Toàn bộ nội dung Markdown hoặc HTML phải đi qua hàm `sanitizeHtml()` (DOMPurify).
+6. **Optimistic Updates với Rollback an toàn:** Khi thực hiện cập nhật lạc quan (ví dụ: bấm "Đánh dấu đã hoàn thành bài học"), nếu mutation gặp lỗi (`onError`), **bắt buộc phải rollback trạng thái UI về giá trị trước đó** và bắn thông báo `toast.error("Không thể cập nhật tiến độ, vui lòng thử lại!")`.
 
 ---
 
@@ -406,7 +407,7 @@ Mọi dòng code Frontend được sinh ra bắt buộc phải thỏa mãn 7 ngu
    - Khi render nội dung bài học Markdown, bình luận hỏi đáp hoặc nhận xét bài tập, **bắt buộc bọc qua `DOMPurify.sanitize(dirtyContent)`**.
    - Cấm sử dụng `dangerouslySetInnerHTML` trực tiếp mà không qua bước làm sạch.
 3. 🔒 **Bảo mật Tải tệp lên AWS S3 qua Presigned URL:**
-   - Client phải kiểm tra định dạng đuôi tệp (Whitelist: `.pdf, .docx, .zip, .png, .jpg, .webp`) và dung lượng tệp (`file.size <= maxSize`) **trước khi gửi request xin URL**.
+   - Client phải kiểm tra định dạng đuôi tệp (Whitelist: `.pdf, .docx, .zip, .png, .jpg, .webp` — tuyệt đối không cho phép `.rar`, `.exe`, `.bat`) và dung lượng tệp (`file.size <= MAX_UPLOAD_SIZE = 25MB`) **trước khi gửi request xin URL**.
    - Header `Content-Type` khi gọi `axios.put(presignedUrl, file)` phải khớp chính xác 100% với kiểu tệp đã khai báo để tránh lỗi chữ ký `SignatureDoesNotMatch` từ AWS S3.
 4. ⏱️ **Chống Gian lận Bài thi Trắc nghiệm (Quiz Integrity):**
    - Dữ liệu câu hỏi gửi về Client trong lúc làm bài **tuyệt đối không được chứa đáp án đúng (`is_correct`) hoặc lời giải thích**.
