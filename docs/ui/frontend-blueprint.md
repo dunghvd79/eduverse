@@ -20,7 +20,7 @@ DỰA TRÊN TÀI LIỆU MASTER BLUEPRINT DƯỚI ĐÂY, HÃY TUÂN THỦ NGHIÊM
 5. Form & Validation: React Hook Form kết hợp Joi schemas.
 6. Thẩm mỹ & UX: Bảng màu chuẩn C4 (#1168bd primary), giao diện hiện đại, sạch sẽ, chuẩn responsive (Desktop, Tablet, Mobile), luôn có Loading Skeletons, Empty States và Toast Notifications.
 7. Bảo mật & Toàn vẹn: Bắt buộc sanitize toàn bộ Markdown/Rich-text qua DOMPurify; Client timer chỉ phục vụ UX (server timestamp là chốt chặn); Upload S3 phải validate MIME/size trước khi xin Presigned URL.
-8. Triển khai theo đúng danh mục 25 màn hình và 5 Layout Shells được đặc tả chi tiết trong tài liệu này.
+8. Triển khai theo đúng danh mục 37 Màn hình độc lập (SCR-01 đến SCR-37) và 6 Master Layout Shells được đặc tả chi tiết trong tài liệu này.
 ```
 
 ---
@@ -40,13 +40,13 @@ frontend/
     │
     ├── assets/                      # Hình ảnh tĩnh, SVG logo, default avatars
     │
-    ├── layouts/                     # ⭐ 5 Khung Layout chính (Master Shells)
-    │   ├── PublicLayout.jsx         # Header + Navbar + Content + Footer
-    │   ├── AuthLayout.jsx           # Split screen (Banner minh họa + Form card)
-    │   ├── StudentLayout.jsx        # Sidebar học viên + TopHeader + Main Content
-    │   ├── TeacherLayout.jsx        # Sidebar giảng dạy + TopHeader + Main Content
-    │   ├── ManagerLayout.jsx        # Sidebar kiểm duyệt + TopHeader + Main Content
-    │   └── AdminLayout.jsx          # Sidebar quản trị hệ thống + Breadcrumb + Content
+    ├── layouts/                     # ⭐ 6 Khung Layout chính (Master Shells)
+    │   ├── PublicLayout.jsx         # 1. Header + Navbar + Content + Footer
+    │   ├── AuthLayout.jsx           # 2. Split screen (Banner minh họa + Form card)
+    │   ├── StudentLayout.jsx        # 3. Sidebar học viên + TopHeader + Main Content
+    │   ├── TeacherLayout.jsx        # 4. Sidebar giảng dạy + TopHeader + Main Content
+    │   ├── ManagerLayout.jsx        # 5. Sidebar kiểm duyệt + TopHeader + Main Content
+    │   └── AdminLayout.jsx          # 6. Sidebar quản trị hệ thống + Breadcrumb + Content
     │
     ├── routes/                      # ⭐ Hệ thống Định tuyến & Phân quyền
     │   ├── AppRoutes.jsx            # Cây định tuyến tập trung toàn hệ thống
@@ -89,10 +89,10 @@ frontend/
 
 ---
 
-## 2. Hệ thống 5 Master Layout Shells
+## 2. Hệ thống 6 Master Layout Shells
 
 ```
-[1. PUBLIC LAYOUT]              [2. AUTH LAYOUT]               [3. ROLE DASHBOARD LAYOUT]
+[1. PUBLIC LAYOUT]              [2. AUTH LAYOUT]               [3-6. ROLE DASHBOARD LAYOUTS]
 +--------------------------+    +----------------------------+  +-------------------------------+
 | Logo  Nav Links  [Login] |    | Minh họa | Form đăng nhập/ |  | [Logo]   Top Header    [Avatar]|
 +--------------------------+    | đồ họa   | đăng ký         |  +---------+---------------------+
@@ -103,81 +103,97 @@ frontend/
 | Footer: EduVerse © 2026  |    +----------------------------+  +---------+---------------------+
 ```
 
-1. **`PublicLayout`:** Dành cho khách vãng lai duyệt khóa học. Header cố định phía trên, hiển thị thanh tìm kiếm, danh mục, nút Đăng nhập / Đăng ký.
-2. **`AuthLayout`:** Tỉ lệ chia đôi 50/50. Cột trái là đồ họa minh họa thương hiệu EduVerse, cột phải là Card form nhập liệu có viền mềm và đổ bóng nhẹ.
-3. **`StudentLayout` / `TeacherLayout` / `ManagerLayout` / `AdminLayout`:** Bố cục Dashboard chuẩn quốc tế:
-   - **Sidebar (260px):** Logo, Menu điều hướng theo quyền, Trạng thái tài khoản, Nút Đăng xuất. Thu gọn thành hamburger menu trên mobile.
-   - **Header (64px):** Nút toggle sidebar, Tiêu đề phân hệ, Thanh tìm kiếm nhanh, Chuông thông báo, Dropdown User Profile.
-   - **Content Canvas:** Nền xám nhạt (`#f8fafc`), khối card nền trắng (`#ffffff`), padding rộng rãi.
+Hệ thống phân định rành mạch **6 Master Layouts** tương ứng với từng ngữ cảnh người dùng:
+1. **`PublicLayout`:** Dành cho khách vãng lai duyệt khóa học. Header cố định phía trên, thanh tìm kiếm, danh mục, footer.
+2. **`AuthLayout`:** Tỉ lệ chia đôi 50/50. Cột trái là đồ họa minh họa thương hiệu EduVerse, cột phải là Card form nhập liệu.
+3. **`StudentLayout`:** Dành riêng cho Học viên. Sidebar học tập cá nhân (Khóa học của tôi, Lịch nộp bài, Điểm số).
+4. **`TeacherLayout`:** Dành riêng cho Giảng viên. Sidebar nghiệp vụ giảng dạy (Khóa học, Lớp học, Bài tập, Chấm điểm, Ngân hàng đề thi AI).
+5. **`ManagerLayout`:** Dành riêng cho Quản lý Đào tạo. Sidebar kiểm định chất lượng (Hàng đợi duyệt khóa học, Danh mục, Báo cáo thống kê).
+6. **`AdminLayout`:** Dành riêng cho Quản trị viên. Giao diện Back-office quản trị người dùng RBAC, Cấu hình hệ thống, Audit Logs.
 
 ---
 
-## 3. Danh mục Chi tiết Toàn bộ 25 Màn hình (Screen Inventory & API Mapping)
+## 3. Danh mục Chi tiết Toàn bộ 37 Màn hình Độc lập (1:1 với React Router)
 
-### Phân hệ 1: Public & Khám phá (3 màn hình)
+> [!NOTE]
+> Để tránh việc AI gộp nhầm các màn hình con vào chung một component, danh mục dưới đây **tách bạch 100% từng Route URL độc lập thành 1 Screen Component riêng biệt** (tổng cộng 37 màn hình).
 
-| ID | Tên Màn hình | Route URL | Quyền hạn | Components chính | API Endpoints tương ứng |
+### Phân hệ 1: Public & Khám phá (4 màn hình)
+
+| ID | Tên Màn hình & Component | Route URL | Quyền hạn | Components chính | API Endpoints tương ứng |
 |---|---|---|:---:|---|---|
-| **SCR-01** | Trang chủ (Landing Page) | `/` | Public | HeroBanner, SearchBar, CategoryPills, FeaturedCourseGrid, TestimonialSection, Footer | `GET /api/v1/courses?status=published&sort=popular&limit=8` |
-| **SCR-02** | Khám phá Khóa học | `/courses` | Public | CourseFilterBar (giá, chuyên mục, đánh giá), SearchInput, CourseCardGrid, PaginationBar | `GET /api/v1/courses?status=published&page=1&limit=12&category=...` |
-| **SCR-03** | Chi tiết Khóa học | `/courses/:slug` | Public | CourseHero (Thumbnail, Giảng viên, Đánh giá), CurriculumAccordion (Xem trước bài giảng), EnrollmentCard, StickyCTA | `GET /api/v1/courses/:id/preview`, `POST /api/v1/classes/:id/join` |
+| **SCR-01** | Landing Page (`HomePage.jsx`) | `/` | Public | HeroBanner, SearchBar, CategoryPills, FeaturedCourseGrid, TestimonialSection, Footer | `GET /api/v1/courses?status=published&sort=popular&limit=8` |
+| **SCR-02** | Khám phá Khóa học (`CourseCatalogPage.jsx`) | `/courses` | Public | CourseFilterBar (giá, chuyên mục, đánh giá), SearchInput, CourseCardGrid, PaginationBar | `GET /api/v1/courses?status=published&page=1&limit=12` |
+| **SCR-03** | Chi tiết Khóa học (`CourseDetailPage.jsx`) | `/courses/:slug` | Public | CourseHero (Thumbnail, Giảng viên, Đánh giá), CurriculumAccordion (Xem trước đề cương), EnrollmentCard, StickyCTA | `GET /api/v1/courses/:id/preview`, `POST /api/v1/classes/:id/join` |
+| **SCR-04** | Trang 404 Không tìm thấy (`NotFoundPage.jsx`) | `*` | Public | Illustration404, SearchRedirectInput, BackToHomeButton | N/A |
 
 ---
 
 ### Phân hệ 2: Xác thực & Tài khoản (5 màn hình)
 
-| ID | Tên Màn hình | Route URL | Quyền hạn | Components chính | API Endpoints tương ứng |
+| ID | Tên Màn hình & Component | Route URL | Quyền hạn | Components chính | API Endpoints tương ứng |
 |---|---|---|:---:|---|---|
-| **SCR-04** | Đăng nhập | `/auth/login` | Public | LoginForm (Email, Mật khẩu, Checkbox Remember me), SocialLoginPlaceholder, Link sang Quên MK/Đăng ký | `POST /api/v1/auth/login` |
-| **SCR-05** | Đăng ký Học viên | `/auth/register` | Public | RegisterForm (Họ tên, Email, Mật khẩu, Xác nhận MK), PasswordStrengthMeter, Link sang Đăng nhập | `POST /api/v1/auth/register` (Tự động role = `student`) |
-| **SCR-06** | Xác thực Email OTP | `/auth/verify-email` | Public | OtpInputBox (6 ô nhập tự động focus), CountdownTimer (cooldown 60s), ResendOtpButton | `POST /api/v1/auth/verify-otp`, `POST /api/v1/auth/resend-otp` |
-| **SCR-07** | Quên Mật khẩu | `/auth/forgot-password` | Public | ForgotPasswordForm (Nhập Email đã đăng ký), Thông báo email đã gửi thành công | `POST /api/v1/auth/forgot-password` |
-| **SCR-08** | Đặt lại Mật khẩu | `/auth/reset-password` | Public | ResetPasswordForm (Mã token/OTP, Mật khẩu mới, Xác nhận mật khẩu mới) | `POST /api/v1/auth/reset-password` |
+| **SCR-05** | Đăng nhập (`LoginPage.jsx`) | `/auth/login` | Public | LoginForm (Email, Mật khẩu, Checkbox Remember me), SocialLoginPlaceholder, Link sang Quên MK/Đăng ký | `POST /api/v1/auth/login` |
+| **SCR-06** | Đăng ký Học viên (`RegisterPage.jsx`) | `/auth/register` | Public | RegisterForm (Họ tên, Email, Mật khẩu, Xác nhận MK), PasswordStrengthMeter, Link sang Đăng nhập | `POST /api/v1/auth/register` (Tự động role = `student`) |
+| **SCR-07** | Xác thực Email OTP (`VerifyOtpPage.jsx`) | `/auth/verify-email` | Public | OtpInputBox (6 ô nhập tự động focus), CountdownTimer (cooldown 60s), ResendOtpButton | `POST /api/v1/auth/verify-otp`, `POST /api/v1/auth/resend-otp` |
+| **SCR-08** | Quên Mật khẩu (`ForgotPasswordPage.jsx`) | `/auth/forgot-password` | Public | ForgotPasswordForm (Nhập Email đã đăng ký), Thông báo email đã gửi thành công | `POST /api/v1/auth/forgot-password` |
+| **SCR-09** | Đặt lại Mật khẩu (`ResetPasswordPage.jsx`) | `/auth/reset-password` | Public | ResetPasswordForm (Mã token/OTP, Mật khẩu mới, Xác nhận mật khẩu mới) | `POST /api/v1/auth/reset-password` |
 
 ---
 
-### Phân hệ 3: Học viên — Student Portal (7 màn hình)
+### Phân hệ 3: Học viên — Student Portal (9 màn hình)
 
-| ID | Tên Màn hình | Route URL | Quyền hạn | Components chính | API Endpoints tương ứng |
+| ID | Tên Màn hình & Component | Route URL | Quyền hạn | Components chính | API Endpoints tương ứng |
 |---|---|---|:---:|---|---|
-| **SCR-09** | Student Dashboard | `/student/dashboard` | `student` | StatCards (Khóa đang học, Bài sắp hết hạn, Điểm TB), RecentCourseList, UpcomingDeadlineList | `GET /api/v1/users/me/dashboard`, `GET /api/v1/classes/my-classes` |
-| **SCR-10** | Khóa học của tôi | `/student/my-courses` | `student` | EnrolledCourseGrid, ProgressBar, JoinClassByCodeModal (Nhập mã lớp) | `GET /api/v1/classes/my-classes`, `POST /api/v1/classes/join` |
-| **SCR-11** | Không gian Học tập (Classroom) | `/student/courses/:courseId/learn/:lessonId` | `student` | VideoPlayer, MarkdownContentViewer (Bắt buộc bọc DOMPurify chống XSS), AttachmentDownloadList (S3), MarkCompletedButton, NextPrevLessonNav, CurriculumSidebar | `GET /api/v1/lessons/:id`, `POST /api/v1/lessons/:id/progress`, `GET /api/v1/lessons/:id/video-stream-url` |
-| **SCR-12** | Làm bài Quiz Trắc nghiệm | `/student/quizzes/:id/take` | `student` | FullscreenExamHeader, StickyCountdownTimer (Client UX only), QuestionAnswerRadioGroup (KHÔNG chứa đáp án đúng is_correct), Autosave to sessionStorage, QuestionNavigationMatrix, SubmitExamConfirmModal | `POST /api/v1/quizzes/:id/attempts/start`, `POST /api/v1/quizzes/:id/attempts/:attemptId/submit` |
-| **SCR-13** | Kết quả Bài Quiz | `/student/quizzes/:id/result/:attemptId` | `student` | ScoreBanner (Đạt/Không đạt, Số điểm), DetailedAnswerReview (Xem lại câu đúng/sai & lời giải thích), RetakeQuizButton | `GET /api/v1/quizzes/:id/attempts/:attemptId` |
-| **SCR-14** | Chi tiết Bài tập & Nộp bài | `/student/assignments/:id` | `student` | AssignmentInstructionCard, DeadlineCountdownBadge, FileDropzone (Client validate MIME/size trước khi xin S3 Presigned URL), SubmittedFileList, TeacherFeedbackCard | `GET /api/v1/assignments/:id`, `POST /api/v1/uploads/presigned-url`, `POST /api/v1/assignments/:id/submit` |
-| **SCR-15** | Bảng điểm & Hồ sơ cá nhân | `/student/grades` & `/student/profile` | `student` | GradeSummaryTable (Điểm Quiz, Điểm Bài tập, Trọng số), AvatarUploader, EditProfileForm, ChangePasswordForm | `GET /api/v1/grades/my-grades`, `GET /api/v1/auth/me`, `PATCH /api/v1/users/me`, `PATCH /api/v1/auth/change-password` |
+| **SCR-10** | Student Dashboard (`StudentDashboardPage.jsx`) | `/student/dashboard` | `student` | StatCards (Khóa đang học, Bài sắp hết hạn, Điểm TB), RecentCourseList, UpcomingDeadlineList | `GET /api/v1/users/me/dashboard`, `GET /api/v1/classes/my-classes` |
+| **SCR-11** | Khóa học của tôi (`MyCoursesPage.jsx`) | `/student/my-courses` | `student` | EnrolledCourseGrid, ProgressBar, JoinClassByCodeModal (Nhập mã lớp) | `GET /api/v1/classes/my-classes`, `POST /api/v1/classes/join` |
+| **SCR-12** | Chi tiết Lớp học (`StudentClassDetailPage.jsx`) | `/student/classes/:id` | `student` | ClassHeaderInfo, ClassNoticeList, ClassMaterialDownloadList, ClassmatesList | `GET /api/v1/classes/:id`, `GET /api/v1/classes/:id/materials` |
+| **SCR-13** | Không gian Học tập (`ClassroomPage.jsx`) | `/student/courses/:courseId/learn/:lessonId` | `student` | VideoPlayer, MarkdownContentViewer (Bọc DOMPurify), AttachmentDownloadList (S3), MarkCompletedButton, NextPrevLessonNav, CurriculumSidebar | `GET /api/v1/lessons/:id`, `POST /api/v1/lessons/:id/progress`, `GET /api/v1/lessons/:id/video-stream-url` |
+| **SCR-14** | Làm bài Quiz Trắc nghiệm (`QuizTakePage.jsx`) | `/student/quizzes/:id/take` | `student` | FullscreenExamHeader, StickyCountdownTimer (Client UX only), QuestionAnswerRadioGroup (KHÔNG chứa đáp án đúng), Autosave sessionStorage, QuestionNavigationMatrix, SubmitExamConfirmModal | `POST /api/v1/quizzes/:id/attempts/start`, `POST /api/v1/quizzes/:id/attempts/:attemptId/submit` |
+| **SCR-15** | Kết quả Bài Quiz (`QuizResultPage.jsx`) | `/student/quizzes/:id/result/:attemptId` | `student` | ScoreBanner (Đạt/Không đạt, Số điểm), DetailedAnswerReview (Xem lại câu đúng/sai & lời giải thích), RetakeQuizButton | `GET /api/v1/quizzes/:id/attempts/:attemptId` |
+| **SCR-16** | Chi tiết Bài tập & Nộp bài (`AssignmentDetailPage.jsx`) | `/student/assignments/:id` | `student` | AssignmentInstructionCard, DeadlineCountdownBadge, FileDropzone (Client validate MIME/size trước khi xin S3 Presigned URL), SubmittedFileList, TeacherFeedbackCard | `GET /api/v1/assignments/:id`, `POST /api/v1/uploads/presigned-url`, `POST /api/v1/assignments/:id/submit` |
+| **SCR-17** | Bảng điểm cá nhân (`GradesPage.jsx`) | `/student/grades` | `student` | GradeSummaryTable (Điểm Quiz, Điểm Bài tập, Trọng số, Điểm trung bình môn), ExportPDFButton | `GET /api/v1/grades/my-grades` |
+| **SCR-18** | Hồ sơ cá nhân (`ProfilePage.jsx`) | `/student/profile` | `student` | AvatarUploader (S3), EditProfileForm (Họ tên, SĐT, Bio), ChangePasswordForm | `GET /api/v1/auth/me`, `PATCH /api/v1/users/me`, `PATCH /api/v1/auth/change-password` |
 
 ---
 
-### Phân hệ 4: Giảng viên — Teacher Portal (6 màn hình)
+### Phân hệ 4: Giảng viên — Teacher Portal (10 màn hình)
 
-| ID | Tên Màn hình | Route URL | Quyền hạn | Components chính | API Endpoints tương ứng |
+| ID | Tên Màn hình & Component | Route URL | Quyền hạn | Components chính | API Endpoints tương ứng |
 |---|---|---|:---:|---|---|
-| **SCR-16** | Teacher Dashboard | `/teacher/dashboard` | `teacher` | TeacherMetricCards (Số khóa, Số lớp, Tổng học viên, Bài tập chờ chấm), PendingGradingAlertTable, QuickActionButtons | `GET /api/v1/teacher/dashboard-stats` |
-| **SCR-17** | Quản lý Khóa học & Đề cương | `/teacher/courses` & `.../:id/curriculum` | `teacher` | CourseListTable, CreateCourseModal, CurriculumTreeBuilder (Chương $\rightarrow$ Bài học, Drag-and-drop sort), LessonEditorModal, SubmitForApprovalButton | `GET /api/v1/courses/my-courses`, `POST /api/v1/courses`, `POST /api/v1/chapters`, `POST /api/v1/lessons`, `POST /api/v1/courses/:id/submit-approval` |
-| **SCR-18** | Quản lý Lớp học & Thành viên | `/teacher/classes` & `.../:id` | `teacher` | ClassCardGrid, CreateClassModal (Tạo mã `class_code`), StudentDataTable (Họ tên, Email, % Tiến độ hoàn thành, Thao tác mời/xóa) | `GET /api/v1/classes`, `POST /api/v1/classes`, `GET /api/v1/classes/:id/students`, `POST /api/v1/classes/:id/invite` |
-| **SCR-19** | Quản lý Bài Quiz & AI Generator | `/teacher/quizzes` & `.../ai-generator` | `teacher` | QuizListTable, ManualQuestionBuilderForm, **Gemini AI Generator Modal** (Chọn bài học $\rightarrow$ AI sinh trắc nghiệm $\rightarrow$ Review/Edit card $\rightarrow$ Lưu vào đề) | `GET /api/v1/quizzes`, `POST /api/v1/quizzes`, `POST /api/v1/quizzes/generate-ai` (Gemini API) |
-| **SCR-20** | Quản lý Bài tập & Chấm điểm | `/teacher/assignments` & `.../:id/grade` | `teacher` | AssignmentListTable, CreateAssignmentForm, SubmissionSplitPane (Bên trái: Danh sách sinh viên; Bên phải: Xem bài nộp, Tải file S3, Ô nhập điểm 0-10, Rich-text nhận xét) | `GET /api/v1/assignments`, `POST /api/v1/assignments`, `GET /api/v1/assignments/:id/submissions`, `POST /api/v1/assignments/submissions/:id/grade` |
-| **SCR-21** | Sổ điểm Tổng hợp (Gradebook) | `/teacher/classes/:id/gradebook` | `teacher` | GradebookMatrixGrid (Học viên x Điểm các cột Quiz/Bài tập), AverageScoreCol, ExportToExcelButton | `GET /api/v1/classes/:id/gradebook`, `GET /api/v1/classes/:id/export-grades` |
+| **SCR-19** | Teacher Dashboard (`TeacherDashboardPage.jsx`) | `/teacher/dashboard` | `teacher` | TeacherMetricCards (Số khóa, Số lớp, Tổng học viên, Bài tập chờ chấm), PendingGradingAlertTable, QuickActionButtons | `GET /api/v1/teacher/dashboard-stats` |
+| **SCR-20** | Quản lý Khóa học (`TeacherCoursesPage.jsx`) | `/teacher/courses` | `teacher` | CourseListTable, CreateCourseModal, FilterStatusTabs (`draft`, `pending_approval`, `published`), ActionDropdown | `GET /api/v1/courses/my-courses`, `POST /api/v1/courses` |
+| **SCR-21** | Soạn thảo Đề cương Khóa học (`CourseCurriculumBuilderPage.jsx`) | `/teacher/courses/:id/curriculum` | `teacher` | CurriculumTreeBuilder (Chương $\rightarrow$ Bài học, Drag-drop reorder), AddChapterModal, LessonEditorModal (Video URL / S3 Upload), SubmitForApprovalButton | `GET /api/v1/courses/:id`, `POST /api/v1/chapters`, `POST /api/v1/lessons`, `POST /api/v1/courses/:id/submit-approval` |
+| **SCR-22** | Quản lý Lớp học (`TeacherClassesPage.jsx`) | `/teacher/classes` | `teacher` | ClassCardGrid, CreateClassModal (Tự động sinh mã `class_code`), FilterSemesterSelect | `GET /api/v1/classes`, `POST /api/v1/classes` |
+| **SCR-23** | Chi tiết Lớp & Học viên (`TeacherClassDetailPage.jsx`) | `/teacher/classes/:id` | `teacher` | ClassInfoBanner, InviteStudentModal (mời qua email), StudentDataTable (Họ tên, Email, % Tiến độ, Thao tác xóa khỏi lớp) | `GET /api/v1/classes/:id`, `GET /api/v1/classes/:id/students`, `POST /api/v1/classes/:id/invite` |
+| **SCR-24** | Quản lý Đề kiểm tra (`TeacherQuizzesPage.jsx`) | `/teacher/quizzes` | `teacher` | QuizListTable, CreateQuizModal, QuestionListSummary, ActionEditDelete | `GET /api/v1/quizzes`, `POST /api/v1/quizzes` |
+| **SCR-25** | Bộ tạo Quiz bằng AI (`AIQuizGeneratorPage.jsx`) | `/teacher/quizzes/ai-generator` | `teacher` | SelectLessonDropdown, QuestionCountSlider, **Gemini AI Generator Action**, AIQuestionReviewCardGrid (Chỉnh sửa câu hỏi/đáp án AI sinh), SaveToQuestionBankButton | `POST /api/v1/quizzes/generate-ai`, `POST /api/v1/quizzes` |
+| **SCR-26** | Quản lý Bài tập (`TeacherAssignmentsPage.jsx`) | `/teacher/assignments` | `teacher` | AssignmentListTable, CreateAssignmentForm (Hạn nộp, File mẫu đính kèm), GradingStatusBadge | `GET /api/v1/assignments`, `POST /api/v1/assignments` |
+| **SCR-27** | Giao diện Chấm bài tập (`AssignmentGradingPage.jsx`) | `/teacher/assignments/:id/grade` | `teacher` | SubmissionSplitPane (Cột trái: Danh sách bài nộp SV; Cột phải: Xem bài nộp, Tải file S3, Form nhập điểm 0-10, Nhận xét giảng viên, Nút Lưu & Gửi thông báo) | `GET /api/v1/assignments/:id/submissions`, `POST /api/v1/assignments/submissions/:id/grade` |
+| **SCR-28** | Sổ điểm Lớp học (`GradebookPage.jsx`) | `/teacher/classes/:id/gradebook` | `teacher` | GradebookMatrixGrid (Học viên x Điểm các cột Quiz/Bài tập), AverageScoreCol, ExportToExcelButton | `GET /api/v1/classes/:id/gradebook`, `GET /api/v1/classes/:id/export-grades` |
 
 ---
 
-### Phân hệ 5: Quản lý Đào tạo — Training Manager Portal (2 màn hình)
+### Phân hệ 5: Quản lý Đào tạo — Training Manager Portal (5 màn hình)
 
-| ID | Tên Màn hình | Route URL | Quyền hạn | Components chính | API Endpoints tương ứng |
+| ID | Tên Màn hình & Component | Route URL | Quyền hạn | Components chính | API Endpoints tương ứng |
 |---|---|---|:---:|---|---|
-| **SCR-22** | Hàng đợi & Duyệt Khóa học | `/manager/approvals` & `.../:id/review` | `training_manager` | ApprovalQueueTable (Danh sách khóa `pending_approval`), CourseAuditPreview (Kiểm tra video, bài học, bản quyền), ApproveButton (Xuất bản), RejectWithFeedbackDialog (Từ chối kèm lý do) | `GET /api/v1/courses/pending-approval`, `POST /api/v1/courses/:id/approve`, `POST /api/v1/courses/:id/reject` |
-| **SCR-23** | Quản lý Danh mục & Báo cáo | `/manager/categories` & `/reports` | `training_manager` | CategoryTreeManager (Thêm/Sửa/Ẩn danh mục), CompletionRateChart, TeacherPerformanceTable | `GET /api/v1/categories`, `POST /api/v1/categories`, `GET /api/v1/manager/analytics` |
+| **SCR-29** | Manager Dashboard (`ManagerDashboardPage.jsx`) | `/manager/dashboard` | `training_manager` | PendingCourseMetricCard, TotalActiveCourseMetric, SystemLearnerChart, QuickReviewQueueWidget | `GET /api/v1/manager/analytics` |
+| **SCR-30** | Hàng đợi Phê duyệt Khóa học (`CourseApprovalQueuePage.jsx`) | `/manager/approvals` | `training_manager` | ApprovalQueueTable (Danh sách khóa `pending_approval`), FilterByCategory, SortBySubmissionDate | `GET /api/v1/courses/pending-approval` |
+| **SCR-31** | Chi tiết Kiểm duyệt Khóa học (`CourseReviewDetailPage.jsx`) | `/manager/approvals/:id/review` | `training_manager` | CourseFullAuditPreview (Kiểm tra từng video, bài giảng, bài tập), ApproveButton (Chuyển sang `published`), RejectWithFeedbackDialog (Từ chối kèm lý do) | `GET /api/v1/courses/:id`, `POST /api/v1/courses/:id/approve`, `POST /api/v1/courses/:id/reject` |
+| **SCR-32** | Quản lý Danh mục (`CategoryManagementPage.jsx`) | `/manager/categories` | `training_manager` | CategoryTreeManager (Thêm, Sửa, Ẩn/Hiện danh mục khóa học), CategoryOrderSorter | `GET /api/v1/categories`, `POST /api/v1/categories`, `PATCH /api/v1/categories/:id` |
+| **SCR-33** | Báo cáo & Thống kê Đào tạo (`ManagerReportsPage.jsx`) | `/manager/reports` | `training_manager` | CompletionRateBarChart, StudentRetentionLineChart, TeacherPerformanceLeaderboard, ExportReportCSVButton | `GET /api/v1/manager/analytics` |
 
 ---
 
-### Phân hệ 6: Quản trị viên — Admin Console (2 màn hình)
+### Phân hệ 6: Quản trị viên — Admin Console (4 màn hình)
 
-| ID | Tên Màn hình | Route URL | Quyền hạn | Components chính | API Endpoints tương ứng |
+| ID | Tên Màn hình & Component | Route URL | Quyền hạn | Components chính | API Endpoints tương ứng |
 |---|---|---|:---:|---|---|
-| **SCR-24** | Quản lý Người dùng & RBAC | `/admin/users` | `admin` | UserDataTable (Lọc theo 4 role, lọc theo trạng thái Active/Locked), **CreatePrivilegedUserModal** (Tạo tài khoản Giảng viên / Quản lý theo BR-004/005), ToggleLockUserDialog | `GET /api/v1/admin/users`, `POST /api/v1/admin/users`, `PATCH /api/v1/admin/users/:id/status` |
-| **SCR-25** | Nhật ký Hệ thống & Cài đặt | `/admin/audit-logs` & `/settings` | `admin` | AuditLogTable (Theo dõi login, tạo token, thu hồi phiên), SystemHealthWidget, PlatformSettingsForm (Tham số S3, JWT, SMTP, Rate limit) | `GET /api/v1/admin/audit-logs`, `GET /api/v1/admin/system-health`, `PUT /api/v1/admin/settings` |
+| **SCR-34** | Admin Dashboard (`AdminDashboardPage.jsx`) | `/admin/dashboard` | `admin` | SystemMetricCards (Tổng User 4 role, S3 Storage used, API Request count), ServerHealthStatus, DatabaseConnectionIndicator | `GET /api/v1/admin/system-health` |
+| **SCR-35** | Quản lý Người dùng & RBAC (`UserManagementPage.jsx`) | `/admin/users` | `admin` | UserDataTable (Lọc theo 4 role, lọc theo trạng thái Active/Locked), **CreatePrivilegedUserModal** (Tạo tài khoản Giảng viên / Quản lý theo BR-004/005), ToggleLockUserDialog | `GET /api/v1/admin/users`, `POST /api/v1/admin/users`, `PATCH /api/v1/admin/users/:id/status` |
+| **SCR-36** | Nhật ký Hệ thống (`AuditLogsPage.jsx`) | `/admin/audit-logs` | `admin` | AuditLogTable (Theo dõi đăng nhập, cấp/hủy token trong `user_tokens`, giám sát thao tác nhạy cảm), FilterByDateRange | `GET /api/v1/admin/audit-logs` |
+| **SCR-37** | Cấu hình Nền tảng (`PlatformSettingsPage.jsx`) | `/admin/settings` | `admin` | S3ConfigForm, EmailSmtpConfigForm, RateLimitThresholdForm, JwtExpirationSettingForm, SaveSettingsButton | `GET /api/v1/admin/settings`, `PUT /api/v1/admin/settings` |
 
 ---
 
