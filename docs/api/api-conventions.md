@@ -110,7 +110,7 @@ Hệ thống API của EduVerse được thiết kế tuân thủ nghiêm ngặt
   * `statusCode` *(number)*: Mã lỗi HTTP (400, 401, 403, 404, 409, 500, 503).
   * `error` *(string)*: Tên định danh ngắn gọn của lỗi (theo chuẩn HTTP Exception).
   * `message` *(string)*: Thông báo lỗi tóm tắt cho người dùng.
-  * `errors` *(array)* *(tùy chọn)*: Mảng chi tiết các trường bị lỗi validation (`class-validator`). Chỉ xuất hiện khi có lỗi nhập liệu chi tiết.
+  * `errors` *(array)* *(tùy chọn)*: Mảng chi tiết các trường bị lỗi validation (`Joi`). Chỉ xuất hiện khi có lỗi nhập liệu chi tiết.
   * `path` *(string)*: Đường dẫn URI gây ra lỗi.
   * `timestamp` *(string)*: Mốc thời gian xảy ra lỗi.
 

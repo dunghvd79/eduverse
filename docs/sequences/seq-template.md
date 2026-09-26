@@ -42,13 +42,13 @@ sequenceDiagram
     participant FE as Frontend
     participant CTRL as Controller
     participant SVC as Service
-    participant DB as Repository
+    participant DB as Sequelize Models
     participant EXT as External
 
     User->>FE: user action
-    FE->>CTRL: POST /api/resource
+    FE->>CTRL: POST /api/v1/resource
     CTRL->>SVC: processRequest
-    SVC->>DB: findOrSave
+    SVC->>DB: Model.findOne / Model.create
     DB-->>SVC: result
     SVC->>EXT: sendNotification
     EXT-->>SVC: ok
@@ -63,10 +63,10 @@ sequenceDiagram
 | Participant | Alias | Mô tả | Màu gợi ý |
 |---|---|---|---|
 | **Actor** | `User` | Người dùng thực tế (Student/Teacher/Manager/Admin) | 👤 |
-| **Frontend** | `FE` | React/Vite SPA chạy trên trình duyệt | 🌐 |
+| **Frontend** | `FE` | React/Vite SPA (.jsx) chạy trên trình duyệt | 🌐 |
 | **Controller** | `CTRL` | Express Controller — nhận HTTP request, validate schema qua Joi | 🎮 |
 | **Service** | `SVC` | Express Service — xử lý business logic | ⚙️ |
-| **Repository/DB** | `DB` | Sequelize Model + PostgreSQL database | 🗄️ |
+| **Database** | `DB` | Sequelize Model + PostgreSQL 16 database | 🗄️ |
 | **External** | `EXT` | Email SMTP (Nodemailer), AI API (Gemini), File Storage (AWS S3) | 📧/🤖/☁️ |
 
 
@@ -80,12 +80,12 @@ sequenceDiagram
 |---|---|---|
 | `Actor->>FE:` | Solid line (Đường liền, mũi tên mở) | Hành động của người dùng, gửi request |
 | `FE-->>Actor:` | Dashed line (Đường đứt, mũi tên mở) | Phản hồi về giao diện (render, hiển thị) |
-| `FE->>CTRL:` | Solid | Gọi HTTP API (ghi rõ `POST /api/...`) |
+| `FE->>CTRL:` | Solid | Gọi HTTP API (ghi rõ `POST /api/v1/...`) |
 | `CTRL-->>FE:` | Dashed | HTTP Response (ghi rõ `200 OK`, `201 Created`, `400 Bad Request`...) |
 | `CTRL->>SVC:` | Solid | Gọi method trong Service |
-| `SVC-->>CTRL:` | Dashed | Trả về dữ liệu / throw Exception |
-| `SVC->>DB:` | Solid | Gọi Repository method (ví dụ: `findByEmail()`, `save()`) |
-| `DB-->>SVC:` | Dashed | Trả về kết quả truy vấn (Entity / null) |
+| `SVC-->>CTRL:` | Dashed | Trả về dữ liệu / throw ApiError |
+| `SVC->>DB:` | Solid | Gọi Sequelize Model method (ví dụ: `Model.findOne()`, `Model.create()`) |
+| `DB-->>SVC:` | Dashed | Trả về kết quả truy vấn (Model instance / null) |
 | `SVC->>EXT:` | Solid | Gọi dịch vụ ngoài (sendEmail, callGemini, uploadToS3) |
 | `EXT-->>SVC:` | Dashed | Phản hồi từ dịch vụ ngoài |
 
@@ -98,16 +98,16 @@ sequenceDiagram
     participant SVC as Service
     participant CTRL as Controller
     participant FE as Frontend
-    participant DB as Repository
+    participant DB as Sequelize Models
     participant EXT as External
 
     %% Dung alt de phan nhanh dieu kien (if/else)
     alt Dieu kien thanh cong
-        SVC->>DB: save(entity)
+        SVC->>DB: Model.create(data)
         DB-->>SVC: savedEntity
     else Dieu kien that bai - loi
-        SVC-->>CTRL: throw ConflictException
-        CTRL-->>FE: 409 Conflict - Email da ton tai
+        SVC-->>CTRL: throw ApiError(409, 'Conflict', 'Da ton tai')
+        CTRL-->>FE: 409 Conflict - Da ton tai
     end
 
     %% Dung opt de bieu dien buoc tuy chon

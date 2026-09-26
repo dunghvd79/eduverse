@@ -305,7 +305,7 @@ Hệ thống phân định rõ ràng 4 mục đích sử dụng tệp với các
 * **Mô tả chức năng:** Học viên hoặc Giảng viên nhấn nút tải tài liệu học tập. Hệ thống kiểm tra quyền thành viên hợp lệ (học viên đã ghi danh vào lớp chứa bài học này), sau đó sinh một **S3 Presigned GET URL** (hạn dùng 30 phút) để người dùng tải file trực tiếp an toàn từ private bucket ([`UC-DOC-001`](../use-cases/actor-student.md#uc-doc-001)).
 * **Kỹ thuật tải đúng tên tệp (ResponseContentDisposition):**
   * Khi backend gọi `@aws-sdk/s3-request-presigner`, hệ thống cấu hình tham số:
-    ```typescript
+    ```javascript
     ResponseContentDisposition: `attachment; filename="${encodeURIComponent(material.fileName)}"`
     ```
   * Điều này đảm bảo trình duyệt người dùng luôn tự động bật hộp thoại lưu tệp với đúng tên hiển thị sạch đẹp thay vì lưu theo chuỗi UUID/timestamp ngẫu nhiên của S3 Key.

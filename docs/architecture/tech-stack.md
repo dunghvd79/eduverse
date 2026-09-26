@@ -10,24 +10,24 @@
 
 ```mermaid
 flowchart LR
-    subgraph FE ["Frontend (Client)"]
-        A["React 18 + Vite (.jsx)"] --> B["Tailwind CSS + shadcn/ui"]
+    subgraph Frontend["Frontend (JavaScript)"]
+        A["React + Vite (.jsx)"] --> B["Tailwind CSS + shadcn/ui"]
     end
-    subgraph BE ["Backend (API Server)"]
-        C["Express.js (Node.js)"] --> D["Sequelize ORM"]
+    subgraph Backend["Backend (JavaScript)"]
+        C["Express.js - Node.js"] --> D["Sequelize ORM"]
         D --> E["PostgreSQL 16"]
         C --> R["Redis 7"]
     end
-    subgraph EXT ["External Services"]
+    subgraph Services["External Services"]
         F["Nodemailer + Gmail SMTP"]
         G["Google Gemini API"]
         H["AWS S3 (Presigned URL)"]
     end
-    subgraph OPS ["DevOps"]
+    subgraph DevOps["DevOps"]
         I["Docker + Docker Compose"]
     end
-    A -.->|"REST API (JSON)"| C
-    A -.->|"Socket.IO (Real-time)"| C
+    A -.->|REST API| C
+    A -.->|Socket.IO| C
     C --> F
     C --> G
     C --> H
@@ -69,16 +69,16 @@ flowchart LR
 
 ### Services bên ngoài
 
-| Quyết định | Lựa chọn | Version / Plan | Lý do | Các lựa chọn đã cân nhắc |
-|---|---|---|---|---|
-| File Storage | **AWS S3** | SDK v3 (`@aws-sdk/client-s3`) | Phổ biến nhất trong doanh nghiệp, scalable, SDK tốt, an toàn với Presigned URL | GCS, Local disk (phình container), MinIO |
-| Email | **Nodemailer + Gmail SMTP** | Nodemailer 6 | Miễn phí, dễ cài đặt, 500 email/ngày đủ cho đồ án | SendGrid, Mailtrap |
-| AI | **Google Gemini API** | gemini-1.5-flash | Free tier rộng rãi (15 req/phút, 1M token/ngày), tiếng Việt tốt | OpenAI, Ollama |
+| Quyết định   | Lựa chọn                    | Version / Plan                | Lý do                                                                          | Các lựa chọn đã cân nhắc                 |
+| --------------| -----------------------------| -------------------------------| --------------------------------------------------------------------------------| ------------------------------------------|
+| File Storage | **AWS S3**                  | SDK v3 (`@aws-sdk/client-s3`) | Phổ biến nhất trong doanh nghiệp, scalable, SDK tốt, an toàn với Presigned URL | GCS, Local disk (phình container), MinIO |
+| Email        | **Nodemailer + Gmail SMTP** | Nodemailer 6                  | Miễn phí, dễ cài đặt, 500 email/ngày đủ cho đồ án                              | SendGrid, Mailtrap                       |
+| AI           | **Google Gemini API**       | gemini-1.5-flash              | Free tier rộng rãi (15 req/phút, 1M token/ngày), tiếng Việt tốt                | OpenAI, Ollama                           |
 
 ### DevOps & Deployment
 
-| Quyết định | Lựa chọn | Version | Lý do | Các lựa chọn đã cân nhắc |
-|---|---|---|---|---|
+| Quyết định | Lựa chọn                    | Version               | Lý do                                                    | Các lựa chọn đã cân nhắc          |
+| ------------| -----------------------------| -----------------------| ----------------------------------------------------------| -----------------------------------|
 | Deployment | **Docker + Docker Compose** | Docker 25, Compose v2 | 1 lệnh chạy xong, đồng nhất môi trường, dễ demo/chấm bài | Cloud deploy, npm start trực tiếp |
 
 ### Xác thực & Phân quyền
@@ -144,7 +144,6 @@ backend/src/
 │   ├── quiz.service.js          # Logic tính điểm trắc nghiệm tự động, thời gian làm bài
 │   ├── assignment.service.js    # Logic nộp bài, kiểm tra trễ hạn nộp (deadline)
 │   ├── grade.service.js         # Logic tổng hợp điểm số lớp học
-│   ├── notification.service.js  # Lấy danh sách thông báo, đánh dấu đã đọc, tạo thông báo mới
 │   ├── mail.service.js          # Gửi email qua Gmail SMTP (mẫu OTP, reset password)
 │   ├── ai.service.js            # Xây dựng prompt & gọi Google Gemini API
 │   ├── upload.service.js        # Tạo Presigned Upload/Download URL với AWS S3
@@ -189,9 +188,7 @@ backend/src/
 │   └── rateLimit.middleware.js  # Giới hạn tần suất gọi API qua Redis
 ├── validations/                 # Các Schema kiểm tra tính hợp lệ dữ liệu (Joi)
 │   ├── auth.validation.js       # Schema cho register, login, verifyOtp, changePassword
-│   ├── user.validation.js       # Schema cho updateProfile, changePassword, blockUser
-│   ├── course.validation.js     # Schema cho createCourse, updateCourse, createChapter
-│   ├── class.validation.js      # Schema cho createClass, joinClass, updateClass
+│   ├── course.validation.js     # Schema cho createCourse, updateCourse
 │   ├── quiz.validation.js       # Schema cho createQuiz, submitQuiz
 │   └── assignment.validation.js # Schema cho createAssignment, submitAssignment
 ├── sockets/                     # Quản lý Real-time Socket.IO (Phase 2)

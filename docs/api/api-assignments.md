@@ -1,4 +1,4 @@
-﻿# 📝 Đặc Tả API: Module Bài Tập Tự Luận & Nộp File S3 — api-assignments.md
+# 📝 Đặc Tả API: Module Bài Tập Tự Luận & Nộp File S3 — api-assignments.md
 
 > **Tài liệu tham chiếu:** [`api-conventions.md`](api-conventions.md), [`schema.md`](../database/schema.md), [`seq-assign-001.md`](../sequences/seq-assign-001.md), [`actor-student.md`](../use-cases/actor-student.md#uc-assign-001), [`actor-teacher.md`](../use-cases/actor-teacher.md#uc-assign-002)  
 > **Base Path:** `/api/v1/assignments`, `/api/v1/classes/:classId/assignments`, `/api/v1/assignment-submissions`  
@@ -115,7 +115,7 @@
     "id": "as1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
     "lessonId": "ls1a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
     "title": "Xây dựng RESTful API CRUD Người dùng với Express.js & Sequelize",
-    "instruction": "### Yêu cầu bài tập:\n1. Khởi tạo router và controller `users` trong Express.js.\n2. Cấu hình kết nối PostgreSQL qua Sequelize.\n3. Viết đầy đủ các endpoint CRUD có phân trang và validate DTO bằng class-validator.\n\n**Quy cách nộp bài:** Nén toàn bộ mã nguồn vào file `.zip` (loại bỏ thư mục `node_modules`) kèm báo cáo định dạng `.pdf`.",
+    "instruction": "### Yêu cầu bài tập:\n1. Khởi tạo router và controller `users` trong Express.js.\n2. Cấu hình kết nối PostgreSQL qua Sequelize.\n3. Viết đầy đủ các endpoint CRUD có phân trang và validate request bằng Joi.\n\n**Quy cách nộp bài:** Nén toàn bộ mã nguồn vào file `.zip` (loại bỏ thư mục `node_modules`) kèm báo cáo định dạng `.pdf`.",
     "allowedFileTypes": "pdf,zip,docx",
     "maxFileSizeMb": 25,
     "createdAt": "2026-09-24T08:00:00.000Z",
