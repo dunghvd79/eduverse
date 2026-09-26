@@ -10,11 +10,11 @@ EduVerse là hệ thống quản lý khóa học và hỗ trợ dạy/học tr�
 
 | Layer | Công nghệ |
 |---|---|
-| Frontend | React + Vite, Tailwind CSS + shadcn/ui |
-| Backend | NestJS (TypeScript) |
-| Database | PostgreSQL + TypeORM |
-| File Storage | AWS S3 |
-| AI | Google Gemini API |
+| Frontend | React 18 + Vite (JavaScript `.jsx`), Tailwind CSS + shadcn/ui, TanStack Query + Zustand |
+| Backend | Express.js (Node.js 20, ES Modules: `import/export`), Joi Validation, Socket.IO |
+| Database & Cache | PostgreSQL 16 + Sequelize ORM, Redis 7 (`ioredis`) |
+| File Storage | AWS S3 (Presigned URLs) |
+| AI | Google Gemini API (`gemini-1.5-flash`) |
 | Email | Nodemailer + Gmail SMTP |
 | DevOps | Docker + Docker Compose |
 
@@ -31,8 +31,8 @@ eduverse/
 │   ├── ui/             # Wireframes & mockups
 │   ├── sequences/      # Sequence diagrams
 │   └── project/        # Quản lý dự án & biên bản họp
-├── backend/            # NestJS backend
-├── frontend/           # React frontend
+├── backend/            # Express.js (Node.js ES Modules) backend
+├── frontend/           # React + Vite (.jsx) frontend
 └── assets/             # Tài nguyên (logo, hình ảnh, diagrams)
 ```
 

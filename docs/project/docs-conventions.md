@@ -77,7 +77,7 @@ eduverse/
 │       └── 📂 meeting-notes/        # Biên bản họp nhóm
 │           └── 📄 2026-09-21.md     # Biên bản theo ngày
 │
-├── 📂 backend/                      # NestJS backend (code)
+├── 📂 backend/                      # Express.js (Node 20, ES Modules) backend (code)
 │   └── ...
 │
 ├── 📂 frontend/                     # React frontend (code)
@@ -252,7 +252,7 @@ Base URL: `/api/auth`
 - Phân chia module
 
 ## Quyết định
-- Dùng NestJS + React
+- Dùng Express.js + React
 - Sprint 1 bắt đầu từ 28/09
 
 ## Công việc giao
