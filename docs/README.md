@@ -43,6 +43,7 @@
 
 ### 🎨 Giao diện
 - [Master Frontend Blueprint (Prompt-ready)](ui/frontend-blueprint.md)
+- [Design System & UI Tokens](ui/design-system.md)
 - [Sitemap](ui/sitemap.md)
 - [Wireframes](ui/wireframes.md)
 
