@@ -42,6 +42,7 @@
 - [API: Upload & Đa phương tiện (Uploads)](api/api-uploads.md)
 
 ### 🎨 Giao diện
+- [Master Frontend Blueprint (Prompt-ready)](ui/frontend-blueprint.md)
 - [Sitemap](ui/sitemap.md)
 - [Wireframes](ui/wireframes.md)
 
