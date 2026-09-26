@@ -29,13 +29,13 @@ Dự án đã hoàn thành toàn bộ giai đoạn phân tích nghiệp vụ (Us
   - `docs/database/erd.md`: Sơ đồ ERD 15 thực thể chuẩn 3NF, phân tách mối quan hệ rõ ràng.
   - `docs/database/schema.md`: Đặc tả chi tiết từng bảng, kiểu dữ liệu PostgreSQL, Constraints, Indexes (đã đồng bộ các cột `is_published`, `show_answers_after_submit`, `explanation`, `deleted_at`).
   - `docs/database/seed-data.md`: Dữ liệu mẫu (Users mặc định, Khóa học mẫu, Lớp học mẫu).
-- [x] **Hệ thống Sơ đồ Tuần tự Nghiệp vụ Cốt lõi (Sequence Diagrams):**
-  - `docs/sequences/seq-template.md`: Mẫu chuẩn thiết kế Sequence Diagram cho toàn dự án.
-  - `docs/sequences/seq-auth-001.md`: Đăng ký tài khoản học viên & xác thực Email kích hoạt.
-  - `docs/sequences/seq-auth-002.md`: Đăng nhập hệ thống & cấp phát JWT qua Cookie HttpOnly an toàn.
-  - `docs/sequences/seq-quiz-001.md`: Làm bài kiểm tra trắc nghiệm & Tự động chấm điểm (Server Time Authority, Anti-cheat).
-  - `docs/sequences/seq-assign-001.md`: Học viên nộp bài tập file S3 & Giảng viên chấm điểm phản hồi.
-  - `docs/sequences/seq-ai-001.md`: Giảng viên dùng Google Gemini AI tự động sinh câu hỏi trắc nghiệm từ bài giảng.
+- [x] **Hệ thống Sơ đồ Tuần tự Nghiệp vụ Cốt lõi (Sequence Diagrams — Đã đồng bộ 100% Express.js & Sequelize):**
+  - `docs/sequences/seq-template.md`: Mẫu chuẩn thiết kế 6 layers với Express Controller, Service, Sequelize Models, Joi validation.
+  - `docs/sequences/seq-auth-001.md`: Đăng ký tài khoản học viên & xác thực Email kích hoạt qua Joi, Sequelize User & UserToken, Nodemailer.
+  - `docs/sequences/seq-auth-002.md`: Đăng nhập hệ thống & cấp phát JWT qua Cookie HttpOnly, RAM Zustand, Sequelize UserToken & Redis Blacklist.
+  - `docs/sequences/seq-quiz-001.md`: Làm bài kiểm tra trắc nghiệm & Tự động chấm điểm (Sequelize QuizAttempt, Question, QuestionOption, Redis cache).
+  - `docs/sequences/seq-assign-001.md`: Học viên nộp bài tập file S3 qua Presigned URL & xác nhận bài nộp qua Sequelize ClassAssignment & AssignmentSubmission.
+  - `docs/sequences/seq-ai-001.md`: Giảng viên dùng Google Gemini AI tự động sinh câu hỏi trắc nghiệm, validate Joi và bulk insert Sequelize.
 - [x] **Đặc tả API (API Specifications - Đã hoàn thành 8/8 tài liệu):**
   - [x] `docs/api/api-conventions.md`: Quy chuẩn RESTful, Envelope Pattern (`success`, `data`, `meta`), Error codes, Phân trang, CORS, Cookie chính sách.
   - [x] `docs/api/api-auth.md`: Xác thực, JWT, Refresh Token, Đổi/Quên mật khẩu.
