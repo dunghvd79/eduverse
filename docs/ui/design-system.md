@@ -1,6 +1,7 @@
 ---
 name: EduVerse Enterprise UI
 colors:
+  # App Canvas & Surface Hierarchy (Single Source of Truth)
   surface: '#f8f9ff'
   surface-dim: '#cbdbf5'
   surface-bright: '#f8f9ff'
@@ -16,23 +17,45 @@ colors:
   outline: '#727783'
   outline-variant: '#c1c6d4'
   surface-tint: '#005fb0'
-  primary: '#005096'
+  
+  # Primary Brand Palette (C4 Standard Blue)
+  primary: '#1168bd'
+  primary-hover: '#0e5aa5'
+  primary-active: '#0b4782'
+  primary-dark: '#005096'
   on-primary: '#ffffff'
   primary-container: '#1168bd'
   on-primary-container: '#dce8ff'
   inverse-primary: '#a6c8ff'
-  secondary: '#44617e'
+
+  # Secondary Brand Palette (Deep Navy Architecture)
+  secondary: '#0c2d48'
+  secondary-light: '#44617e'
   on-secondary: '#ffffff'
   secondary-container: '#c0ddff'
   on-secondary-container: '#45617f'
-  tertiary: '#00557a'
-  on-tertiary: '#ffffff'
+
+  # Tertiary Brand Palette (Cyan Accents & Progress)
+  tertiary: '#0ea5e9'
+  tertiary-dark: '#00557a'
   tertiary-container: '#006e9e'
+  on-tertiary: '#ffffff'
   on-tertiary-container: '#d2eaff'
+
+  # Semantic Statuses
   error: '#ba1a1a'
+  error-hover: '#93000a'
   on-error: '#ffffff'
   error-container: '#ffdad6'
   on-error-container: '#93000a'
+  success: '#10b981'
+  success-container: '#d1fae5'
+  on-success: '#065f46'
+  warning: '#f59e0b'
+  warning-container: '#fef3c7'
+  on-warning: '#92400e'
+
+  # Fixed Variants
   primary-fixed: '#d5e3ff'
   primary-fixed-dim: '#a6c8ff'
   on-primary-fixed: '#001c3b'
@@ -61,12 +84,6 @@ typography:
     fontWeight: '600'
     lineHeight: 2.25rem
     letterSpacing: -0.02em
-  headline-lg-mobile:
-    fontFamily: Inter
-    fontSize: 1.5rem
-    fontWeight: '600'
-    lineHeight: 2rem
-    letterSpacing: -0.015em
   headline-md:
     fontFamily: Inter
     fontSize: 1.25rem
@@ -130,14 +147,34 @@ spacing:
   space-md: 1rem
   space-lg: 1.5rem
   space-xl: 2rem
+zIndex:
+  base: 0
+  sticky: 20
+  dropdown: 40
+  popover: 50
+  modal: 60
+  drawer: 70
+  toast: 80
+breakpoints:
+  tablet: 768px
+  desktop: 1024px
+  wide: 1280px
+  max: 1600px
 ---
 
 # 🎨 Design System & UI Specification — EduVerse Enterprise UI
 
-> **Phiên bản:** 1.0  
+> **Phiên bản:** 1.0 (Final Enterprise Standard)  
 > **Cập nhật lần cuối:** 26/09/2026  
-> **Áp dụng cho:** Toàn bộ giao diện React SPA (Frontend EduVerse)  
+> **Áp dụng cho:** Toàn bộ giao diện Web React SPA (Frontend EduVerse)  
 > **Mục tiêu:** Cung cấp bộ quy chuẩn thiết kế (Design Tokens) và hướng dẫn cấu hình chi tiết cho Tailwind CSS nhằm đảm bảo tính thẩm mỹ, nhất quán và chuẩn mực Corporate SaaS.
+
+---
+
+> [!IMPORTANT]
+> ### 📌 NGUYÊN TẮC VÀNG: SINGLE SOURCE OF TRUTH
+> **Design Tokens trong tài liệu này là Nguồn Chân Lý Duy Nhất (Single Source of Truth).**  
+> Mọi giá trị màu sắc, typography, spacing, radius, shadow, z-index và component state trong toàn bộ mã nguồn Frontend phải trực tiếp tham chiếu Design Tokens này thông qua Tailwind utilities; **tuyệt đối không tự ý hardcode mã màu hex ngẫu nhiên** hoặc tạo giá trị thay thế nếu token tương ứng đã tồn tại.
 
 ---
 
@@ -150,28 +187,38 @@ Hệ thống thiết kế nhắm đến các tác vụ quản lý đào tạo v�
 
 ---
 
-## 2. Bảng Màu & Hệ Thống Phân Cấp (Colors)
+## 2. Bảng Màu Thống Nhất & Phân Cấp Semantic (Colors)
 
-Hệ thống màu thiết lập trật tự thị giác rõ ràng cho mô hình quản trị doanh nghiệp:
+Hệ thống màu loại bỏ hoàn toàn sự nhập nhằng và thiết lập tên gọi semantic rõ ràng:
 
 ### 2.1. Màu Thương hiệu & Hành động Chính (Brand Palette)
-- **Primary (`#1168bd` / `#005096`):** Điểm nhấn tương tác trung tâm, nút hành động chính (Primary CTA), viền focus của form nhập liệu, highlight menu điều hướng đang kích hoạt.
-- **Secondary (`#0c2d48` / `#44617e`):** Xanh navy đậm cấu trúc, sử dụng cho khung sườn hệ thống (Sidebar cố định), thanh tiêu đề phân cấp cao và nhận diện thương hiệu tổ chức.
-- **Tertiary (`#0ea5e9` / `#006e9e`):** Xanh cyan điểm nhấn, dành cho thanh tiến độ học tập (Progress Bar), callout thông tin quan trọng và các huy hiệu ngữ cảnh.
+- **Primary Base (`#1168bd`):** Màu thương hiệu cốt lõi C4, nút hành động chính (Primary CTA), viền focus active, liên kết điều hướng đang chọn.
+  - Hover: `#0e5aa5`
+  - Active: `#0b4782`
+  - Dark: `#005096`
+  - On Primary (Text): `#ffffff`
+- **Secondary Base (`#0c2d48`):** Xanh navy sâu, sử dụng làm cấu trúc khung sườn (Persistent Sidebar), thanh điều hướng cấp cao và tiêu đề lớn.
+  - Secondary Light: `#44617e`
+  - On Secondary (Text): `#ffffff`
+- **Tertiary Base (`#0ea5e9`):** Xanh cyan điểm nhấn, dành cho thanh tiến độ học tập (Progress Bar), callout thông tin quan trọng.
+  - Tertiary Dark: `#00557a`
+  - Tertiary Container: `#006e9e`
+  - On Tertiary (Text): `#ffffff`
 
-### 2.2. Bề Mặt & Màu Trung Tính (Neutrals & Surfaces)
-- **Base Canvas:** `#f8fafc` (Slate 50) hoặc `#f8f9ff` (Muted Indigo Canvas).
-- **Primary Surface / Cards:** `#ffffff` (Pure White).
-- **Secondary Surface:** `#f1f5f9` (Slate 100) cho header bảng dữ liệu, thanh tiến trình chưa hoàn thành, và sub-panels.
-- **Borders & Dividers:** `#e2e8f0` (Slate 200) và viền ngoài `#cbd5e1` (Slate 300).
-- **Text Neutral Muted:** `#64748b` (Slate 500) cho chú thích, nhãn phụ, placeholder.
-- **Text Neutral Body:** `#334155` (Slate 700) cho văn bản nội dung thông thường.
-- **Text Neutral Heading:** `#0f172a` (Slate 900) cho tiêu đề khối, tên khóa học, thống kê chính.
+### 2.2. Bề Mặt & Màu Nền (Surfaces — Đồng bộ Canvas)
+- **App Canvas (Màu nền toàn ứng dụng):** `#f8f9ff` (Soft Blue/Indigo Canvas — Thống nhất 100% với `frontend-blueprint.md`).
+- **Cards & Primary Surface:** `#ffffff` (Pure White).
+- **Secondary Surface (Sub-panels, Table Header):** `#eff4ff` (`surface-container-low`) và `#e5eeff` (`surface-container`).
+- **Borders & Dividers:** `#c1c6d4` (`outline-variant`) cho viền mỏng hairline và `#727783` (`outline`) cho đường viền có tương phản cao.
+- **Text Hierarchy:**
+  - Text Heading: `#0b1c30` (`on-surface`)
+  - Text Body: `#0b1c30` / `#414752` (`on-surface-variant`)
+  - Text Muted / Placeholder: `#727783` (`outline`)
 
 ### 2.3. Màu Ngữ Nghĩa Chức Năng (Semantic Statuses)
-- **Success (`#10b981` / `#16a34a`):** Đạt bài kiểm tra, hoàn thành bài học, duyệt khóa học thành công, tài khoản kích hoạt.
-- **Warning (`#f59e0b` / `#eab308`):** Sắp đến hạn nộp bài tập, khóa học đang chờ duyệt (`pending_approval`), hàng đợi chấm bài.
-- **Destructive / Error (`#ef4444` / `#ba1a1a`):** Không đạt quiz, bài nộp trễ hạn, từ chối phê duyệt khóa học, khóa tài khoản vi phạm.
+- **Success (`#10b981`):** Nền `#d1fae5`, Chữ `#065f46` — Đạt bài kiểm tra, hoàn thành bài học, duyệt khóa học thành công, tài khoản kích hoạt.
+- **Warning (`#f59e0b`):** Nền `#fef3c7`, Chữ `#92400e` — Sắp đến hạn nộp bài tập, khóa học đang chờ duyệt (`pending_approval`), hàng đợi chấm bài.
+- **Error / Destructive (`#ba1a1a` / `#ef4444`):** Nền `#ffdad6`, Chữ `#93000a` — Không đạt quiz, bài nộp trễ hạn, từ chối phê duyệt khóa học, khóa tài khoản vi phạm.
 
 ---
 
@@ -184,87 +231,143 @@ Toàn bộ hệ thống giao diện sử dụng đồng nhất phông chữ **`I
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum";
   ```
-- **Tracking & Hierarchy:**
-  - Tiêu đề cấp cao (Display, Headline-lg) sử dụng khoảng cách chữ co nhẹ (`letterSpacing: -0.025em` đến `-0.015em`) để giao diện trông chắc chắn và hiện đại.
-  - Bảng dữ liệu dày đặc và nhãn meta-tags sử dụng font-weight `600` (Semibold) ở kích cỡ nhỏ (`12px` và `14px`) để giữ nét sắc sảo trên nền viền.
+- **Hệ Thống Phông Chữ Semantic (Typography Scale):**
+  - `display`: `2.25rem` (36px), leading `2.75rem`, bold `700`, tracking `-0.025em` (Trang chủ Hero).
+  - `headline-lg`: `1.75rem` (28px), leading `2.25rem`, semibold `600`, tracking `-0.02em` (Tiêu đề trang Dashboard).
+  - `headline-md`: `1.25rem` (20px), leading `1.75rem`, semibold `600`, tracking `-0.015em` (Tiêu đề nhóm thẻ Card).
+  - `headline-sm`: `1.125rem` (18px), leading `1.5rem`, semibold `600`, tracking `-0.01em` (Tiêu đề Modal/Section).
+  - `body-lg`: `1rem` (16px), leading `1.5rem`, regular `400` (Nội dung bài học Markdown).
+  - `body-md`: `0.875rem` (14px), leading `1.25rem`, regular `400` (Văn bản bảng biểu, form label tiêu chuẩn).
+  - `body-sm`: `0.75rem` (12px), leading `1rem`, regular `400` (Mô tả phụ, timestamp).
+  - `label-md`: `0.875rem` (14px), leading `1.25rem`, medium `500` (Nút bấm, tabs).
+  - `label-sm`: `0.75rem` (12px), leading `1rem`, semibold `600` (Badges, Chips).
 
 ---
 
-## 4. Bố Cục & Nhịp Điệu Không Gian (Layout & Spacing)
+## 4. Bố Cục, Không Gian & Thang Z-Index (Layout, Spacing & Z-Index)
 
-### 4.1. Khung Vỏ Ứng Dụng (Application Shell)
-- **Sidebar:** Độ rộng cố định `260px`, có thể thu gọn (collapse) thành thanh rail biểu tượng `64px` trên màn hình vừa hoặc Drawer trên mobile.
-- **Header:** Chiều cao cố định `64px` (`4rem`) với đường viền dưới mỏng 1px (`#e2e8f0`).
-- **Viewport Canvas:** Khung layout linh hoạt với độ rộng tối đa nội dung `1600px` trên màn hình độ phân giải siêu cao (Ultra-wide), đảm bảo các bảng dữ liệu rộng và dòng đọc bài giảng không bị kéo dài quá mức.
+### 4.1. Khung Vỏ Ứng Dụng Web (Application Shell)
+- **Sidebar:** Độ rộng cố định `260px`, có thể thu gọn (collapse) thành thanh rail biểu tượng `64px` trên màn hình tablet ngang.
+- **Header:** Chiều cao cố định `64px` (`4rem`) với đường viền dưới mỏng 1px (`#c1c6d4`).
+- **Viewport Canvas:** Khung layout linh hoạt với độ rộng tối đa nội dung `1600px` trên màn hình Desktop lớn, đảm bảo các bảng dữ liệu rộng và dòng đọc bài giảng không bị kéo dài quá mức.
 
-### 4.2. Lưới & Nhịp Điệu Padding
-- **Hệ thống Lưới 12 Cột:** Khoảng cách giữa các cột (gutters) là `1.5rem` (`24px`) trên Desktop (`≥ 1024px`), co về 1 cột trên Mobile (`< 768px`).
-- **Quy tắc Base-4 Spacing:** Mọi padding và margin tuân thủ bội số của 4: `4px (space-xs)`, `8px (space-sm)`, `16px (space-md)`, `24px (space-lg)`, `32px (space-xl)`.
-  - Ô trong bảng dữ liệu: padding dọc `8px` hoặc `12px`.
-  - Thẻ Card nội dung: padding từ `16px` đến `24px`.
+### 4.2. Hệ Thống Thang Z-Index Chuẩn
+Nhằm tránh tình trạng các component tự sinh `z-[9999]` xung đột nhau, toàn bộ hệ thống tuân thủ thang z-index duy nhất:
+```yaml
+zIndex:
+  base: 0        # Nội dung thông thường
+  sticky: 20     # Header sticky, sticky table column
+  dropdown: 40   # Select menu, action dropdown
+  popover: 50    # Popover, tooltip
+  modal: 60      # Dialog, confirm modal
+  drawer: 70     # Slide-over sidebar
+  toast: 80      # Thông báo toast góc màn hình
+```
 
----
-
-## 5. Độ Nổi & Chiều Sâu Thị Giác (Elevation & Depth)
-
-Sự phân tách trực quan ưu tiên sử dụng **đường viền nét mảnh (hairline borders 1px)** thay vì hiệu ứng đổ bóng mờ nặng nề:
-
-- **Hairline Borders:** Các bề mặt phẳng sử dụng viền vi mô `1px solid #e2e8f0`. Độ sâu phân lớp thể hiện qua sự tương phản nền: Canvas nền `#f8fafc` nằm dưới Cards `#ffffff`, kết hợp sub-headers `#f1f5f9`.
-- **Hệ thống Đổ bóng Nhẹ (Ambient Shadow System):**
-  - **Flat Layer (Cards, Metric Tiles):** `box-shadow: 0 1px 2px 0 rgba(15, 23, 42, 0.05); border: 1px solid #e2e8f0`.
-  - **Dropdowns & Popovers:** `box-shadow: 0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.05); border: 1px solid #e2e8f0`.
-  - **Modals & Slide-over Drawers:** `box-shadow: 0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.06)`.
-
----
-
-## 6. Hình Khối & Độ Bo Góc (Shapes & Radii)
-
-Quy chuẩn hình khối duy trì phong cách **Soft Geometry** sắc nét:
-- Nút bấm, ô input, bảng dữ liệu, card bao ngoài: `rounded: 0.25rem (4px)` hoặc `rounded-md: 0.375rem (6px)` để giữ tính kỹ thuật và nghiêm túc.
-- Huy hiệu trạng thái (Status Chips / Badges): Dùng `rounded-full (9999px)` dạng viên thuốc hoặc `rounded-sm (2px)` để phân biệt rõ rệt với nút bấm tương tác.
+### 4.3. Quy Tắc Base-4 Spacing
+- `space-xs`: `0.25rem` (4px)
+- `space-sm`: `0.5rem` (8px)
+- `space-md`: `1rem` (16px)
+- `space-lg`: `1.5rem` (24px)
+- `space-xl`: `2rem` (32px)
+- `gutter`: `1.5rem` (24px khoảng cách giữa các cột)
 
 ---
 
-## 7. Quy Chuẩn Chi Tiết Từng Component (Component Specifications)
+## 5. Ma Trận Trạng Thái Component (Component State Matrix)
 
-### 7.1. Nút Bấm (Buttons)
-- **Primary Button:** Nền `#1168bd`, chữ `#ffffff`, hover `#0e5aa5`, active `#0b4782`. Focus ring: `2px solid #1168bd` với offset 2px.
-- **Secondary Button:** Nền `#ffffff`, viền `1px solid #cbd5e1`, chữ `#334155`. Hover: nền `#f8fafc`, viền `#94a3b8`.
-- **Destructive Button:** Nền `#ef4444`, chữ `#ffffff`. Phiên bản Outline: nền trắng, viền `#fca5a5`, chữ `#b91c1c`.
+Mọi component tương tác bắt buộc phải khai báo đầy đủ các trạng thái để không bị sinh mã tùy tiện:
 
-### 7.2. Ô Nhập Liệu & Form Controls (Inputs & Selects)
-- Chiều cao chuẩn `40px` (Default) hoặc `32px` (Compact trong bảng dữ liệu).
-- Nền `#ffffff`, viền `1px solid #cbd5e1`, phông chữ `0.875rem` (`text-sm`).
-- **Focus State:** `focus:outline-none focus:border-[#1168bd] focus:ring-2 focus:ring-[#1168bd]/20`.
-- **Error State:** Viền chuyển sang `#ef4444` và focus ring `#ef4444/20`, hiển thị câu báo lỗi màu đỏ ngay dưới input.
+### 5.1. Nút Bấm (Buttons)
+| Trạng thái | Primary Button | Secondary Button | Destructive Button |
+|---|---|---|---|
+| **Default** | `bg-primary text-white` | `bg-white border border-outline-variant text-on-surface` | `bg-error text-white` |
+| **Hover** | `bg-primary-hover` | `bg-surface-container-low border-outline` | `bg-error-hover` |
+| **Active** | `bg-primary-active` | `bg-surface-container` | `bg-error-hover` |
+| **Focus Visible** | `ring-2 ring-primary ring-offset-2 outline-none` | `ring-2 ring-primary ring-offset-2 outline-none` | `ring-2 ring-error ring-offset-2 outline-none` |
+| **Disabled** | `bg-outline-variant text-on-surface-variant cursor-not-allowed opacity-60` | `bg-surface-container text-outline border-outline-variant cursor-not-allowed` | `bg-outline-variant text-on-surface-variant cursor-not-allowed opacity-60` |
+| **Loading** | Hiển thị `<Loader2 className="animate-spin mr-2" />` và tự động set `disabled` | Tương tự | Tương tự |
 
-### 7.3. Bảng Dữ Liệu Doanh Nghiệp (Data Tables)
-- **Header:** Nền `#f1f5f9`, chữ `#475569`, in hoa nhẹ `0.75rem`, letter-spacing `0.05em`, viền dưới `1px solid #e2e8f0`.
-- **Hàng (Rows):** Hiệu ứng hover mềm `#f8fafc`, phân cách bằng đường viền dưới `1px solid #f1f5f9`. Chiều cao hàng compact: `36px` (sổ điểm/thống kê), hàng tiêu chuẩn: `48px` (danh sách học viên/khóa học).
+### 5.2. Ô Nhập Liệu (Inputs & Selects)
+| Trạng thái | Giao diện hiển thị |
+|---|---|
+| **Default** | Chiều cao 40px (hoặc 32px compact), `bg-white border border-outline-variant text-sm text-on-surface` |
+| **Hover** | `border-outline` |
+| **Focus** | `outline-none border-primary ring-2 ring-primary/20` |
+| **Error** | `border-error ring-2 ring-error/20`, câu thông báo lỗi đỏ `text-xs text-error mt-1` |
+| **Disabled** | `bg-surface-container text-outline border-outline-variant cursor-not-allowed` |
+| **Read-only** | `bg-surface-container-low border-outline-variant text-on-surface-variant cursor-default` |
 
-### 7.4. Thẻ Đo Lường & Chỉ Số (Metric Cards & Trend Badges)
-- Nền `#ffffff`, viền `1px solid #e2e8f0`, padding `16px` đến `20px`.
-- Chỉ số hiển thị số lớn `1.75rem` định dạng font `tabular-nums` semibold.
-- Huy hiệu tăng trưởng (Trend badge): Kèm icon mũi tên, nền xanh `#ecfdf5` chữ `#065f46` (tăng) hoặc nền đỏ `#fef2f2` chữ `#991b1b` (giảm).
+### 5.3. Bảng Dữ Liệu Web (Data Tables)
+- **Desktop (≥ 1024px):** Hiển thị đầy đủ bảng dữ liệu với header `#eff4ff`, hàng xen kẽ hover mềm `#f8f9ff`.
+- **Tablet / Màn hình nhỏ (768px – 1023px):** Bọc trong container `overflow-x-auto`. Riêng **Sổ điểm Gradebook** bắt buộc cố định cột đầu tiên:
+  ```css
+  /* Cột 1 cố định khi cuộn ngang */
+  th:first-child, td:first-child {
+    position: sticky;
+    left: 0;
+    z-index: 10;
+    background-color: #ffffff;
+  }
+  ```
 
-### 7.5. Huy Hiệu Trạng Thái (Status Chips)
-- Kích thước chữ `0.75rem`, font-weight `600`:
-  - **Completed / Passed:** Nền `#d1fae5`, chữ `#065f46`.
-  - **In Progress:** Nền `#e0f2fe`, chữ `#0369a1`.
-  - **Pending / At Risk:** Nền `#fef3c7`, chữ `#92400e`.
-  - **Overdue / Failed:** Nền `#fee2e2`, chữ `#991b1b`.
-
-### 7.6. Phản Hồi, Toast & Skeleton
-- **Toast Notifications:** Cố định góc dưới bên phải màn hình (độ rộng `360px`), nền trắng, đổ bóng popover và có vạch màu trạng thái 4px ở mép trái.
-- **Skeleton Loading:** Nền `#e2e8f0` nhấp nháy chuyển động (`animate-pulse`) sang `#f1f5f9` có hiệu ứng bóng sáng shimmer.
-- **Empty States:** Khung căn giữa với biểu tượng màu nhạt trong vòng tròn xám `#f1f5f9`, tiêu đề in đậm, mô tả ngắn và một nút bấm hành động chính.
+### 5.4. Hiệu Ứng Skeleton Loading (Chốt Shimmer Gradient)
+Toàn bộ Skeleton trong ứng dụng sử dụng hiệu ứng **Shimmer Gradient** mượt mà (không dùng pulse opacity đơn giản):
+```css
+/* Shimmer Animation Keyframe */
+@keyframes shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+.skeleton-shimmer {
+  position: relative;
+  overflow: hidden;
+  background-color: #e5eeff;
+}
+.skeleton-shimmer::after {
+  position: absolute;
+  top: 0; right: 0; bottom: 0; left: 0;
+  transform: translateX(-100%);
+  background-image: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0) 0,
+    rgba(255, 255, 255, 0.4) 50%,
+    rgba(255, 255, 255, 0) 100%
+  );
+  animation: shimmer 1.5s infinite;
+  content: '';
+}
+```
 
 ---
 
-## 8. File Mẫu Cấu Hình Tailwind CSS (`tailwind.config.js`)
+## 6. Quy Tắc Trợ Năng Bàn Phím Toàn Hệ Thống (Accessibility Focus Rules)
 
-> [!TIP]
-> Hãy sao chép file cấu hình dưới đây vào thư mục `frontend/tailwind.config.js` để tích hợp toàn bộ Design Tokens vào dự án:
+Mọi phần tử có thể tương tác (Buttons, Links, Inputs, Tabs, Checkboxes) bắt buộc phải có visual keyboard focus rõ ràng:
+- **Nguyên tắc:** Tuyệt đối cấm viết `outline: none` mà không có `focus-visible:ring-*` thay thế.
+- **Tiêu chuẩn áp dụng:**
+  ```html
+  focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2
+  ```
+
+---
+
+## 7. Định Hướng Responsive Web Breakpoints
+
+Hệ thống nhắm trọng tâm vào trải nghiệm duyệt Web trên máy tính và máy tính bảng:
+
+| Môi trường | Kích thước | Hành vi Layout |
+|---|---|---|
+| **Desktop / Laptop** (Trọng tâm chính) | `≥ 1024px` | Sidebar mở rộng 260px đầy đủ, hiển thị toàn bộ 12 cột grid và bảng dữ liệu lớn. |
+| **Tablet màn hình ngang** | `768px – 1023px` | Sidebar tự động thu gọn thành thanh rail biểu tượng 64px (Icon-only rail), bảng dữ liệu cuộn ngang tự nhiên (`overflow-x-auto`). |
+| **Màn hình nhỏ** | `< 768px` | Sidebar chuyển thành Drawer trượt từ cạnh trái, các bảng dữ liệu cuộn ngang mượt mà. |
+
+---
+
+## 8. Cấu Hình Hoàn Chỉnh `tailwind.config.js` (Ready-to-Use)
+
+Dưới đây là cấu hình hoàn chỉnh tích hợp 100% tokens từ tài liệu này vào Tailwind CSS:
 
 ```javascript
 /** @type {import('tailwindcss').Config} */
@@ -276,9 +379,10 @@ export default {
   theme: {
     extend: {
       colors: {
-        // Core Brand Colors
         primary: {
           DEFAULT: '#1168bd',
+          hover: '#0e5aa5',
+          active: '#0b4782',
           dark: '#005096',
           container: '#1168bd',
           on: '#ffffff',
@@ -296,21 +400,25 @@ export default {
           container: '#006e9e',
           on: '#ffffff',
         },
-        // Surfaces & Backgrounds
         surface: {
-          DEFAULT: '#f8f9ff',
+          DEFAULT: '#f8f9ff', // Base App Canvas
           dim: '#cbdbf5',
           bright: '#f8f9ff',
+          card: '#ffffff',
           container: '#e5eeff',
           'container-low': '#eff4ff',
           'container-lowest': '#ffffff',
           'container-high': '#dce9ff',
-          'on': '#0b1c30',
+          on: '#0b1c30',
           'on-variant': '#414752',
         },
-        // System Semantics
+        outline: {
+          DEFAULT: '#727783',
+          variant: '#c1c6d4',
+        },
         error: {
           DEFAULT: '#ba1a1a',
+          hover: '#93000a',
           container: '#ffdad6',
           on: '#ffffff',
         },
@@ -328,17 +436,55 @@ export default {
       fontFamily: {
         sans: ['Inter', 'sans-serif'],
       },
+      fontSize: {
+        display: ['2.25rem', { lineHeight: '2.75rem', letterSpacing: '-0.025em', fontWeight: '700' }],
+        'headline-lg': ['1.75rem', { lineHeight: '2.25rem', letterSpacing: '-0.02em', fontWeight: '600' }],
+        'headline-md': ['1.25rem', { lineHeight: '1.75rem', letterSpacing: '-0.015em', fontWeight: '600' }],
+        'headline-sm': ['1.125rem', { lineHeight: '1.5rem', letterSpacing: '-0.01em', fontWeight: '600' }],
+        'body-lg': ['1rem', { lineHeight: '1.5rem', letterSpacing: '0em', fontWeight: '400' }],
+        'body-md': ['0.875rem', { lineHeight: '1.25rem', letterSpacing: '0em', fontWeight: '400' }],
+        'body-sm': ['0.75rem', { lineHeight: '1rem', letterSpacing: '0em', fontWeight: '400' }],
+        'label-md': ['0.875rem', { lineHeight: '1.25rem', letterSpacing: '0.01em', fontWeight: '500' }],
+        'label-sm': ['0.75rem', { lineHeight: '1rem', letterSpacing: '0.02em', fontWeight: '600' }],
+      },
+      spacing: {
+        'space-xs': '0.25rem',
+        'space-sm': '0.5rem',
+        'space-md': '1rem',
+        'space-lg': '1.5rem',
+        'space-xl': '2rem',
+        gutter: '1.5rem',
+        margin: '1.5rem',
+      },
       borderRadius: {
         sm: '0.125rem',
         DEFAULT: '0.25rem',
         md: '0.375rem',
         lg: '0.5rem',
         xl: '0.75rem',
+        full: '9999px',
+      },
+      zIndex: {
+        base: '0',
+        sticky: '20',
+        dropdown: '40',
+        popover: '50',
+        modal: '60',
+        drawer: '70',
+        toast: '80',
       },
       boxShadow: {
         flat: '0 1px 2px 0 rgba(15, 23, 42, 0.05)',
         popover: '0 4px 6px -1px rgba(15, 23, 42, 0.08), 0 2px 4px -2px rgba(15, 23, 42, 0.05)',
         drawer: '0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 8px 10px -6px rgba(15, 23, 42, 0.06)',
+      },
+      keyframes: {
+        shimmer: {
+          '100%': { transform: 'translateX(100%)' },
+        },
+      },
+      animation: {
+        shimmer: 'shimmer 1.5s infinite',
       },
     },
   },
