@@ -377,7 +377,15 @@ export default {
     "./src/**/*.{js,ts,jsx,tsx}",
   ],
   theme: {
+    screens: {
+      md: '768px',
+      lg: '1024px',
+      xl: '1280px',
+    },
     extend: {
+      maxWidth: {
+        app: '1600px',
+      },
       colors: {
         primary: {
           DEFAULT: '#1168bd',
@@ -385,20 +393,35 @@ export default {
           active: '#0b4782',
           dark: '#005096',
           container: '#1168bd',
-          on: '#ffffff',
           'on-container': '#dce8ff',
+          fixed: '#d5e3ff',
+          'fixed-dim': '#a6c8ff',
+          on: '#ffffff',
+          'on-fixed': '#001c3b',
+          'on-fixed-variant': '#004787',
+          inverse: '#a6c8ff',
         },
         secondary: {
           DEFAULT: '#0c2d48',
           light: '#44617e',
           container: '#c0ddff',
+          'on-container': '#45617f',
+          fixed: '#cfe4ff',
+          'fixed-dim': '#acc9eb',
           on: '#ffffff',
+          'on-fixed': '#001d34',
+          'on-fixed-variant': '#2c4965',
         },
         tertiary: {
           DEFAULT: '#0ea5e9',
           dark: '#00557a',
           container: '#006e9e',
+          'on-container': '#d2eaff',
+          fixed: '#c9e6ff',
+          'fixed-dim': '#89ceff',
           on: '#ffffff',
+          'on-fixed': '#001e2f',
+          'on-fixed-variant': '#004c6e',
         },
         surface: {
           DEFAULT: '#f8f9ff', // Base App Canvas
@@ -410,12 +433,15 @@ export default {
           'container-lowest': '#ffffff',
           'container-high': '#dce9ff',
           'container-highest': '#d3e4fe',
+          variant: '#d3e4fe',
           on: '#0b1c30',
           'on-variant': '#414752',
           inverse: '#213145',
           'inverse-on': '#eaf1ff',
           tint: '#005fb0',
         },
+        background: '#f8f9ff',
+        'on-background': '#0b1c30',
         outline: {
           DEFAULT: '#727783',
           variant: '#c1c6d4',
