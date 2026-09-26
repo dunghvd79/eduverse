@@ -154,7 +154,7 @@ Màn hình chuyên biệt nhập 6 chữ số OTP với tự động chuyển ô
 
 ---
 
-### WF-05: Không gian Học tập của Học viên — Classroom Player (SCR-13 — Route: `/student/courses/:id/learn/:lessonId`)
+### WF-05: Không gian Học tập của Học viên — Classroom Player (SCR-13 — Route: `/student/courses/:courseId/learn/:lessonId`)
 
 Giao diện học tập tối ưu sự tập trung: Trái/Giữa là nội dung bài học (video stream hoặc markdown), Phải là cây đề cương chương hồi với trạng thái đã hoàn thành.
 

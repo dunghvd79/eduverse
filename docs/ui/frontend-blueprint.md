@@ -54,7 +54,7 @@ frontend/
     │   └── RoleBasedGuard.jsx       # Kiểm tra quyền Role (403 Forbidden nếu sai quyền)
     │
     ├── stores/                      # ⭐ Quản lý Global Client State (Zustand)
-    │   ├── useAuthStore.js          # user, accessToken, roles, login(), logout(), checkAuth()
+    │   ├── useAuthStore.js          # user, accessToken, roles, login(), logout(), initializeAuth()
     │   └── useUIStore.js            # sidebarOpen, theme, modalState, activeToast
     │
     ├── services/                    # ⭐ Tầng Tương tác Backend API (Axios Instance)
