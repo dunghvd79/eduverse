@@ -218,7 +218,7 @@ Hệ thống màu loại bỏ hoàn toàn sự nhập nhằng và thiết lập 
 ### 2.3. Màu Ngữ Nghĩa Chức Năng (Semantic Statuses)
 - **Success (`#10b981`):** Nền `#d1fae5`, Chữ `#065f46` — Đạt bài kiểm tra, hoàn thành bài học, duyệt khóa học thành công, tài khoản kích hoạt.
 - **Warning (`#f59e0b`):** Nền `#fef3c7`, Chữ `#92400e` — Sắp đến hạn nộp bài tập, khóa học đang chờ duyệt (`pending_approval`), hàng đợi chấm bài.
-- **Error / Destructive (`#ba1a1a` / `#ef4444`):** Nền `#ffdad6`, Chữ `#93000a` — Không đạt quiz, bài nộp trễ hạn, từ chối phê duyệt khóa học, khóa tài khoản vi phạm.
+- **Error / Destructive (`#ba1a1a` / `#93000a`):** Nền `#ffdad6`, Chữ `#93000a` — Không đạt quiz, bài nộp trễ hạn, từ chối phê duyệt khóa học, khóa tài khoản vi phạm.
 
 ---
 
