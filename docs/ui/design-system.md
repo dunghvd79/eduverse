@@ -409,8 +409,12 @@ export default {
           'container-low': '#eff4ff',
           'container-lowest': '#ffffff',
           'container-high': '#dce9ff',
+          'container-highest': '#d3e4fe',
           on: '#0b1c30',
           'on-variant': '#414752',
+          inverse: '#213145',
+          'inverse-on': '#eaf1ff',
+          tint: '#005fb0',
         },
         outline: {
           DEFAULT: '#727783',
@@ -420,6 +424,7 @@ export default {
           DEFAULT: '#ba1a1a',
           hover: '#93000a',
           container: '#ffdad6',
+          'on-container': '#93000a',
           on: '#ffffff',
         },
         success: {
@@ -446,6 +451,7 @@ export default {
         'body-sm': ['0.75rem', { lineHeight: '1rem', letterSpacing: '0em', fontWeight: '400' }],
         'label-md': ['0.875rem', { lineHeight: '1.25rem', letterSpacing: '0.01em', fontWeight: '500' }],
         'label-sm': ['0.75rem', { lineHeight: '1rem', letterSpacing: '0.02em', fontWeight: '600' }],
+        'tabular-number': ['0.875rem', { lineHeight: '1.25rem', letterSpacing: '0em', fontWeight: '500' }],
       },
       spacing: {
         'space-xs': '0.25rem',
@@ -488,7 +494,17 @@ export default {
       },
     },
   },
-  plugins: [],
+  plugins: [
+    // Utility class .tabular-number kích hoạt font-variant-numeric: tabular-nums cho toàn bộ bảng điểm, đồng hồ thi
+    function({ addUtilities }) {
+      addUtilities({
+        '.tabular-number': {
+          'font-variant-numeric': 'tabular-nums',
+          'font-feature-settings': '"tnum"',
+        },
+      });
+    },
+  ],
 }
 ```
 
