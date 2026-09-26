@@ -13,29 +13,32 @@ Tài liệu này kế thừa 100% các giá trị từ **Design System** (`docs/
 
 ### 1.1. Grid & Breakpoints (Responsive)
 
-Hệ thống tuân thủ nghiêm ngặt chuẩn responsive cho màn hình Web và Mobile:
+Hệ thống tuân thủ nghiêm ngặt chuẩn responsive cho màn hình Web và Mobile (theo triết lý mobile-first của Tailwind CSS):
 
-| Kích thước | Tên Breakpoint | Độ rộng tối thiểu | Bố cục Layout chính |
+| Kích thước | Tên Breakpoint Tailwind | Độ rộng màn hình | Bố cục Layout chính |
 |---|---|---|---|
-| **Mobile** | `sm` | `< 768px` | 1 cột đơn, Sidebar thu gọn thành Bottom Nav hoặc Drawer menu (Hamburger). Bảng dữ liệu có `overflow-x-auto`. |
+| **Mobile** | Base styles (mặc định) | `< 768px` | 1 cột đơn, Sidebar thu gọn thành Bottom Nav hoặc Drawer menu (Hamburger). Bảng dữ liệu có `overflow-x-auto`. |
 | **Tablet** | `md` | `768px – 1023px` | 2 cột linh hoạt, Sidebar dạng icon thu gọn (collapsed sidebar). |
-| **Desktop** | `lg` / `xl` | `≥ 1024px` | Bố cục chuẩn Dashboard: Sidebar cố định (260px) + Header (64px) + Main Content (12 cột, max 1600px). |
+| **Desktop** | `lg` | `≥ 1024px` | Bố cục chuẩn Dashboard: Sidebar cố định (260px) + Header (64px) + Main Content (12 cột). |
+| **Wide Desktop** | `xl` | `≥ 1280px` (max `1600px`) | Khung nội dung tối đa `max-w-app` (1600px), canh giữa màn hình `mx-auto`. |
 
 ### 1.2. Bảng màu & Kiểu chữ (Color Palette & Typography)
 
 - **Màu chủ đạo (Primary):** Xanh công nghệ `#1168bd` (`primary`), Hover `#0e5aa5` (`primary-hover`), Active `#0b4782` (`primary-active`), Dark `#005096` (`primary-dark`).
-- **Màu phụ (Secondary):** Xanh than `#0c2d48` (`secondary`), Light `#143d5f` (`secondary-light`).
-- **Màu điểm xuyết (Tertiary):** Xanh băng dịu `#0ea5e9` (`tertiary`), Dark `#0284c7` (`tertiary-dark`).
-- **Màu nền (Background & Surfaces):** Nền App Canvas `#f8f9ff` (`surface`), Khối Card `#ffffff` (`surface-container-lowest`), Nền phụ `#eff4ff` (`surface-container-low`), Viền `#c1c6d4` (`outline-variant`).
+- **Màu phụ (Secondary):** Xanh than `#0c2d48` (`secondary`), Light `#44617e` (`secondary-light`).
+- **Màu điểm xuyết (Tertiary):** Xanh băng dịu `#0ea5e9` (`tertiary`), Dark `#00557a` (`tertiary-dark`).
+- **Màu nền (Background & Surfaces):** Nền App Canvas `#f8f9ff` (`surface` / `background`), Khối Card `#ffffff` (`surface-container-lowest`), Nền phụ `#eff4ff` (`surface-container-low`), Viền `#c1c6d4` (`outline-variant`).
 - **Màu trạng thái (Semantic Feedback):**
-  - **Success:** `#10b981` (`success`) / On-success `#ffffff` — Hoàn thành bài học, Đạt quiz, Phê duyệt.
-  - **Warning:** `#f59e0b` (`warning`) / On-warning `#ffffff` — Chờ duyệt (Pending), Sắp đến hạn nộp bài.
-  - **Error / Danger:** `#ba1a1a` (`error`), Hover `#93000a` / On-error `#ffffff` — Trễ hạn, Khóa tài khoản, Từ chối phê duyệt.
+  - **Success:** `#10b981` (`success`) / Chữ & Icon: On-success `#065f46` — Hoàn thành bài học, Đạt quiz, Phê duyệt.
+  - **Warning:** `#f59e0b` (`warning`) / Chữ & Icon: On-warning `#92400e` — Chờ duyệt (Pending), Sắp đến hạn nộp bài.
+  - **Error / Danger:** `#ba1a1a` (`error`), Hover `#93000a` / Chữ & Icon: On-error `#ffffff` — Trễ hạn, Khóa tài khoản, Từ chối phê duyệt.
 - **Phông chữ:** Duy nhất `Inter, sans-serif` trên toàn bộ hệ thống. Các trường đồng hồ đếm ngược, điểm số, bảng dữ liệu tài chính/thống kê áp dụng class utility `.tabular-number` (`font-variant-numeric: tabular-nums`).
 
 ---
 
-## 2. Wireframes Chi tiết Các Màn hình Cốt lõi (Khớp 1:1 SCR Blueprint)
+## 2. Wireframes Chi tiết Các Màn hình Cốt lõi
+
+Các wireframe dưới đây minh họa các màn hình cốt lõi trọng yếu của hệ thống; tên Route và Screen ID tham chiếu trực tiếp theo Master Screen Inventory trong Blueprint (SCR-01 → SCR-37).
 
 ---
 
@@ -343,9 +346,9 @@ Cột trái hiển thị danh sách sinh viên nộp bài; Cột phải mở tà
 
 ---
 
-### WF-11: Hàng đợi Phê duyệt & Modal Kiểm duyệt Khóa học của Quản lý Đào tạo (SCR-30, SCR-31 — Route: `/manager/approvals`, `/manager/approvals/:id/review`)
+### WF-11: Hàng đợi Phê duyệt Khóa học của Quản lý Đào tạo (SCR-30 — Route: `/manager/approvals`)
 
-Màn hình kiểm soát chất lượng nội dung trước khi xuất bản ra toàn hệ thống kèm Modal review chi tiết thông qua Radix UI Dialog.
+Màn hình kiểm soát chất lượng nội dung trước khi xuất bản ra toàn hệ thống với bộ lọc danh mục, trạng thái và bảng danh sách khóa học chờ duyệt.
 
 ```
 +-----------------------------------------------------------------------------------------+
@@ -355,22 +358,37 @@ Màn hình kiểm soát chất lượng nội dung trước khi xuất bản ra 
 +-----------------------------------------------------------------------------------------+
 | KHÓA HỌC                   | GIẢNG VIÊN         | NỘI DUNG         | NGÀY GỬI | THAO TÁC|
 +----------------------------+--------------------+------------------+----------+---------+
-| Lập trình Web Fullstack    | ThS. Nguyễn Văn A  | 4 Chương, 16 Bài | Hôm nay  | [ Duyệt]|
-| Trí tuệ Nhân tạo Cơ bản    | TS. Lê Minh Đức    | 6 Chương, 24 Bài | 24/09    | [ Duyệt]|
-| Thiết kế Đồ họa UI/UX      | GV. Phạm Hồng Nhung| 3 Chương, 12 Bài | 22/09    | [ Duyệt]|
+| Lập trình Web Fullstack    | ThS. Nguyễn Văn A  | 4 Chương, 16 Bài | Hôm nay  | [Kiểm duyệt]|
+| Trí tuệ Nhân tạo Cơ bản    | TS. Lê Minh Đức    | 6 Chương, 24 Bài | 24/09    | [Kiểm duyệt]|
+| Thiết kế Đồ họa UI/UX      | GV. Phạm Hồng Nhung| 3 Chương, 12 Bài | 22/09    | [Kiểm duyệt]|
 +-----------------------------------------------------------------------------------------+
+| Hiển thị 1 - 3 trên 3 khóa chờ phê duyệt             [ < Trang trước ] [ 1 ] [ Trang sau > ]|
++-----------------------------------------------------------------------------------------+
+```
 
-Modal Xem chi tiết & Phê duyệt (/manager/approvals/:id/review) — Radix UI Dialog:
+---
+
+### WF-12: Màn hình Xem Chi tiết & Kiểm duyệt Khóa học (SCR-31 — Route: `/manager/approvals/:id/review`)
+
+Giao diện chuyên sâu cho phép Quản lý Đào tạo thẩm định chi tiết đề cương, nội dung video, bài kiểm tra, tài liệu đính kèm và ra quyết định phê duyệt hoặc từ chối kèm lý do phản hồi (sử dụng Radix UI Dialog hoặc Review Panel).
+
+```
 +-----------------------------------------------------------------------------------------+
-| CHI TIẾT KIỂM DUYỆT: Khóa học "Lập trình Web Fullstack"                                 |
+| [<- Quay lại Hàng đợi]   CHI TIẾT KIỂM DUYỆT KHÓA HỌC: "LẬP TRÌNH WEB FULLSTACK"        |
 | Giảng viên: ThS. Nguyễn Văn A | Danh mục: Lập trình CNTT | Dự kiến: Miễn phí            |
 +-----------------------------------------------------------------------------------------+
-| • Mô tả khóa học: Đầy đủ, đạt tiêu chuẩn.                                               |
-| • Kiểm tra giáo trình: Đầy đủ 4 chương, 16 bài học, 2 bài quiz, 1 bài tập lớn.          |
-| • Kiểm tra bản quyền tài liệu: Hợp lệ.                                                  |
+| THÔNG TIN CHUNG & ĐỀ CƯƠNG                                                              |
+| • Mô tả khóa học: Đầy đủ, đạt chuẩn khung chương trình đào tạo.                         |
+| • Cấu trúc giáo trình: Đầy đủ 4 chương, 16 bài học, 2 bài quiz, 1 bài tập lớn.          |
+| • Kiểm tra bản quyền tài liệu đính kèm: Hợp lệ (.zip, .pdf nguồn mở).                   |
 |                                                                                         |
-| Lý do phản hồi (nếu từ chối):                                                           |
-| [                                                                                    ]  |
+| DANH SÁCH BÀI HỌC CẦN REVIEW:                                                           |
+| ├── [▶ Xem thử video 1.1] Giới thiệu Node.js & NPM (15p)  -> [✓ Đạt]                    |
+| ├── [▶ Xem thử video 2.1] Kết nối CSDL PostgreSQL (25p)   -> [✓ Đạt]                    |
+| └── [❓ Xem thử Quiz 2.3] Trắc nghiệm CSDL (15 câu)       -> [✓ Đạt]                    |
+|                                                                                         |
+| Ý kiến phản hồi / Ghi chú kiểm duyệt:                                                   |
+| [ Khóa học đáp ứng đầy đủ yêu cầu chất lượng chuyên môn và sư phạm.                  ]  |
 |                                                                                         |
 | [ ❌ TỪ CHỐI & YÊU CẦU SỬA ĐỔI ]                [ ✅ PHÊ DUYỆT & XUẤT BẢN KHÓA HỌC ]    |
 +-----------------------------------------------------------------------------------------+
@@ -378,7 +396,7 @@ Modal Xem chi tiết & Phê duyệt (/manager/approvals/:id/review) — Radix UI
 
 ---
 
-### WF-12: Bảng Quản trị Người dùng & Phân quyền Admin (SCR-35 — Route: `/admin/users`)
+### WF-13: Bảng Quản trị Người dùng & Phân quyền Admin (SCR-35 — Route: `/admin/users`)
 
 Màn hình back-office dành cho Admin tối ưu tìm kiếm, lọc theo 4 vai trò, tạo tài khoản giảng viên/quản lý và khóa/mở khóa tài khoản vi phạm.
 

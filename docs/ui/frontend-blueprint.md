@@ -35,7 +35,7 @@ frontend/
 ├── package.json
 └── src/
     ├── main.jsx                     # Entry point (QueryClientProvider, BrowserRouter)
-    ├── App.jsx                      # App root (AppRoutes, ToastContainer)
+    ├── App.jsx                      # App root (AppRoutes, Toaster)
     ├── index.css                    # Tailwind directives & global utility classes
     │
     ├── assets/                      # Hình ảnh tĩnh, SVG logo, default avatars
@@ -68,7 +68,7 @@ frontend/
     │   └── adminService.js          # getUsers, createUser, toggleUserStatus, getAuditLogs
     │
     ├── components/                  # ⭐ Thư viện Component tái sử dụng
-    │   ├── common/                  # Button, Input, Modal, Dropdown, Table, Badge, Skeleton, Toast
+    │   ├── common/                  # Button, Input, Modal, Dropdown, Table, Badge, Skeleton, Toast (Sonner wrapper)
     │   ├── course/                  # CourseCard, CourseFilter, CurriculumTree, ChapterAccordion
     │   ├── classroom/               # VideoPlayer, MarkdownViewer, AttachmentList, CompleteButton
     │   ├── quiz/                    # QuizTimer, QuestionMatrix, QuestionCard, QuizResultModal
