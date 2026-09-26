@@ -22,7 +22,7 @@ Hệ thống tuân thủ nghiêm ngặt chuẩn responsive cho màn hình Web v�
 ### 1.2. Bảng màu & Kiểu chữ (Color Palette & Typography)
 
 - **Màu chủ đạo (Primary):** Xanh công nghệ C4 `#1168bd` (Tailwind: `blue-600`), Hover `#0d5396` (`blue-700`).
-- **Màu nền (Background):** Nền chính `#f8fafc` (`slate-50`), Khối Card `#ffffff` (`white`), Viền `#e2e8f0` (`slate-200`).
+- **Màu nền (Background):** Nền App Canvas `#f8f9ff` (`surface`), Khối Card `#ffffff` (`surface-card`), Viền `#c1c6d4` (`outline-variant`).
 - **Màu trạng thái:**
   - Success: `#16a34a` (`green-600`) — Hoàn thành bài học, Đạt quiz, Phê duyệt.
   - Warning: `#eab308` (`yellow-500`) — Chờ duyệt (Pending), Sắp đến hạn nộp bài.

@@ -18,7 +18,7 @@ DỰA TRÊN TÀI LIỆU MASTER BLUEPRINT DƯỚI ĐÂY, HÃY TUÂN THỦ NGHIÊM
 3. State Management: Zustand quản lý Client State (Auth, UI Modals, Toast) + TanStack React Query v5 quản lý Server State/Cache.
 4. API Client & Auth Security: Axios instance với baseURL = "/api/v1", đính kèm Authorization: Bearer <accessToken> trong bộ nhớ (Zustand memory - KHÔNG lưu localStorage để chống XSS). Tự động phục hồi phiên khi F5 qua initializeAuth() và tự động bắt lỗi 401 để kích hoạt cơ chế Refresh Token qua cookie HttpOnly.
 5. Form & Validation: React Hook Form kết hợp Joi schemas.
-6. Thẩm mỹ & UX: Tuân thủ 100% bộ Design Tokens trong `docs/ui/design-system.md` (Primary `#1168bd`, Secondary `#0c2d48`, Tertiary `#0ea5e9`, Font `Inter` với `tabular-nums`), giao diện Corporate SaaS sạch sẽ, chuẩn responsive (Desktop, Tablet, Mobile), luôn có Loading Skeletons, Empty States và Toast Notifications.
+6. Thẩm mỹ & UX: Tuân thủ 100% bộ Design Tokens trong `docs/ui/design-system.md` (Primary `#1168bd`, Secondary `#0c2d48`, Tertiary `#0ea5e9`, Canvas `#f8f9ff`, Font `Inter` với `tabular-nums`), giao diện Corporate SaaS sạch sẽ, chuẩn responsive (Desktop, Tablet, Mobile), luôn có Loading Skeletons (Shimmer Gradient), Empty States và Toast Notifications.
 7. Bảo mật & Toàn vẹn: Bắt buộc sanitize toàn bộ Markdown/Rich-text qua DOMPurify; Client timer chỉ phục vụ UX (server timestamp là chốt chặn); Upload S3 phải validate MIME/size trước khi xin Presigned URL.
 8. Triển khai theo đúng danh mục 37 Màn hình độc lập (SCR-01 đến SCR-37) và 6 Master Layout Shells được đặc tả chi tiết trong tài liệu này.
 ```
