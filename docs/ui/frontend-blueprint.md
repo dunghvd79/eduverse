@@ -218,9 +218,33 @@ sequenceDiagram
 
 ---
 
-## 5. Quy chuẩn API Client Pattern (Axios Instance)
+## 5. Quy chuẩn Kết nối API & Chống Lỗi CORS
 
-File cấu hình chuẩn tại `frontend/src/services/api.js`:
+### 5.1. Cấu hình Vite Dev Server Proxy (`vite.config.js` — Triệt tiêu CORS khi Dev)
+
+Để khi lập trình cục bộ (Local Development) không bao giờ bị lỗi CORS trên trình duyệt, Vite được cấu hình proxy ngầm toàn bộ request `/api` sang backend cổng `3000`:
+
+```javascript
+// vite.config.js
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig({
+  plugins: [react()],
+  server: {
+    port: 5173,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:3000',
+        changeOrigin: true,
+        secure: false,
+      },
+    },
+  },
+});
+```
+
+### 5.2. File cấu hình chuẩn Axios Client (`frontend/src/services/api.js`)
 
 ```javascript
 import axios from 'axios';
@@ -375,6 +399,11 @@ Mọi dòng code Frontend được sinh ra bắt buộc phải thỏa mãn 6 ngu
 6. 🔑 **Không để lộ Khóa Bí Mật (No Hardcoded Secrets):**
    - Mã nguồn Frontend chỉ được chứa các biến công khai bắt đầu bằng tiền tố `VITE_*` (ví dụ: `VITE_API_BASE_URL`).
    - Tuyệt đối cấm đưa AWS Secret Key, JWT Secret hay Gemini API Key vào Frontend. Mọi dịch vụ nhạy cảm này đều phải gọi thông qua Backend Express.js API.
+7. 🌐 **Chiến lược Xử lý & Chống Lỗi CORS Toàn diện (Zero CORS Errors):**
+   - **Khi phát triển cục bộ (Localhost):** Dùng **Vite Dev Server Proxy** chuyển tiếp ngầm từ `localhost:5173/api` sang `localhost:3000/api`. Cùng Origin $\rightarrow$ Trình duyệt không kích hoạt cơ chế chặn CORS.
+   - **Backend Express CORS:** Middleware `cors` phải chỉ định rõ `origin: ['http://localhost:5173', 'http://127.0.0.1:5173']` và `credentials: true`. **Tuyệt đối không dùng `origin: '*'`** vì trình duyệt sẽ từ chối nhận Cookie `refreshToken`.
+   - **Khi triển khai thật (Production):** Nginx đóng vai trò Reverse Proxy gộp cả Frontend SPA và Backend API về cùng 1 cổng `80/443` $\rightarrow$ Triệt tiêu 100% rủi ro CORS.
+   - **Upload trực tiếp AWS S3:** Bucket S3 bắt buộc phải được cấu hình CORS (cho phép method `PUT, GET`, header `*`, origin `localhost:5173` và domain production) để hỗ trợ direct upload qua Presigned URL.
 
 ---
 
