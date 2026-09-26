@@ -40,32 +40,46 @@ C4Context
 
 ## 2. C4 Level 2 — Container Diagram
 
-> Mô tả chi tiết các thành phần (container) bên trong EduVerse và cách chúng giao tiếp.
+> Mô tả chi tiết các thành phần (container) bên trong EduVerse và cách chúng giao tiếp, áp dụng bảng màu và biểu tượng chuẩn C4 Model với bố cục phân tầng trực quan, không chồng chéo.
 
 ```mermaid
-C4Container
-    title Container Diagram — EduVerse
+flowchart TB
+    %% ================= STYLES (C4 STANDARD COLOR PALETTE) =================
+    classDef person fill:#08427b,stroke:#052e56,stroke-width:2px,color:#ffffff,font-weight:bold;
+    classDef container fill:#1168bd,stroke:#0b4884,stroke-width:2px,color:#ffffff,font-weight:bold;
+    classDef db fill:#1168bd,stroke:#0b4884,stroke-width:2px,color:#ffffff,font-weight:bold;
+    classDef external fill:#555555,stroke:#333333,stroke-width:2px,color:#ffffff,font-weight:bold;
 
-    Person(user, "Người dùng", "Student / Teacher / Training Manager / Admin")
+    User["👤 Người dùng (User)<br/><i>[Học viên, Giảng viên, Quản lý, Admin]</i>"]:::person
 
-    System_Boundary(eduverse, "EduVerse") {
-        Container(frontend, "Frontend App", "React 18 + Vite (JavaScript .jsx)", "Giao diện web SPA responsive. Chạy trên trình duyệt người dùng.")
-        Container(backend, "Backend API", "Express.js + Node.js (JavaScript)", "REST API server & Socket.IO. Xử lý toàn bộ business logic, xác thực, phân quyền.")
-        Container(db, "PostgreSQL Database", "PostgreSQL 16", "Lưu trữ toàn bộ dữ liệu quan hệ: người dùng, khóa học, bài thi, điểm số, và vòng đời user_tokens.")
-        Container(redis, "Redis Cache", "Redis 7", "Cache tốc độ cao O(1): Rate Limiting, tra cứu nhanh Refresh Token Blacklist.")
-    }
+    subgraph EDUVERSE ["🏫 NỀN TẢNG EDUVERSE (System Boundary)"]
+        direction TB
+        Frontend["🌐 Frontend App<br/><b>[React 18 + Vite .jsx + Tailwind]</b><br/>Giao diện Web SPA responsive"]:::container
+        Backend["⚙️ Backend API Server<br/><b>[Express.js 4 + Node.js 20]</b><br/>REST API, Socket.IO, Auth & Business Logic"]:::container
+        
+        subgraph DATA_TIER ["🗄️ Tầng Dữ liệu & Lưu trữ (Internal Data)"]
+            direction LR
+            DB[("🐘 PostgreSQL 16<br/><b>[Relational Database]</b><br/>18 Bảng quan hệ, audit log user_tokens")]:::db
+            Redis[("⚡ Redis 7<br/><b>[In-Memory Cache]</b><br/>Rate Limiting, Token Blacklist O(1)")]:::db
+        end
+    end
 
-    System_Ext(s3vol, "AWS S3 Bucket", "AWS S3 Cloud Object Storage: Lưu trữ tài liệu đính kèm, ảnh bài nộp, avatar qua Presigned URL.")
-    System_Ext(gmail, "Gmail SMTP", "Dịch vụ gửi email thông báo và mã OTP kích hoạt tài khoản")
-    System_Ext(gemini, "Google Gemini API", "AI sinh câu hỏi trắc nghiệm tự động (Phase 2)")
+    subgraph EXT_SYSTEMS ["☁️ DỊCH VỤ BÊN NGOÀI (External Services)"]
+        direction TB
+        S3["📦 AWS S3 Bucket<br/><b>[Cloud Object Storage]</b><br/>Tài liệu học tập, bài nộp, avatar"]:::external
+        Gmail["📧 Gmail SMTP Server<br/><b>[Email Service]</b><br/>Gửi mã OTP xác thực, thông báo"]:::external
+        Gemini["🤖 Google Gemini API<br/><b>[Generative AI Service]</b><br/>Tự động sinh câu hỏi trắc nghiệm"]:::external
+    end
 
-    Rel(user, frontend, "Tương tác giao diện người dùng", "HTTPS / trình duyệt")
-    Rel(frontend, backend, "Gọi REST API qua Nginx Reverse Proxy", "JSON / HTTPS")
-    Rel(backend, db, "Đọc/Ghi dữ liệu qua Sequelize ORM", "TCP / port 5432 (internal)")
-    Rel(backend, redis, "Tra cứu Blacklist & Bộ đếm Rate Limit", "TCP / port 6379 (internal)")
-    Rel(backend, s3vol, "Sinh Presigned URL upload/download", "HTTPS / AWS SDK v3")
-    Rel(backend, gmail, "Gửi email kích hoạt OTP, thông báo", "SMTP+TLS / port 587")
-    Rel(backend, gemini, "Gửi prompt sinh câu hỏi trắc nghiệm", "HTTPS / REST")
+    %% Luồng tương tác có đánh số thứ tự rõ ràng
+    User -->|"1. HTTPS (Port 80/443)"| Frontend
+    Frontend -->|"2. REST API / WebSocket (Port 3000)"| Backend
+    Backend -->|"3. Sequelize ORM (Port 5432)"| DB
+    Backend -->|"4. Cache O(1) (Port 6379)"| Redis
+    Backend -->|"5. Sinh Presigned URL (HTTPS)"| S3
+    Backend -->|"6. SMTP TLS (Port 587)"| Gmail
+    Backend -->|"7. Prompt JSON (REST HTTPS)"| Gemini
+    Frontend -.->|"8. Direct Upload / Download (S3 Presigned)"| S3
 ```
 
 ---
