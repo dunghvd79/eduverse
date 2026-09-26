@@ -11,16 +11,16 @@
 > [!TIP]
 > **Prompt dành cho AI:** Hãy copy toàn bộ nội dung khối bên dưới gửi vào công cụ AI để AI nắm bắt vai trò và bắt đầu sinh mã nguồn Frontend:
 
-```text
 BẠN LÀ SENIOR FRONTEND ARCHITECT & REACT SPECIALIST ĐƯỢC GIAO NHIỆM VỤ XÂY DỰNG TOÀN BỘ GIAO DIỆN FRONTEND CHO HỆ THỐNG EDUVERSE.
 DỰA TRÊN TÀI LIỆU MASTER BLUEPRINT DƯỚI ĐÂY, HÃY TUÂN THỦ NGHIÊM NGẶT CÁC QUY TẮC SAU:
-1. Tech Stack: React 18 + Vite (JavaScript .jsx) + Tailwind CSS + Lucide React Icons.
+1. Tech Stack: React 18 + Vite (JavaScript .jsx) + Tailwind CSS + Lucide React Icons + DOMPurify (Chống XSS).
 2. Routing & Guard: React Router v6, phân tầng Route Guard theo 4 vai trò (student, teacher, training_manager, admin) và Public routes.
 3. State Management: Zustand quản lý Client State (Auth, UI Modals, Toast) + TanStack React Query v5 quản lý Server State/Cache.
-4. API Client: Axios instance với baseURL = "/api/v1", đính kèm Authorization: Bearer <accessToken>, tự động bắt lỗi 401 để kích hoạt cơ chế Refresh Token qua cookie HttpOnly.
+4. API Client & Auth Security: Axios instance với baseURL = "/api/v1", đính kèm Authorization: Bearer <accessToken> trong bộ nhớ (Zustand memory - KHÔNG lưu localStorage để chống XSS). Tự động phục hồi phiên khi F5 qua initializeAuth() và tự động bắt lỗi 401 để kích hoạt cơ chế Refresh Token qua cookie HttpOnly.
 5. Form & Validation: React Hook Form kết hợp Joi schemas.
 6. Thẩm mỹ & UX: Bảng màu chuẩn C4 (#1168bd primary), giao diện hiện đại, sạch sẽ, chuẩn responsive (Desktop, Tablet, Mobile), luôn có Loading Skeletons, Empty States và Toast Notifications.
-7. Triển khai theo đúng danh mục 25 màn hình và 5 Layout Shells được đặc tả chi tiết trong tài liệu này.
+7. Bảo mật & Toàn vẹn: Bắt buộc sanitize toàn bộ Markdown/Rich-text qua DOMPurify; Client timer chỉ phục vụ UX (server timestamp là chốt chặn); Upload S3 phải validate MIME/size trước khi xin Presigned URL.
+8. Triển khai theo đúng danh mục 25 màn hình và 5 Layout Shells được đặc tả chi tiết trong tài liệu này.
 ```
 
 ---
@@ -84,7 +84,7 @@ frontend/
     │   └── admin/                   # AdminDashboardPage, UserManagementPage, CreateUserModalPage, AuditLogsPage, PlatformSettingsPage
     │
     ├── hooks/                       # Custom hooks (useDebounce, useQuizCountdown, usePagination)
-    └── utils/                       # formatters.js (date, currency), constants.js (ROLES, STATUSES)
+    └── utils/                       # formatters.js, constants.js (ROLES, STATUSES), sanitize.js (DOMPurify)
 ```
 
 ---
@@ -130,7 +130,7 @@ frontend/
 |---|---|---|:---:|---|---|
 | **SCR-04** | Đăng nhập | `/auth/login` | Public | LoginForm (Email, Mật khẩu, Checkbox Remember me), SocialLoginPlaceholder, Link sang Quên MK/Đăng ký | `POST /api/v1/auth/login` |
 | **SCR-05** | Đăng ký Học viên | `/auth/register` | Public | RegisterForm (Họ tên, Email, Mật khẩu, Xác nhận MK), PasswordStrengthMeter, Link sang Đăng nhập | `POST /api/v1/auth/register` (Tự động role = `student`) |
-| **SCR-06** | Xác thực Email OTP | `/auth/verify-email` | Public | OtpInputBox (6 ô nhập tự động focus), CountdownTimer (cooldown 60s), ResendOtpButton | `POST /api/v1/auth/verify-email`, `POST /api/v1/auth/resend-otp` |
+| **SCR-06** | Xác thực Email OTP | `/auth/verify-email` | Public | OtpInputBox (6 ô nhập tự động focus), CountdownTimer (cooldown 60s), ResendOtpButton | `POST /api/v1/auth/verify-otp`, `POST /api/v1/auth/resend-otp` |
 | **SCR-07** | Quên Mật khẩu | `/auth/forgot-password` | Public | ForgotPasswordForm (Nhập Email đã đăng ký), Thông báo email đã gửi thành công | `POST /api/v1/auth/forgot-password` |
 | **SCR-08** | Đặt lại Mật khẩu | `/auth/reset-password` | Public | ResetPasswordForm (Mã token/OTP, Mật khẩu mới, Xác nhận mật khẩu mới) | `POST /api/v1/auth/reset-password` |
 
@@ -142,11 +142,11 @@ frontend/
 |---|---|---|:---:|---|---|
 | **SCR-09** | Student Dashboard | `/student/dashboard` | `student` | StatCards (Khóa đang học, Bài sắp hết hạn, Điểm TB), RecentCourseList, UpcomingDeadlineList | `GET /api/v1/users/me/dashboard`, `GET /api/v1/classes/my-classes` |
 | **SCR-10** | Khóa học của tôi | `/student/my-courses` | `student` | EnrolledCourseGrid, ProgressBar, JoinClassByCodeModal (Nhập mã lớp) | `GET /api/v1/classes/my-classes`, `POST /api/v1/classes/join` |
-| **SCR-11** | Không gian Học tập (Classroom) | `/student/courses/:courseId/learn/:lessonId` | `student` | VideoPlayer (hoặc MarkdownContentViewer), AttachmentDownloadList (S3), MarkCompletedButton, NextPrevLessonNav, CurriculumSidebar | `GET /api/v1/lessons/:id`, `POST /api/v1/lessons/:id/progress` |
-| **SCR-12** | Làm bài Quiz Trắc nghiệm | `/student/quizzes/:id/take` | `student` | FullscreenExamHeader, StickyCountdownTimer, QuestionAnswerRadioGroup, QuestionNavigationMatrix, SubmitExamConfirmModal | `POST /api/v1/quizzes/:id/attempts/start`, `POST /api/v1/quizzes/:id/attempts/:attemptId/submit` |
+| **SCR-11** | Không gian Học tập (Classroom) | `/student/courses/:courseId/learn/:lessonId` | `student` | VideoPlayer, MarkdownContentViewer (Bắt buộc bọc DOMPurify chống XSS), AttachmentDownloadList (S3), MarkCompletedButton, NextPrevLessonNav, CurriculumSidebar | `GET /api/v1/lessons/:id`, `POST /api/v1/lessons/:id/progress`, `GET /api/v1/lessons/:id/video-stream-url` |
+| **SCR-12** | Làm bài Quiz Trắc nghiệm | `/student/quizzes/:id/take` | `student` | FullscreenExamHeader, StickyCountdownTimer (Client UX only), QuestionAnswerRadioGroup (KHÔNG chứa đáp án đúng is_correct), Autosave to sessionStorage, QuestionNavigationMatrix, SubmitExamConfirmModal | `POST /api/v1/quizzes/:id/attempts/start`, `POST /api/v1/quizzes/:id/attempts/:attemptId/submit` |
 | **SCR-13** | Kết quả Bài Quiz | `/student/quizzes/:id/result/:attemptId` | `student` | ScoreBanner (Đạt/Không đạt, Số điểm), DetailedAnswerReview (Xem lại câu đúng/sai & lời giải thích), RetakeQuizButton | `GET /api/v1/quizzes/:id/attempts/:attemptId` |
-| **SCR-14** | Chi tiết Bài tập & Nộp bài | `/student/assignments/:id` | `student` | AssignmentInstructionCard, DeadlineCountdownBadge, FileDropzone (Upload trực tiếp S3 Presigned URL), SubmittedFileList, TeacherFeedbackCard | `GET /api/v1/assignments/:id`, `POST /api/v1/uploads/presigned-url`, `POST /api/v1/assignments/:id/submit` |
-| **SCR-15** | Bảng điểm & Hồ sơ cá nhân | `/student/grades` & `/student/profile` | `student` | GradeSummaryTable (Điểm Quiz, Điểm Bài tập, Trọng số), AvatarUploader, EditProfileForm, ChangePasswordForm | `GET /api/v1/grades/my-grades`, `PUT /api/v1/users/profile`, `PUT /api/v1/auth/change-password` |
+| **SCR-14** | Chi tiết Bài tập & Nộp bài | `/student/assignments/:id` | `student` | AssignmentInstructionCard, DeadlineCountdownBadge, FileDropzone (Client validate MIME/size trước khi xin S3 Presigned URL), SubmittedFileList, TeacherFeedbackCard | `GET /api/v1/assignments/:id`, `POST /api/v1/uploads/presigned-url`, `POST /api/v1/assignments/:id/submit` |
+| **SCR-15** | Bảng điểm & Hồ sơ cá nhân | `/student/grades` & `/student/profile` | `student` | GradeSummaryTable (Điểm Quiz, Điểm Bài tập, Trọng số), AvatarUploader, EditProfileForm, ChangePasswordForm | `GET /api/v1/grades/my-grades`, `GET /api/v1/auth/me`, `PATCH /api/v1/users/me`, `PATCH /api/v1/auth/change-password` |
 
 ---
 
@@ -296,11 +296,50 @@ api.interceptors.response.use(
 );
 ```
 
+### 5.2. Quản lý Auth State & Khôi phục Phiên khi F5 (`useAuthStore.js`)
+
+Để đảm bảo an toàn tuyệt đối chống **XSS**, Access Token được lưu trữ trong **Memory** của Zustand (không lưu `localStorage`). Khi người dùng F5 hoặc tải lại trình duyệt, hàm `initializeAuth()` sẽ tự động gọi endpoint Silent Refresh để cấp lại Access Token mới dựa trên Cookie `refreshToken` (HttpOnly):
+
+```javascript
+// src/stores/useAuthStore.js
+import { create } from 'zustand';
+import axios from 'axios';
+
+export const useAuthStore = create((set) => ({
+  user: null,
+  accessToken: null,
+  isAuthenticated: false,
+  isInitializing: true, // Cờ kiểm tra phiên khi F5 tải trang
+
+  setAuth: (user, token) => set({ user, accessToken: token, isAuthenticated: true, isInitializing: false }),
+  setAccessToken: (token) => set({ accessToken: token, isAuthenticated: true }),
+  
+  logout: async () => {
+    try {
+      await axios.post('/api/v1/auth/logout', {}, { withCredentials: true });
+    } finally {
+      set({ user: null, accessToken: null, isAuthenticated: false, isInitializing: false });
+    }
+  },
+
+  // Khôi phục phiên ngầm khi người dùng F5 trang
+  initializeAuth: async () => {
+    try {
+      const res = await axios.post('/api/v1/auth/refresh-token', {}, { withCredentials: true });
+      const { user, accessToken } = res.data.data;
+      set({ user, accessToken, isAuthenticated: true, isInitializing: false });
+    } catch {
+      set({ user: null, accessToken: null, isAuthenticated: false, isInitializing: false });
+    }
+  },
+}));
+```
+
 ---
 
 ## 6. Checklist Sinh mã Dành cho AI Developer
 
-Khi nhận yêu cầu code bất kỳ màn hình nào, AI cần thực hiện theo 4 bước tuần tự:
+Khi nhận yêu cầu code bất kỳ màn hình nào, AI cần thực hiện theo 5 bước tuần tự:
 1. **Kiểm tra Route & Layout:** Đặt file đúng thư mục `pages/<role>/` và bọc trong đúng Layout Shell (`StudentLayout`, `TeacherLayout`...).
 2. **Khai báo State & Query:** Dùng TanStack Query (`useQuery`, `useMutation`) kết nối đúng service API trong `services/`.
 3. **Hiển thị Đầy đủ 4 Trạng thái:**
@@ -309,7 +348,34 @@ Khi nhận yêu cầu code bất kỳ màn hình nào, AI cần thực hiện th
    - Có dữ liệu: Card, Bảng dữ liệu hoặc Form.
    - Thông báo lỗi/thành công: Gọi `<Toast />`.
 4. **Validation Dữ liệu:** Form nhập liệu luôn bọc qua React Hook Form + Joi validation trước khi gửi API.
+5. **Vệ sinh Dữ liệu Render:** Toàn bộ nội dung Markdown hoặc HTML phải đi qua hàm `sanitizeHtml()` (DOMPurify).
 
 ---
 
-_Tài liệu Master Frontend Blueprint đã được hoàn thiện và đóng gói sẵn sàng để làm tài liệu chuẩn bàn giao cho AI hoặc Developer triển khai mã nguồn._
+## 7. Tiêu Chuẩn Bảo Mật Frontend Bắt Buộc (Security Hardening)
+
+Mọi dòng code Frontend được sinh ra bắt buộc phải thỏa mãn 6 nguyên tắc bảo mật:
+
+1. 🛡️ **Tuyệt đối KHÔNG lưu Token trong Web Storage (`localStorage` / `sessionStorage`):**
+   - Lưu trữ `accessToken` trong Web Storage sẽ khiến người dùng bị chiếm đoạt tài khoản ngay lập tức nếu xuất hiện lỗ hổng XSS từ thư viện bên thứ ba.
+   - Luôn lưu `accessToken` trong bộ nhớ ứng dụng (Zustand State) và lưu `refreshToken` trong Cookie `HttpOnly; Secure; SameSite=Strict`.
+2. 🧹 **Chống tấn công XSS (Cross-Site Scripting - Stored & Reflected):**
+   - Khi render nội dung bài học Markdown, bình luận hỏi đáp hoặc nhận xét bài tập, **bắt buộc bọc qua `DOMPurify.sanitize(dirtyContent)`**.
+   - Cấm sử dụng `dangerouslySetInnerHTML` trực tiếp mà không qua bước làm sạch.
+3. 🔒 **Bảo mật Tải tệp lên AWS S3 qua Presigned URL:**
+   - Client phải kiểm tra định dạng đuôi tệp (Whitelist: `.pdf, .docx, .zip, .png, .jpg, .webp`) và dung lượng tệp (`file.size <= maxSize`) **trước khi gửi request xin URL**.
+   - Header `Content-Type` khi gọi `axios.put(presignedUrl, file)` phải khớp chính xác 100% với kiểu tệp đã khai báo để tránh lỗi chữ ký `SignatureDoesNotMatch` từ AWS S3.
+4. ⏱️ **Chống Gian lận Bài thi Trắc nghiệm (Quiz Integrity):**
+   - Dữ liệu câu hỏi gửi về Client trong lúc làm bài **tuyệt đối không được chứa đáp án đúng (`is_correct`) hoặc lời giải thích**.
+   - Bộ đếm thời gian (Countdown Timer) ở giao diện chỉ phục vụ trải nghiệm người dùng; thời gian nộp bài hợp lệ hoàn toàn do máy chủ Backend kiểm soát (`submitted_at <= started_at + duration + grace_period`).
+   - Tự động lưu bản nháp đáp án vào `sessionStorage` theo `attemptId` để bảo vệ học viên khi bị rớt mạng hoặc vô tình đóng tab.
+5. 🛡️ **Phân quyền Giao diện (Client-Side Guard) là lớp UX, không phải lớp Security:**
+   - `RoleBasedGuard` và `ProtectedRoute` chỉ đóng vai trò che giấu các nút bấm hoặc chuyển hướng màn hình nhằm tạo trải nghiệm thuận tiện cho người dùng.
+   - Mọi thao tác ghi dữ liệu, xóa, cập nhật đều phải được máy chủ Backend kiểm tra quyền `authenticate` và `authorize(roles)`.
+6. 🔑 **Không để lộ Khóa Bí Mật (No Hardcoded Secrets):**
+   - Mã nguồn Frontend chỉ được chứa các biến công khai bắt đầu bằng tiền tố `VITE_*` (ví dụ: `VITE_API_BASE_URL`).
+   - Tuyệt đối cấm đưa AWS Secret Key, JWT Secret hay Gemini API Key vào Frontend. Mọi dịch vụ nhạy cảm này đều phải gọi thông qua Backend Express.js API.
+
+---
+
+_Tài liệu Master Frontend Blueprint đã được hoàn thiện, rà soát bảo mật toàn diện và đóng gói sẵn sàng để làm cẩm nang chuẩn bàn giao cho AI hoặc Developer triển khai mã nguồn._
