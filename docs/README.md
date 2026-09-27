@@ -10,17 +10,13 @@
 - [Thuật ngữ nghiệp vụ](requirements/glossary.md)
 
 ### 🎯 Use Cases
-- [Use Case Diagram — Tổng quan](use-cases/use-case-diagram.md)
+- [Use Case Diagram — Tổng quan (Level-0)](use-cases/use-case-diagram.md)
+- [Quy chuẩn thiết kế Use Case chuẩn Doanh nghiệp](use-cases/use-case-guidelines.md)
+- [Actor: Học viên (Student)](use-cases/actor-student.md)
+- [Actor: Giảng viên (Teacher)](use-cases/actor-teacher.md)
+- [Actor: Quản lý Đào tạo (Training Manager)](use-cases/actor-manager.md)
+- [Actor: Quản trị viên (Admin)](use-cases/actor-admin.md)
 - [Tổng hợp quyết định Use Case](use-cases/use-case-decisions.md)
-- [UC: Xác thực](use-cases/uc-auth.md)
-- [UC: Quản lý khóa học](use-cases/uc-course.md)
-- [UC: Quản lý lớp học](use-cases/uc-class.md)
-- [UC: Quản lý bài học](use-cases/uc-lesson.md)
-- [UC: Bài kiểm tra](use-cases/uc-quiz.md)
-- [UC: Bài tập](use-cases/uc-assignment.md)
-- [UC: Điểm số & phản hồi](use-cases/uc-grade.md)
-- [UC: Tiến độ học tập](use-cases/uc-progress.md)
-- [UC: Quản lý người dùng](use-cases/uc-user.md)
 
 ### 🏗️ Kiến trúc
 - [Tổng hợp quyết định thiết kế](architecture/design-decisions.md)
@@ -30,22 +26,24 @@
 - [Bảo mật](architecture/security.md)
 
 ### 🗃️ Cơ sở Dữ liệu
+- [Tổng hợp quyết định thiết kế CSDL](database/database-decisions.md)
 - [ERD Diagram](database/erd.md)
 - [Chi tiết Schema](database/schema.md)
-- [Dữ liệu mẫu](database/seed-data.md)
+- [Dữ liệu mẫu (Seed Data)](database/seed-data.md)
 
 ### 🔌 API
-- [Tổng quan API](api/api-overview.md)
-- [API: Xác thực](api/api-auth.md)
-- [API: Người dùng](api/api-users.md)
-- [API: Khóa học](api/api-courses.md)
-- [API: Lớp học](api/api-classes.md)
-- [API: Bài học](api/api-lessons.md)
-- [API: Bài kiểm tra](api/api-quizzes.md)
-- [API: Bài tập](api/api-assignments.md)
-- [API: Upload file](api/api-upload.md)
+- [Quy chuẩn thiết kế API (API Conventions)](api/api-conventions.md)
+- [API: Xác thực (Auth)](api/api-auth.md)
+- [API: Người dùng (Users)](api/api-users.md)
+- [API: Khóa học, Chương & Bài học (Courses)](api/api-courses.md)
+- [API: Lớp học (Classes)](api/api-classes.md)
+- [API: Bài kiểm tra (Quizzes)](api/api-quizzes.md)
+- [API: Bài tập (Assignments)](api/api-assignments.md)
+- [API: Upload & Đa phương tiện (Uploads)](api/api-uploads.md)
 
 ### 🎨 Giao diện
+- [Master Frontend Blueprint (Prompt-ready)](ui/frontend-blueprint.md)
+- [Design System & UI Tokens](ui/design-system.md)
 - [Sitemap](ui/sitemap.md)
 - [Wireframes](ui/wireframes.md)
 
