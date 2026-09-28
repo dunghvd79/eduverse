@@ -1,11 +1,11 @@
 import { useState } from 'react';
 
 const categories = [
-  { id: 'it', icon: '</>', title: 'Lập trình & CNTT', description: 'Web Fullstack, Mobile App, Cloud Computing, DevOps & Kiến trúc hệ thống.', tone: 'blue' },
-  { id: 'ai', icon: '▣', title: 'Trí tuệ Nhân tạo & Data', description: 'Machine Learning, Deep Learning, Generative AI, Phân tích dữ liệu & Big Data.', tone: 'indigo' },
-  { id: 'business', icon: '◉', title: 'Kinh doanh & Quản trị', description: 'Marketing số, Tài chính, Thương mại điện tử, Quản trị vận hành & Logistics.', tone: 'green' },
-  { id: 'design', icon: '◈', title: 'Kỹ thuật & Thiết kế', description: 'UI/UX Design, Đồ họa 3D, IoT & Hệ thống nhúng, Kỹ thuật vi điện tử.', tone: 'amber' },
-  { id: 'language', icon: '文', title: 'Ngoại ngữ Chuyên ngành', description: 'Tiếng Anh CNTT, Business English, Tiếng Nhật & Hàn kỹ thuật.', tone: 'purple' },
+  { id: 'math', icon: '∑', title: 'Toán học', description: 'Đại số, hình học, giải tích và phương pháp giải bài theo từng khối lớp.', tone: 'blue' },
+  { id: 'english', icon: 'A+', title: 'Tiếng Anh', description: 'Ngữ pháp, từ vựng, đọc hiểu và luyện các dạng bài theo chương trình THPT.', tone: 'indigo' },
+  { id: 'literature', icon: '文', title: 'Ngữ văn', description: 'Đọc hiểu, tác phẩm văn học, tiếng Việt và kỹ năng viết bài nghị luận.', tone: 'green' },
+  { id: 'history', icon: '◷', title: 'Lịch sử', description: 'Hệ thống các giai đoạn, sự kiện và kiến thức lịch sử Việt Nam, thế giới.', tone: 'amber' },
+  { id: 'geography', icon: '◎', title: 'Địa lý', description: 'Địa lý tự nhiên, kinh tế - xã hội, bản đồ và kỹ năng khai thác Atlat.', tone: 'purple' },
 ];
 
 const learningFeatures = [
@@ -17,32 +17,39 @@ const learningFeatures = [
 
 const courses = [
   {
-    category: 'LẬP TRÌNH & CNTT',
-    title: 'Lập trình Web Fullstack Hiện đại (Node.js, React & Docker)',
-    instructor: 'ThS. Nguyễn Văn A',
-    image: '/images/course-fullstack.jpg',
+    category: 'Toán học',
+    title: 'Toán THPT: Nắm vững kiến thức và phương pháp giải bài',
+    instructor: 'Tổ Toán EduVerse',
+    icon: '∑',
     tone: 'blue',
   },
   {
-    category: 'TRÍ TUỆ NHÂN TẠO',
-    title: 'Nhập môn Machine Learning & Ứng dụng Generative AI',
-    instructor: 'TS. Lê Minh Đức',
-    image: '/images/course-machine-learning.jpg',
+    category: 'Tiếng Anh',
+    title: 'Tiếng Anh THPT: Ngữ pháp, từ vựng và đọc hiểu',
+    instructor: 'Tổ Tiếng Anh EduVerse',
+    icon: 'A+',
     tone: 'indigo',
   },
   {
-    category: 'KINH DOANH & QUẢN TRỊ',
-    title: 'Phân tích Dữ liệu Kinh doanh với SQL & Power BI',
-    instructor: 'Chuyên gia Trần Thị Mai',
-    image: '/images/course-data.jpg',
+    category: 'Ngữ văn',
+    title: 'Ngữ văn THPT: Đọc hiểu tác phẩm và viết bài nghị luận',
+    instructor: 'Tổ Ngữ văn EduVerse',
+    icon: '文',
     tone: 'green',
   },
   {
-    category: 'THIẾT KẾ & KỸ THUẬT',
-    title: 'Thiết kế Sản phẩm Số & UI/UX Design System Thực chiến',
-    instructor: 'Lead Designer Sarah Jenkins',
-    image: '/images/course-design.jpg',
+    category: 'Lịch sử',
+    title: 'Lịch sử Việt Nam và thế giới qua các thời kỳ',
+    instructor: 'Tổ Lịch sử EduVerse',
+    icon: '◷',
     tone: 'amber',
+  },
+  {
+    category: 'Địa lý',
+    title: 'Địa lý THPT: Atlat, tự nhiên và kinh tế - xã hội',
+    instructor: 'Tổ Địa lý EduVerse',
+    icon: '◎',
+    tone: 'purple',
   },
 ];
 
@@ -64,7 +71,7 @@ function ArrowIcon({ className = '' }) {
 function CategoryDropdown() {
   return (
     <details className="category-dropdown">
-      <summary>Chuyên ngành đào tạo <span aria-hidden="true">⌄</span></summary>
+      <summary>Môn học THPT <span aria-hidden="true">⌄</span></summary>
       <div className="dropdown-panel">
         {categories.map((category) => (
           <a className="dropdown-link" href="#categories" key={category.id}>
@@ -80,10 +87,10 @@ function CategoryDropdown() {
 function App() {
   const [activeFilter, setActiveFilter] = useState('Tất cả môn học');
   const [menuOpen, setMenuOpen] = useState(false);
-  const filterOptions = ['Tất cả môn học', 'Lập trình & CNTT', 'Trí tuệ Nhân tạo', 'Kinh doanh & Quản trị', 'Thiết kế & Kỹ thuật'];
+  const filterOptions = ['Tất cả môn học', ...categories.map((category) => category.title)];
   const visibleCourses = activeFilter === 'Tất cả môn học'
     ? courses
-    : courses.filter((course) => course.category.toLowerCase().includes(activeFilter === 'Trí tuệ Nhân tạo' ? 'trí tuệ nhân tạo' : activeFilter.toLowerCase()));
+    : courses.filter((course) => course.category === activeFilter);
 
   return (
     <div className="site-shell">
@@ -95,7 +102,7 @@ function App() {
           </a>
           <nav className={`nav-links${menuOpen ? ' nav-open' : ''}`} aria-label="Điều hướng chính">
             <CategoryDropdown />
-            <a href="#courses">Khóa học trực tuyến</a>
+            <a href="#courses">Môn học</a>
             <a href="#learning-tools">Trải nghiệm học tập</a>
             <a href="#values">Lớp học & bài tập</a>
             <a href="#activate-class">Kích hoạt mã lớp</a>
@@ -115,17 +122,17 @@ function App() {
           <div className="hero-pattern" />
           <div className="hero-inner">
             <div className="hero-copy">
-              <div className="hero-tag"><span>✦</span> Nền tảng học tập đa ngành thế hệ mới</div>
-              <h1 id="hero-heading">NỀN TẢNG HỌC TẬP<br />ĐA NGÀNH <span>THÔNG MINH</span></h1>
-              <p className="hero-description">Khám phá <strong>500+ khóa học</strong> đa ngành, học cùng giảng viên và phát triển kiến thức qua lớp học trực tuyến.</p>
+              <div className="hero-tag"><span>✦</span> Nền tảng học tập dành cho học sinh THPT</div>
+              <h1 id="hero-heading">HỌC TỐT CÁC MÔN<br />THPT CÙNG <span>EDUVERSE</span></h1>
+              <p className="hero-description">Cùng học sinh lớp 10–12 củng cố kiến thức <strong>Toán, Tiếng Anh, Ngữ văn, Lịch sử, Địa lý</strong> qua bài học và hoạt động học tập trực tuyến.</p>
               <ul className="hero-highlights">
-                <li><span className="bullet" /><span><strong>Kho khóa học đa ngành:</strong> Công nghệ thông tin, Trí tuệ nhân tạo, Khoa học dữ liệu, Kinh doanh, Kỹ thuật...</span></li>
-                <li><span className="bullet" /><span><strong>Lớp học trực tuyến:</strong> Ghi danh bằng mã lớp, truy cập chương trình và tài liệu học tập.</span></li>
-                <li><span className="bullet" /><span><strong>Kiểm tra kiến thức:</strong> Bài trắc nghiệm và đúng/sai được hệ thống chấm tự động.</span></li>
-                <li><span className="bullet" /><span><strong>Thực hành và tiến bộ:</strong> Nộp bài tập, nhận nhận xét và theo dõi tiến độ học tập.</span></li>
+                <li><span className="bullet" /><span><strong>Môn học phổ thông:</strong> Nội dung bám sát các môn học và chương trình THPT.</span></li>
+                <li><span className="bullet" /><span><strong>Lớp học trực tuyến:</strong> Ghi danh bằng mã lớp, truy cập bài học và tài liệu học tập.</span></li>
+                <li><span className="bullet" /><span><strong>Luyện tập kiến thức:</strong> Làm bài trắc nghiệm và nhận kết quả sau khi hoàn thành.</span></li>
+                <li><span className="bullet" /><span><strong>Theo dõi tiến độ:</strong> Ôn tập theo từng bài học và xem quá trình học của mình.</span></li>
               </ul>
               <div className="hero-actions">
-                <a className="button button-primary" href="#courses">Khám phá khóa học ngay <ArrowIcon /></a>
+                <a className="button button-primary" href="#courses">Khám phá môn học <ArrowIcon /></a>
                 <a className="button button-secondary" href="#learning-tools">Tìm hiểu thêm</a>
               </div>
             </div>
@@ -133,18 +140,18 @@ function App() {
               <div className="hero-image-frame">
                 <img src="/images/hero-learning.jpg" alt="Sinh viên học tập tại không gian EduVerse" />
                 <div className="image-shade" />
-                <div className="image-caption"><span>EDUVERSE ACADEMIC HUB</span><strong>Không gian học tập cho hành trình đa ngành</strong></div>
+                <div className="image-caption"><span>EDUVERSE • THPT</span><strong>Đồng hành cùng học sinh trên hành trình học tập</strong></div>
               </div>
-              <div className="hero-badge badge-courses"><strong>500+</strong><span>KHÓA HỌC<br />ĐA NGÀNH</span></div>
-              <div className="hero-badge badge-students"><strong>1M+</strong><span>HỌC VIÊN</span></div>
+              <div className="hero-badge badge-courses"><strong>10–12</strong><span>KHỐI<br />LỚP</span></div>
+              <div className="hero-badge badge-students"><strong>5</strong><span>MÔN HỌC</span></div>
             </div>
           </div>
         </section>
 
         <section className="section categories-section" id="categories">
           <div className="section-heading category-heading">
-            <div><span className="section-kicker">CHƯƠNG TRÌNH ĐÀO TẠO TRỌNG TÂM</span><h2>Danh mục ngành học mũi nhọn</h2></div>
-            <p>Bao quát từ công nghệ lõi, khoa học dữ liệu tới khối kinh tế và thiết kế.</p>
+            <div><span className="section-kicker">CÁC MÔN HỌC THPT</span><h2>Chọn môn học bạn quan tâm</h2></div>
+            <p>Ôn tập kiến thức phổ thông theo từng môn và khối lớp 10, 11, 12.</p>
           </div>
           <div className="category-grid">
             {categories.map((category) => (
@@ -152,7 +159,7 @@ function App() {
                 <span className={`category-icon ${category.tone}`}>{category.icon}</span>
                 <strong>{category.title}</strong>
                 <span className="category-description">{category.description}</span>
-                <span className="category-footer"><span>Khám phá khóa học</span><span aria-hidden="true">→</span></span>
+                <span className="category-footer"><span>Khám phá môn học</span><span aria-hidden="true">→</span></span>
               </a>
             ))}
           </div>
@@ -160,8 +167,8 @@ function App() {
 
         <section className="section learning-tools" id="learning-tools">
           <div className="section-heading">
-            <div><span className="section-kicker">CÔNG CỤ HỌC TẬP TRỰC TUYẾN</span><h2>Học tập, thực hành và<br />theo dõi tiến độ</h2></div>
-            <p>Một hành trình liền mạch từ bài học đầu tiên đến khi hoàn thành khóa học.</p>
+            <div><span className="section-kicker">CÔNG CỤ HỌC TẬP TRỰC TUYẾN</span><h2>Học tập, luyện tập và<br />theo dõi tiến độ</h2></div>
+            <p>Củng cố kiến thức từng môn qua bài học, bài luyện tập và lớp học trực tuyến.</p>
           </div>
           <div className="feature-grid">
             {learningFeatures.map((feature, index) => (
@@ -181,8 +188,8 @@ function App() {
 
         <section className="section courses-section" id="courses">
           <div className="section-heading courses-heading">
-            <div><span className="section-kicker">KHÓA HỌC THEO CHỦ ĐỀ</span><h2>Khóa học nổi bật đa ngành</h2></div>
-            <a className="all-courses-link" href="#categories">Khám phá danh mục <ArrowIcon /></a>
+            <div><span className="section-kicker">NỘI DUNG HỌC TẬP THPT</span><h2>Môn học nổi bật</h2></div>
+            <a className="all-courses-link" href="#categories">Xem các môn học <ArrowIcon /></a>
           </div>
           <div className="course-filters" role="group" aria-label="Lọc khóa học">
             {filterOptions.map((filter) => (
@@ -192,20 +199,20 @@ function App() {
           <div className="course-grid">
             {visibleCourses.map((course) => (
               <article className="course-card" key={course.title}>
-                <div className="course-image-wrap">
-                  <img src={course.image} alt="" className="course-image" loading="lazy" />
+                <div className={`course-image-wrap subject-art ${course.tone}`}>
+                  <span className="course-art-icon" aria-hidden="true">{course.icon}</span>
                   <span className={`course-label ${course.tone}`}>{course.category}</span>
-                  <span className="course-free">Miễn phí</span>
+                  <span className="course-free">Lớp 10–12</span>
                 </div>
                 <div className="course-content">
                   <h3>{course.title}</h3>
                   <p>Giảng viên: {course.instructor}</p>
-                  <div className="course-card-footer"><span>Khóa học trực tuyến</span><a href="#login" aria-label={`Xem khóa học: ${course.title}`}>Xem chi tiết <span aria-hidden="true">→</span></a></div>
+                  <div className="course-card-footer"><span>{course.category}</span><a href="#login" aria-label={`Tìm hiểu môn học: ${course.title}`}>Tìm hiểu <span aria-hidden="true">→</span></a></div>
                 </div>
               </article>
             ))}
           </div>
-          <div className="course-more"><a href="#categories">Xem các khóa học theo ngành <ArrowIcon /></a></div>
+          <div className="course-more"><a href="#categories">Xem tất cả môn học <ArrowIcon /></a></div>
         </section>
 
         <section className="section values-section" id="values">
@@ -226,11 +233,11 @@ function App() {
         <div className="footer-main">
           <div className="footer-brand-block">
             <a className="brand footer-brand" href="#" aria-label="EduVerse - Trang chủ"><span className="brand-mark"><span>e</span>v</span><span>edu<span className="brand-accent">verse</span></span></a>
-            <p>Nền tảng học tập trực tuyến đa ngành, đồng hành cùng người học trên hành trình phát triển tri thức và kỹ năng.</p>
+            <p>Nền tảng học tập trực tuyến dành cho học sinh THPT, đồng hành trên hành trình củng cố kiến thức và phát triển kỹ năng.</p>
             <span className="footer-contact">Kết nối hành trình học tập của bạn cùng EduVerse.</span>
           </div>
-          <div><h3>Chuyên ngành đào tạo</h3><a href="#categories">Lập trình & CNTT</a><a href="#categories">Trí tuệ Nhân tạo & Data</a><a href="#categories">Kinh doanh & Quản trị</a><a href="#categories">Kỹ thuật & Thiết kế</a><a href="#categories">Ngoại ngữ Chuyên ngành</a></div>
-          <div><h3>Học tập trực tuyến</h3><a href="#courses">Khám phá khóa học</a><a href="#learning-tools">Chương trình và bài học</a><a href="#learning-tools">Bài kiểm tra</a><a href="#learning-tools">Bài tập và nhận xét</a><a href="#activate-class">Tham gia lớp học</a></div>
+          <div><h3>Môn học THPT</h3><a href="#categories">Toán học</a><a href="#categories">Tiếng Anh</a><a href="#categories">Ngữ văn</a><a href="#categories">Lịch sử</a><a href="#categories">Địa lý</a></div>
+          <div><h3>Học tập trực tuyến</h3><a href="#courses">Khám phá môn học</a><a href="#learning-tools">Chương trình và bài học</a><a href="#learning-tools">Bài kiểm tra</a><a href="#learning-tools">Bài tập và nhận xét</a><a href="#activate-class">Tham gia lớp học</a></div>
           <div><h3>Về EduVerse</h3><a href="#values">Giới thiệu nền tảng</a><a href="#values">Dành cho học viên</a><a href="#values">Dành cho giảng viên</a><a href="#support">Trợ giúp</a><a href="#terms">Điều khoản & bảo mật</a></div>
         </div>
         <div className="footer-bottom"><span>© 2026 EduVerse. Nền tảng học tập trực tuyến.</span><span>Học tập để tiến xa hơn.</span></div>
