@@ -38,7 +38,7 @@ eduverse/
 │   ├── ui/             # Wireframes & mockups
 │   ├── sequences/      # Sequence diagrams
 │   └── project/        # Kế hoạch, biên bản họp, quy ước
-├── backend/            # NestJS
+├── backend/            # Express.js (Node 20, ES Modules)
 ├── frontend/           # React + Vite
 └── assets/             # Hình ảnh, logo, diagrams
 ```
