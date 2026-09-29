@@ -9,11 +9,13 @@
 - **Ngôn ngữ hệ thống:** Tiếng Việt hoàn toàn.
 - **Nền tảng:** Web responsive (React + Vite, Tailwind CSS + shadcn/ui).
 
-## 2. Tech Stack Cốt Lõi
-- **Backend:** NestJS (TypeScript), TypeORM, PostgreSQL.
-- **Frontend:** React (Vite, JSX/TSX), Tailwind CSS, shadcn/ui.
-- **Services:** AWS S3 (Storage), Nodemailer + Gmail (SMTP), Google Gemini API (AI Quiz Generation).
+## 2. Tech Stack Cốt Lõi (Phiên bản v2.0)
+- **Backend:** Express.js (Node.js 20, JavaScript ES Modules: `import/export`), Sequelize ORM v6, Joi v17, Redis 7 (`ioredis`).
+- **Frontend:** React 18 (Vite, JavaScript thuần `.jsx`), Tailwind CSS, shadcn/ui, TanStack Query v5 + Zustand v4, Axios.
+- **Services:** AWS S3 (Storage - Presigned URLs), Nodemailer + Gmail (SMTP), Google Gemini API (gemini-1.5-flash).
+- **Real-time:** Socket.IO v4 (Phase 2).
 - **DevOps:** Docker + Docker Compose.
+
 
 ## 3. Quy Tắc Nghiệp Vụ Bắt Buộc (Critical Business Rules)
 1. **Vai trò:** Mỗi người dùng chỉ có **đúng 1 role** (`student`, `teacher`, `training_manager`, `admin`).

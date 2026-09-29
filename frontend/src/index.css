@@ -1,0 +1,35 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    font-family: 'Inter', sans-serif;
+    color: #1e293b;
+    background-color: #f8fafc;
+  }
+}
+
+.doodle-font {
+  font-family: 'Caveat', cursive;
+}
+
+.hero-banner-bg {
+  background: radial-gradient(circle at 85% 30%, #fef3c7 0%, #f0fdf4 35%, #f8fafc 70%, #ffffff 100%);
+}
+
+/* Shimmer skeleton utility from Design System */
+.skeleton-shimmer {
+  background: linear-gradient(90deg, #eff4ff 0%, #dce9ff 50%, #eff4ff 100%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+}
+
+/* Hide horizontal scrollbar for category pills */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
