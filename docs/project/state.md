@@ -1,21 +1,21 @@
 # 🧭 Trạng Thái Tiến Độ Dự Án (Project State)
 
-> **Cập nhật lần cuối:** 26/09/2026  
-> **Người cập nhật:** dunghvd79 & AI Assistant  
-> **Giai đoạn hiện tại:** Chuyển giao từ Phase 0 (Hoàn tất 100% Đặc tả Thiết kế) sang Phase 1 (Khởi tạo Project)
+> **Cập nhật lần cuối:** 30/09/2026  
+> **Người cập nhật:** dunghvd79, Hoàng Ngọc Sơn & AI Assistant  
+> **Giai đoạn hiện tại:** Phase 1 — Triển Khai Mã Nguồn (Đã hoàn thành 9/37 Màn hình Frontend: Phân hệ Public & Auth)
 
 ---
 
 ## 1. Tóm Tắt Trạng Thái Hiện Tại
-Dự án đã **hoàn thành toàn diện 100% Phase 0 — Đặc Tả Kiến Trúc & Thiết Kế Hệ Thống**. Bao gồm:
-1. Phân tích nghiệp vụ (Use Cases 4 Actor).
-2. Thiết kế CSDL (ERD & Physical Schema 18 bảng, Seed data).
-3. Biểu đồ tuần tự nghiệp vụ cốt lõi (Sequence Diagrams).
-4. Trọn bộ 8/8 tài liệu Đặc tả API (101 Endpoints).
-5. 3/3 tài liệu Kiến trúc Hệ thống (System Architecture, Tech Stack, Design Decisions).
-6. **Trọn bộ Bộ ba Đặc tả UI/UX Chuẩn Enterprise (Đã nghiệm thu & đồng bộ 100% Single Source of Truth)**: `frontend-blueprint.md`, `design-system.md`, `wireframes.md`, `sitemap.md`.
-
-Hệ thống đã đạt độ chín muồi về mặt đặc tả kỹ thuật, không còn bất kỳ điểm xung đột hay mơ hồ nào giữa Backend và Frontend, sẵn sàng bước ngay vào **Phase 1: Khởi tạo dự án & Triển khai mã nguồn**.
+1. Dự án đã **hoàn thành toàn diện 100% Phase 0 — Đặc Tả Kiến Trúc & Thiết Kế Hệ Thống** (Use Cases, ERD 18 bảng, Sequence Diagrams, 8/8 API Docs, C4 Architecture, Master Frontend Blueprint, Design System Tokens, Wireframes, Sitemap).
+2. **Tiến độ Phase 1 (Frontend):**
+   - Đã khởi tạo hoàn chỉnh dự án `frontend/` (React 18 + Vite 5 + Tailwind CSS v3.4.17 với 100% tokens từ `design-system.md`).
+   - Đã triển khai xong **9/37 màn hình frontend** thuộc 2 phân hệ cốt lõi:
+     - **Phân hệ 1: Public Pages (SCR-01 -> SCR-04):** Trang chủ, Danh mục khóa học, Chi tiết khóa học, Trang 404.
+     - **Phân hệ 2: Authentication (SCR-05 -> SCR-09):** Đăng nhập, Đăng ký, Xác thực OTP, Quên mật khẩu, Đặt lại mật khẩu.
+   - Nhóm đã phối hợp làm việc đa nhánh (Git workflow) thành công: Hợp nhất (merge) code từ nhánh `origin/feature-ngocson` vào `feature-dung`, giải quyết xung đột (conflict resolution), cấu hình routing chuẩn xác trong `AppRoutes.jsx`.
+   - Build kiểm thử `npm run build` đạt 100/100 modules thành công, 0 lỗi.
+   - Toàn bộ mã nguồn đã được đẩy lên GitHub remote tại nhánh `feature-dung`, và đã khởi tạo **Pull Request #1** (`feature-dung` -> `main`) để tuân thủ chính sách bảo vệ nhánh (Branch Protection Rule).
 
 ## 2. Các Việc Đã Hoàn Thành ✅
 - [x] Phân tích đặc tả bài toán từ tài liệu thầy gửi (`ĐẶC TẢ SƠ BỘ YÊU CẦU HỆ THỐNG.docx`).
@@ -62,17 +62,38 @@ Hệ thống đã đạt độ chín muồi về mặt đặc tả kỹ thuật,
   - [x] `docs/ui/design-system.md`: Design Tokens là Single Source of Truth — Khóa bảng màu `#1168bd` (Primary), `#0c2d48` (Secondary), `#0ea5e9` (Tertiary), Semantic Status (Success `#10b981`, Warning `#f59e0b`, Error `#ba1a1a`), Phông chữ `Inter`, Utility `.tabular-number`, Skeleton Shimmer Gradient (loại bỏ animate-pulse), Tích hợp 100% Tokens vào `tailwind.config.js` (kèm `screens` và `maxWidth.app = 1600px`).
   - [x] `docs/ui/wireframes.md`: Bố cục chi tiết 13 màn hình cốt lõi (WF-01 đến WF-13) khớp tham chiếu Blueprint, chuẩn responsive Mobile-first (Base styles, `md`, `lg`, `xl`), tách biệt 1 route = 1 screen (WF-11 SCR-30, WF-12 SCR-31, WF-13 SCR-35), cơ chế Optimistic Updates có Rollback khi mutation lỗi.
   - [x] `docs/ui/sitemap.md`: Sơ đồ phân cấp luồng trang người dùng.
+- [x] **Triển khai Mã Nguồn Frontend (Phase 1 — Đã xong 9/37 Màn hình & Layout Shells):**
+  - [x] Khởi tạo dự án `frontend/` (React 18 + Vite 5 + Tailwind CSS v3.4.17 + Lucide Icons + React Router DOM v6).
+  - [x] Tích hợp 100% Design Tokens từ `design-system.md` vào `tailwind.config.js` và `index.css`.
+  - [x] Triển khai **SCR-01** (`HomePage.jsx`) theo đúng thiết kế thẩm mỹ hiện đại, phân rã thành các components: `Header.jsx`, `Footer.jsx`, `PublicLayout.jsx`, `CourseCard.jsx`, `FloatingWidgets.jsx`, `Toast.jsx`.
+  - [x] Tích hợp và Hợp nhất thành công mã nguồn từ nhánh `feature-ngocson`:
+    - **SCR-02**: `CourseCatalogPage.jsx` (`/courses`) — Danh mục khóa học, phân loại, tìm kiếm, filter.
+    - **SCR-03**: `CourseDetailPage.jsx` (`/courses/:id`) — Trang chi tiết khóa học, lộ trình bài giảng, giảng viên.
+    - **SCR-04**: `NotFoundPage.jsx` (`*`) — Màn hình lỗi 404 thân thiện người dùng.
+    - **SCR-05**: `LoginPage.jsx` (`/login`) — Đăng nhập hệ thống.
+    - **SCR-06**: `RegisterPage.jsx` (`/register`) — Đăng ký tài khoản học viên.
+    - **SCR-07**: `VerifyOtpPage.jsx` (`/verify-otp`) — Xác thực OTP kích hoạt.
+    - **SCR-08**: `ForgotPasswordPage.jsx` (`/forgot-password`) — Quên mật khẩu.
+    - **SCR-09**: `ResetPasswordPage.jsx` (`/reset-password`) — Đặt lại mật khẩu.
+    - `AuthLayout.jsx` — Khung Layout đồng bộ cho toàn bộ phân hệ Auth.
+  - [x] Tích hợp bộ điều hướng trung tâm `AppRoutes.jsx`, giải quyết xung đột merge commit `ec45fb4`.
+  - [x] Build kiểm thử `npm run build` không lỗi, đẩy lên `origin/feature-dung` và tạo Pull Request #1.
 
-## 3. Việc Đang Làm / Chuẩn Bị Làm Ngay (Kế hoạch Phase 1) ⏳
-1. **Khởi tạo mã nguồn Frontend (`frontend/`):**
-   - Setup dự án React 18 + Vite (JavaScript `.jsx`).
-   - Cài đặt và cấu hình Tailwind CSS với 100% Design Tokens từ `design-system.md`.
-   - Cài đặt các thư viện lõi: Lucide React Icons, Radix UI Primitives, Sonner Toast, React Router v6, Zustand, TanStack React Query v5, Axios, React Hook Form, Joi, DOMPurify.
-   - Xây dựng hệ thống Common Components cơ sở (Button, Input, Modal, Toaster wrapper, Skeleton Shimmer).
-2. **Khởi tạo mã nguồn Backend (`backend/`):**
-   - Setup Express.js (ES Modules), Sequelize ORM, PostgreSQL connection, Redis client.
+## 3. Việc Đang Làm / Chuẩn Bị Làm Ngay ⏳
+1. **Hoàn tất Pull Request #1 vào nhánh `main`:**
+   - Review và chấp thuận (Approval) từ đồng đội trên GitHub để thỏa mãn Branch Protection Rule.
+   - Hợp nhất PR #1 vào nhánh `main` để làm baseline chuẩn cho toàn team.
+2. **Triển khai Phân hệ 3: Học viên (Student Portal — SCR-10 đến SCR-18):**
+   - **SCR-10**: Bảng điều khiển Học viên / Khóa học của tôi (`/student/courses`)
+   - **SCR-11**: Không gian Lớp học & Trình phát bài học (`/classroom/:classId/learn`) — Player video, outline bài học
+   - **SCR-12 & SCR-13**: Giao diện Làm bài kiểm tra & Kết quả (`/classroom/:classId/quizzes/:quizId`)
+   - **SCR-14 & SCR-15**: Giao diện Nộp bài tập & Chi tiết chấm điểm (`/classroom/:classId/assignments/:assignId`)
+   - **SCR-16 & SCR-17**: Diễn đàn Lớp học (Q&A) & Trung tâm thông báo
+   - **SCR-18**: Hồ sơ cá nhân Học viên (`/student/profile`)
+3. **Khởi tạo mã nguồn Backend (`backend/`):**
+   - Setup Express.js (ES Modules), Sequelize ORM kết nối PostgreSQL.
    - Cấu hình Middleware tập trung (CORS, Helmet, Rate Limit, Error Handler, Cookie Parser).
-3. **Triển khai Nhóm Màn hình Public & Auth (SCR-01 đến SCR-08).**
+   - Triển khai Module Auth Service & JWT Refresh Token.
 
 ## 4. Ghi Chú Kỹ Thuật Quan Trọng
 - Toàn bộ diagram chỉ dùng các loại Mermaid phổ biến (`flowchart`, `sequenceDiagram`, `erDiagram`). Tránh dùng `gitgraph`.
