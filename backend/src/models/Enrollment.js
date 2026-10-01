@@ -32,7 +32,8 @@ export const Enrollment = sequelize.define('enrollments', {
   createdAt: 'created_at',
   deletedAt: 'deleted_at',
   indexes: [
-    { fields: ['student_id'] }
+    { fields: ['student_id'] },
+    { unique: true, fields: ['class_id', 'student_id'] }
   ]
 });
 

@@ -4,6 +4,9 @@ import helmet from 'helmet';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 
+import authRoutes from './routes/authRoutes.js';
+import { errorHandler } from './middlewares/errorMiddleware.js';
+
 const app = express();
 
 // Security HTTP headers
@@ -39,23 +42,20 @@ app.use(cookieParser());
 app.get('/api/v1/health', (req, res) => {
   res.status(200).json({
     success: true,
+    statusCode: 200,
     message: 'EduVerse Backend API is healthy and running!',
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
+    data: {
+      environment: process.env.NODE_ENV || 'development',
+      uptime: process.uptime()
+    },
+    timestamp: new Date().toISOString()
   });
 });
 
+// Mount Routes
+app.use('/api/v1/auth', authRoutes);
+
 // Centralized Error Handler (Envelope Pattern)
-app.use((err, req, res, next) => {
-  console.error('Unhandled Error:', err);
-  const status = err.status || 500;
-  res.status(status).json({
-    success: false,
-    error: {
-      code: err.code || 'INTERNAL_SERVER_ERROR',
-      message: err.message || 'An unexpected error occurred'
-    }
-  });
-});
+app.use(errorHandler);
 
 export default app;

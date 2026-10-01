@@ -52,12 +52,15 @@ ClassModel.belongsTo(Course, { foreignKey: 'course_id' });
 User.hasMany(ClassModel, { foreignKey: 'teacher_id', as: 'taught_classes' });
 ClassModel.belongsTo(User, { foreignKey: 'teacher_id', as: 'teacher' });
 
-// 6. Enrollments
-ClassModel.hasMany(Enrollment, { foreignKey: 'class_id', onDelete: 'CASCADE' });
-Enrollment.belongsTo(ClassModel, { foreignKey: 'class_id' });
+// 6. Enrollments (1:N and M:N through Enrollment)
+ClassModel.hasMany(Enrollment, { foreignKey: 'class_id', as: 'class_enrollments', onDelete: 'CASCADE' });
+Enrollment.belongsTo(ClassModel, { foreignKey: 'class_id', as: 'class' });
 
-User.hasMany(Enrollment, { foreignKey: 'student_id', as: 'enrollments' });
+User.hasMany(Enrollment, { foreignKey: 'student_id', as: 'student_enrollments' });
 Enrollment.belongsTo(User, { foreignKey: 'student_id', as: 'student' });
+
+ClassModel.belongsToMany(User, { through: Enrollment, foreignKey: 'class_id', otherKey: 'student_id', as: 'students' });
+User.belongsToMany(ClassModel, { through: Enrollment, foreignKey: 'student_id', otherKey: 'class_id', as: 'enrolled_classes' });
 
 // 7. Quizzes & Lessons
 Lesson.hasOne(Quiz, { foreignKey: 'lesson_id', onDelete: 'CASCADE' });
