@@ -2,23 +2,18 @@
 
 > **Cập nhật lần cuối:** 01/10/2026  
 > **Người cập nhật:** dunghvd79, Hoàng Ngọc Sơn & AI Assistant  
-> **Giai đoạn hiện tại:** Phase 1 — Đã hoàn thành 100% (37/37) Màn hình Frontend & 6 Master Layouts
+> **Giai đoạn hiện tại:** Phase 1 — Đã xong 100% Frontend (37 màn hình) & Hoàn thành Khởi tạo Backend + Đồng bộ 18 Bảng CSDL lên Neon.tech (AWS Singapore)
 
 ---
 
 ## 1. Tóm Tắt Trạng Thái Hiện Tại
 1. Dự án đã **hoàn thành toàn diện 100% Phase 0 — Đặc Tả Kiến Trúc & Thiết Kế Hệ Thống** (Use Cases, ERD 18 bảng, Sequence Diagrams, 8/8 API Docs, C4 Architecture, Master Frontend Blueprint, Design System Tokens, Wireframes, Sitemap).
-2. **Tiến độ Phase 1 (Frontend):**
-   - Đã hoàn thành **toàn diện 100% (37/37 Màn hình)** và **trọn bộ 6 Master Layouts** chuẩn Responsive Desktop/Tablet/Mobile:
-     - **Phân hệ 1: Public Pages (SCR-01 -> SCR-04):** Landing Page, Khám phá khóa học, Chi tiết khóa học, Trang lỗi 404.
-     - **Phân hệ 2: Authentication (SCR-05 -> SCR-09):** Đăng nhập, Đăng ký, Xác thực OTP, Quên MK, Đặt lại MK.
-     - **Phân hệ 3: Student Portal (SCR-10 -> SCR-18):** Dashboard, Khóa học của tôi, Chi tiết lớp học, Trình học Video Player, Làm bài Quiz trắc nghiệm, Kết quả Quiz, Nộp bài tập S3, Bảng điểm, Hồ sơ cá nhân.
-     - **Phân hệ 4: Teacher Portal (SCR-19 -> SCR-28):** Dashboard, Quản lý khóa học, Soạn thảo đề cương, Lớp học & Thành viên, Đề kiểm tra, Bộ tạo đề thi tự động bằng Gemini AI, Quản lý bài tập, Giao diện chấm bài split-pane, Sổ điểm lớp học.
-     - **Phân hệ 5: Training Manager Portal (SCR-29 -> SCR-33):** Dashboard đào tạo, Hàng đợi phê duyệt, Chi tiết kiểm duyệt khóa học, Quản lý cây danh mục, Báo cáo & Thống kê đào tạo.
-     - **Phân hệ 6: Admin Console (SCR-34 -> SCR-37):** Dashboard hệ thống, Quản lý người dùng & RBAC, Nhật ký Audit Logs, Cấu hình nền tảng.
-   - Hoàn thành rà soát quét lỗi AST toàn diện (xử lý triệt để các lỗi thiếu import icon trên các trang Portal).
-   - Đã hợp nhất (merge) toàn bộ code từ nhánh `feature-ngocson` vào `feature-dung`, giải quyết xung đột `AppRoutes.jsx`, kiểm thử build `npm run build` xuất sắc đạt **2001/2001 modules, 0 lỗi**.
-   - Đã đẩy code mới nhất lên remote tại `origin/feature-dung`.
+2. **Tiến độ Phase 1 (Frontend):** Hoàn thành **100% (37/37 Màn hình)** và **6 Master Layouts**, kiểm thử build 2001 modules không lỗi.
+3. **Tiến độ Phase 1 (Backend & Database):**
+   - Khởi tạo kiến trúc mã nguồn Backend Express.js chuẩn ES Modules (`backend/`).
+   - Kết nối thành công tới **Cloud Database Neon.tech (hạ tầng AWS Singapore)** qua giao thức mã hóa SSL.
+   - Định nghĩa trọn bộ **18 Sequelize Models** với ràng buộc khóa ngoại, UUID v4, indexes và xóa mềm (Soft Delete).
+   - Chạy script đồng bộ và nạp dữ liệu mẫu (`migrateAndSeed.js`): Khởi tạo thành công toàn bộ 18 bảng, nạp 7 tài khoản người dùng 4 role (mật khẩu mặc định `EduVerse@2026`), khóa học mẫu, chương, bài học, đề thi trắc nghiệm, lớp học và học viên ghi danh.
 
 ## 2. Các Việc Đã Hoàn Thành ✅
 - [x] Phân tích đặc tả bài toán từ tài liệu thầy gửi (`ĐẶC TẢ SƠ BỘ YÊU CẦU HỆ THỐNG.docx`).
