@@ -2,7 +2,7 @@
 
 > **Cập nhật lần cuối:** 01/10/2026  
 > **Người cập nhật:** dunghvd79, Hoàng Ngọc Sơn & AI Assistant  
-> **Giai đoạn hiện tại:** Phase 1 — Đã xong 100% Frontend (37 màn hình) & Hoàn thành Khởi tạo Backend + Đồng bộ 18 Bảng CSDL lên Neon.tech (AWS Singapore)
+> **Giai đoạn hiện tại:** Phase 1 — Đã xong 100% Frontend (37 màn hình) & Hoàn thành Module Authentication (10/10 Endpoint Chuẩn Enterprise, Dual-Token JWT, Token Rotation, Rate Limiting, OTP)
 
 ---
 
@@ -13,7 +13,13 @@
    - Khởi tạo kiến trúc mã nguồn Backend Express.js chuẩn ES Modules (`backend/`).
    - Kết nối thành công tới **Cloud Database Neon.tech (hạ tầng AWS Singapore)** qua giao thức mã hóa SSL.
    - Định nghĩa trọn bộ **18 Sequelize Models** với ràng buộc khóa ngoại, UUID v4, indexes và xóa mềm (Soft Delete).
-   - Chạy script đồng bộ và nạp dữ liệu mẫu (`migrateAndSeed.js`): Khởi tạo thành công toàn bộ 18 bảng, nạp 7 tài khoản người dùng 4 role (mật khẩu mặc định `EduVerse@2026`), khóa học mẫu, chương, bài học, đề thi trắc nghiệm, lớp học và học viên ghi danh.
+   - Chạy script đồng bộ và nạp dữ liệu mẫu (`migrateAndSeed.js`): Khởi tạo thành công toàn bộ 18 bảng, nạp 7 tài khoản người dùng 4 role (mật khẩu mặc định `EduVerse@2026`).
+   - **Triển khai Hoàn Tất 100% Module Xác Thực & Phân Quyền (Authentication & Session):**
+     - Đầy đủ 10/10 endpoints theo chuẩn `docs/api/api-auth.md` (`register`, `verify-otp`, `resend-otp`, `login`, `refresh-token`, `logout`, `forgot-password`, `reset-password`, `change-password`, `me`).
+     - Cơ chế bảo mật JWT kép: 15-phút Access Token (RAM/Memory) + 7-ngày Refresh Token (HttpOnly Cookie, Token Rotation).
+     - Quản lý vòng đời token tập trung qua bảng `user_tokens` (băm SHA-256 an toàn).
+     - Middleware chống Brute-Force Rate Limiting (`express-rate-limit`) và Middleware xác thực Joi (`joi`).
+     - Bộ kiểm thử tự động End-to-End (`testAuth.js`) chạy 100% thành công trên Live Database Neon.tech.
 
 ## 2. Các Việc Đã Hoàn Thành ✅
 - [x] Phân tích đặc tả bài toán từ tài liệu thầy gửi (`ĐẶC TẢ SƠ BỘ YÊU CẦU HỆ THỐNG.docx`).
