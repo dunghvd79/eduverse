@@ -30,7 +30,8 @@ export const formatUser = (user) => ({
  * 1. Register a new student account
  */
 export const register = async ({ email, password, fullName }) => {
-  const existingUser = await User.findOne({ where: { email } });
+  const normalizedEmail = email ? email.trim().toLowerCase() : '';
+  const existingUser = await User.findOne({ where: { email: normalizedEmail } });
   if (existingUser) {
     if (existingUser.email_verified) {
       throw new AppError('Địa chỉ email này đã tồn tại trong hệ thống', 409, 'Conflict');
@@ -64,7 +65,7 @@ export const register = async ({ email, password, fullName }) => {
   // Create new user
   const password_hash = await bcrypt.hash(password, 10);
   const newUser = await User.create({
-    email,
+    email: normalizedEmail,
     password_hash,
     full_name: fullName,
     role: 'student',
@@ -90,7 +91,8 @@ export const register = async ({ email, password, fullName }) => {
  * 2. Verify OTP and automatically authenticate
  */
 export const verifyOtp = async ({ email, otp }) => {
-  const user = await User.findOne({ where: { email } });
+  const normalizedEmail = email ? email.trim().toLowerCase() : '';
+  const user = await User.findOne({ where: { email: normalizedEmail } });
   if (!user) {
     throw new AppError('Không tìm thấy tài khoản với email này', 404, 'Not Found');
   }
@@ -146,7 +148,8 @@ export const verifyOtp = async ({ email, otp }) => {
  * 3. Resend OTP
  */
 export const resendOtp = async ({ email }) => {
-  const user = await User.findOne({ where: { email } });
+  const normalizedEmail = email ? email.trim().toLowerCase() : '';
+  const user = await User.findOne({ where: { email: normalizedEmail } });
   if (!user) {
     throw new AppError('Không tìm thấy tài khoản', 404, 'Not Found');
   }
@@ -178,7 +181,8 @@ export const resendOtp = async ({ email }) => {
  * 4. Login
  */
 export const login = async ({ email, password }) => {
-  const user = await User.findOne({ where: { email } });
+  const normalizedEmail = email ? email.trim().toLowerCase() : '';
+  const user = await User.findOne({ where: { email: normalizedEmail } });
   if (!user) {
     throw new AppError('Email hoặc mật khẩu không chính xác', 401, 'Unauthorized');
   }
@@ -292,7 +296,8 @@ export const logout = async ({ userId, incomingToken, allDevices }) => {
  * 7. Forgot Password
  */
 export const forgotPassword = async ({ email }) => {
-  const user = await User.findOne({ where: { email } });
+  const normalizedEmail = email ? email.trim().toLowerCase() : '';
+  const user = await User.findOne({ where: { email: normalizedEmail } });
   if (user && user.is_active) {
     // Invalidate old reset tokens
     await UserToken.update(

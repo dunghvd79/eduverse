@@ -240,7 +240,8 @@ export const getUserById = async (targetUserId) => {
  * 7. Admin: Create a new privileged or student user
  */
 export const adminCreateUser = async ({ email, fullName, role, phoneNumber, password }) => {
-  const existingUser = await User.findOne({ where: { email } });
+  const normalizedEmail = email ? email.trim().toLowerCase() : '';
+  const existingUser = await User.findOne({ where: { email: normalizedEmail } });
   if (existingUser) {
     throw new AppError('Địa chỉ email này đã tồn tại trong hệ thống', 409, 'Conflict');
   }
@@ -251,7 +252,7 @@ export const adminCreateUser = async ({ email, fullName, role, phoneNumber, pass
   const password_hash = await bcrypt.hash(tempPassword, salt);
 
   const newUser = await User.create({
-    email,
+    email: normalizedEmail,
     full_name: fullName.trim(),
     role,
     phone_number: phoneNumber || null,
