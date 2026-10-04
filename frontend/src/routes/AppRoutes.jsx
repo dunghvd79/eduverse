@@ -92,6 +92,7 @@ export default function AppRoutes() {
         <Route path="assignments" element={<TeacherAssignmentsPage />} />
         <Route path="assignments/:id/grade" element={<AssignmentGradingPage />} />
         <Route path="classes/:id/gradebook" element={<GradebookPage />} />
+        <Route path="profile" element={<ProfilePage />} />
       </Route>
 
       {/* 5. Manager Portal Routes */}
@@ -101,6 +102,7 @@ export default function AppRoutes() {
         <Route path="approvals/:id/review" element={<CourseReviewDetailPage />} />
         <Route path="categories" element={<CategoryManagementPage />} />
         <Route path="reports" element={<ManagerReportsPage />} />
+        <Route path="profile" element={<ProfilePage />} />
       </Route>
 
       {/* 6. Admin Console Routes */}
@@ -109,6 +111,7 @@ export default function AppRoutes() {
         <Route path="users" element={<UserManagementPage />} />
         <Route path="audit-logs" element={<AuditLogsPage />} />
         <Route path="settings" element={<PlatformSettingsPage />} />
+        <Route path="profile" element={<ProfilePage />} />
       </Route>
 
       {/* Wildcard 404 Route */}

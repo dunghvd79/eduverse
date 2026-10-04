@@ -8,13 +8,13 @@ const roleConfig={
   ['Tổng quan','/student/dashboard',LayoutDashboard],['Khóa học của tôi','/student/my-courses',BookOpen],['Lớp học','/student/classes/1',Users],['Bài học','/student/courses/1/learn/1',GraduationCap],['Bài kiểm tra','/student/quizzes/1/take',ClipboardCheck],['Bài tập','/student/assignments/1',FileText],['Điểm số','/student/grades',BarChart3],['Hồ sơ','/student/profile',UserCircle]
  ]},
  teacher:{label:'Giảng viên',links:[
-  ['Tổng quan','/teacher/dashboard',LayoutDashboard],['Khóa học','/teacher/courses',BookOpen],['Đề cương','/teacher/courses/1/curriculum',FolderTree],['Lớp học','/teacher/classes',Users],['Bài kiểm tra','/teacher/quizzes',ClipboardCheck],['AI Quiz','/teacher/quizzes/ai-generator',Sparkles],['Bài tập','/teacher/assignments',FileText],['Chấm bài','/teacher/assignments/1/grade',ClipboardCheck],['Sổ điểm','/teacher/classes/1/gradebook',BarChart3]
+  ['Tổng quan','/teacher/dashboard',LayoutDashboard],['Khóa học','/teacher/courses',BookOpen],['Đề cương','/teacher/courses/1/curriculum',FolderTree],['Lớp học','/teacher/classes',Users],['Bài kiểm tra','/teacher/quizzes',ClipboardCheck],['AI Quiz','/teacher/quizzes/ai-generator',Sparkles],['Bài tập','/teacher/assignments',FileText],['Chấm bài','/teacher/assignments/1/grade',ClipboardCheck],['Sổ điểm','/teacher/classes/1/gradebook',BarChart3],['Hồ sơ','/teacher/profile',UserCircle]
  ]},
  manager:{label:'Quản lý đào tạo',links:[
-  ['Tổng quan','/manager/dashboard',LayoutDashboard],['Duyệt khóa học','/manager/approvals',ClipboardCheck],['Chi tiết duyệt','/manager/approvals/1/review',FileText],['Danh mục','/manager/categories',FolderTree],['Báo cáo','/manager/reports',BarChart3]
+  ['Tổng quan','/manager/dashboard',LayoutDashboard],['Duyệt khóa học','/manager/approvals',ClipboardCheck],['Chi tiết duyệt','/manager/approvals/1/review',FileText],['Danh mục','/manager/categories',FolderTree],['Báo cáo','/manager/reports',BarChart3],['Hồ sơ','/manager/profile',UserCircle]
  ]},
  admin:{label:'Quản trị viên',links:[
-  ['Tổng quan','/admin/dashboard',LayoutDashboard],['Người dùng','/admin/users',Users],['Audit Logs','/admin/audit-logs',ShieldCheck],['Cài đặt hệ thống','/admin/settings',Settings]
+  ['Tổng quan','/admin/dashboard',LayoutDashboard],['Người dùng','/admin/users',Users],['Audit Logs','/admin/audit-logs',ShieldCheck],['Cài đặt hệ thống','/admin/settings',Settings],['Hồ sơ','/admin/profile',UserCircle]
  ]}
 };
 
@@ -47,11 +47,11 @@ export function PortalLayout({role}) {
     <div className="nav-caption">KHÔNG GIAN {role==='student'?'HỌC TẬP':role==='teacher'?'GIẢNG DẠY':role==='manager'?'ĐÀO TẠO':'QUẢN TRỊ'}</div>
     {cfg.links.map(([label,path,Icon])=><NavLink key={path} to={path} onClick={()=>setOpen(false)} className={({isActive})=>'portal-nav-link '+(isActive?'active':'')}><Icon size={18}/><span>{label}</span></NavLink>)}
    </nav>
-   <div className="portal-sidebar-bottom"><div className="mini-user"><div className="avatar">{initials}</div><div><b>{displayName}</b><small>{cfg.label}</small></div></div><button type="button" className="portal-logout bg-transparent border-0 cursor-pointer flex items-center gap-1.5" onClick={handleLogout}><LogOut size={17}/> Đăng xuất</button></div>
+   <div className="portal-sidebar-bottom"><div className="mini-user cursor-pointer transition-opacity hover:opacity-85" onClick={()=>nav(`/${role}/profile`)} title="Xem hồ sơ cá nhân"><div className="avatar overflow-hidden">{user?.avatarUrl ? <img src={user.avatarUrl} alt={displayName} className="w-full h-full object-cover" /> : initials}</div><div><b>{displayName}</b><small>{cfg.label}</small></div></div><button type="button" className="portal-logout bg-transparent border-0 cursor-pointer flex items-center gap-1.5" onClick={handleLogout}><LogOut size={17}/> Đăng xuất</button></div>
   </aside>
   {open&&<div className="sidebar-overlay" onClick={()=>setOpen(false)}/>}
   <section className="portal-main">
-   <header className="portal-topbar"><button className="mobile-menu" onClick={()=>setOpen(true)}><Menu/></button><div className="crumb"><span>EduVerse</span><ChevronRight size={15}/><b>{cfg.label}</b></div><div className="top-actions"><div className="search-mini"><Search size={17}/><input placeholder="Tìm kiếm..."/></div><button className="icon-btn"><Bell size={19}/><i/></button><div className="top-avatar">{initials}</div></div></header>
+   <header className="portal-topbar"><button className="mobile-menu" onClick={()=>setOpen(true)}><Menu/></button><div className="crumb"><span>EduVerse</span><ChevronRight size={15}/><b>{cfg.label}</b></div><div className="top-actions"><div className="search-mini"><Search size={17}/><input placeholder="Tìm kiếm..."/></div><button className="icon-btn"><Bell size={19}/><i/></button><div className="top-avatar cursor-pointer overflow-hidden transition-transform hover:scale-105" onClick={()=>nav(`/${role}/profile`)} title="Xem hồ sơ cá nhân">{user?.avatarUrl ? <img src={user.avatarUrl} alt={displayName} className="w-full h-full object-cover" /> : initials}</div></div></header>
    <main className="portal-content"><Outlet/></main>
   </section>
  </div>

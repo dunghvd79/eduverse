@@ -19,6 +19,10 @@ export const useAuthStore = create((set) => ({
     isAuthenticated: true
   }),
 
+  updateUser: (partialUser) => set((state) => ({
+    user: state.user ? { ...state.user, ...partialUser } : null
+  })),
+
   logout: async () => {
     try {
       await axios.post('/api/v1/auth/logout', {}, { withCredentials: true });
