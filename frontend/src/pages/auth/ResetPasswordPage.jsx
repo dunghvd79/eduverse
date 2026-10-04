@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
+import { Eye, EyeOff } from 'lucide-react';
 import { toast } from '../../components/common/Toast';
 import { Field, inputCls, btnCls } from './authUi';
 import { api } from '../../services/api';
@@ -11,6 +12,9 @@ export default function ResetPasswordPage() {
   const nav = useNavigate();
   const [searchParams] = useSearchParams();
   const tokenFromUrl = searchParams.get('token') || '';
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
 
   const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm({
     defaultValues: {
@@ -56,30 +60,52 @@ export default function ResetPasswordPage() {
       </Field>
 
       <Field label="Mật khẩu mới" error={errors.password?.message}>
-        <input 
-          type="password" 
-          className={inputCls} 
-          placeholder="Tối thiểu 8 ký tự (hoa, thường, số, ký tự đặc biệt)"
-          {...register('password', { 
-            required: 'Vui lòng nhập mật khẩu mới', 
-            pattern: {
-              value: passwordPattern,
-              message: 'Mật khẩu phải từ 8-32 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt'
-            }
-          })} 
-        />
+        <div className="relative">
+          <input 
+            type={showPassword ? 'text' : 'password'} 
+            className={`${inputCls} pr-10`} 
+            placeholder="Tối thiểu 8 ký tự (hoa, thường, số, ký tự đặc biệt)"
+            {...register('password', { 
+              required: 'Vui lòng nhập mật khẩu mới', 
+              pattern: {
+                value: passwordPattern,
+                message: 'Mật khẩu phải từ 8-32 ký tự, gồm chữ hoa, chữ thường, số và ký tự đặc biệt'
+              }
+            })} 
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((prev) => !prev)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition p-1 focus:outline-none"
+            title={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+            aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+          >
+            {showPassword ? <EyeOff size={19} /> : <Eye size={19} />}
+          </button>
+        </div>
       </Field>
 
       <Field label="Xác nhận mật khẩu mới" error={errors.confirm?.message}>
-        <input 
-          type="password" 
-          className={inputCls} 
-          placeholder="Nhập lại mật khẩu mới"
-          {...register('confirm', { 
-            required: 'Vui lòng xác nhận mật khẩu',
-            validate: (v) => v === pw || 'Mật khẩu xác nhận không khớp' 
-          })} 
-        />
+        <div className="relative">
+          <input 
+            type={showConfirm ? 'text' : 'password'} 
+            className={`${inputCls} pr-10`} 
+            placeholder="Nhập lại mật khẩu mới"
+            {...register('confirm', { 
+              required: 'Vui lòng xác nhận mật khẩu',
+              validate: (v) => v === pw || 'Mật khẩu xác nhận không khớp' 
+            })} 
+          />
+          <button
+            type="button"
+            onClick={() => setShowConfirm((prev) => !prev)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition p-1 focus:outline-none"
+            title={showConfirm ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+            aria-label={showConfirm ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+          >
+            {showConfirm ? <EyeOff size={19} /> : <Eye size={19} />}
+          </button>
+        </div>
       </Field>
 
       <button className={btnCls} disabled={isSubmitting}>

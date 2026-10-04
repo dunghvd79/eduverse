@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
+import { Eye, EyeOff } from 'lucide-react';
 import { toast } from '../../components/common/Toast';
 import { Field, inputCls, btnCls } from './authUi';
 import { api } from '../../services/api';
@@ -9,6 +10,7 @@ import { useAuthStore } from '../../stores/useAuthStore';
 export default function LoginPage() {
   const nav = useNavigate();
   const setAuth = useAuthStore((state) => state.setAuth);
+  const [showPassword, setShowPassword] = useState(false);
   const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm({
     defaultValues: {
       email: '',
@@ -78,12 +80,23 @@ export default function LoginPage() {
       </Field>
 
       <Field label="Mật khẩu" error={errors.password?.message}>
-        <input 
-          type="password" 
-          className={inputCls} 
-          placeholder="••••••••"
-          {...register('password', { required: 'Vui lòng nhập mật khẩu' })} 
-        />
+        <div className="relative">
+          <input 
+            type={showPassword ? 'text' : 'password'} 
+            className={`${inputCls} pr-10`} 
+            placeholder="••••••••"
+            {...register('password', { required: 'Vui lòng nhập mật khẩu' })} 
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((prev) => !prev)}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition p-1 focus:outline-none"
+            title={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+            aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+          >
+            {showPassword ? <EyeOff size={19} /> : <Eye size={19} />}
+          </button>
+        </div>
       </Field>
 
       <div className="flex items-center justify-between text-body-md">
