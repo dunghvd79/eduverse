@@ -1,6 +1,7 @@
 import React, {useState} from 'react';
-import {NavLink, Outlet, useLocation} from 'react-router-dom';
+import {NavLink, Outlet, useLocation, useNavigate} from 'react-router-dom';
 import {BookOpen, LayoutDashboard, GraduationCap, Users, ClipboardCheck, FileText, BarChart3, Settings, ShieldCheck, FolderTree, Sparkles, Menu, X, Search, Bell, ChevronRight, LogOut, UserCircle} from 'lucide-react';
+import { useAuthStore } from '../../stores/useAuthStore';
 
 const roleConfig={
  student:{label:'Học viên',color:'blue',links:[
@@ -19,6 +20,26 @@ const roleConfig={
 
 export function PortalLayout({role}) {
  const [open,setOpen]=useState(false); const cfg=roleConfig[role]; const location=useLocation();
+ const nav = useNavigate();
+ const user = useAuthStore((state) => state.user);
+ const logout = useAuthStore((state) => state.logout);
+
+ const handleLogout = async (e) => {
+   e.preventDefault();
+   await logout();
+   nav('/auth/login');
+ };
+
+ const getInitials = (name) => {
+   if (!name) return 'EV';
+   const parts = name.trim().split(' ');
+   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+ };
+
+ const displayName = user?.fullName || (role==='student'?'Học viên':role==='teacher'?'Giảng viên':role==='manager'?'Quản lý':'Admin');
+ const initials = getInitials(displayName);
+
  return <div className="portal-shell">
   <aside className={`portal-sidebar ${open?'is-open':''}`}>
    <div className="portal-brand"><div className="brand-mark">E</div><div><b>Edu<span>Verse</span></b><small>{cfg.label}</small></div><button className="mobile-close" onClick={()=>setOpen(false)}><X size={20}/></button></div>
@@ -26,11 +47,11 @@ export function PortalLayout({role}) {
     <div className="nav-caption">KHÔNG GIAN {role==='student'?'HỌC TẬP':role==='teacher'?'GIẢNG DẠY':role==='manager'?'ĐÀO TẠO':'QUẢN TRỊ'}</div>
     {cfg.links.map(([label,path,Icon])=><NavLink key={path} to={path} onClick={()=>setOpen(false)} className={({isActive})=>'portal-nav-link '+(isActive?'active':'')}><Icon size={18}/><span>{label}</span></NavLink>)}
    </nav>
-   <div className="portal-sidebar-bottom"><div className="mini-user"><div className="avatar">NS</div><div><b>Ngọc Sơn</b><small>{cfg.label}</small></div></div><NavLink className="portal-logout" to="/auth/login"><LogOut size={17}/> Đăng xuất</NavLink></div>
+   <div className="portal-sidebar-bottom"><div className="mini-user"><div className="avatar">{initials}</div><div><b>{displayName}</b><small>{cfg.label}</small></div></div><button type="button" className="portal-logout bg-transparent border-0 cursor-pointer flex items-center gap-1.5" onClick={handleLogout}><LogOut size={17}/> Đăng xuất</button></div>
   </aside>
   {open&&<div className="sidebar-overlay" onClick={()=>setOpen(false)}/>}
   <section className="portal-main">
-   <header className="portal-topbar"><button className="mobile-menu" onClick={()=>setOpen(true)}><Menu/></button><div className="crumb"><span>EduVerse</span><ChevronRight size={15}/><b>{cfg.label}</b></div><div className="top-actions"><div className="search-mini"><Search size={17}/><input placeholder="Tìm kiếm..."/></div><button className="icon-btn"><Bell size={19}/><i/></button><div className="top-avatar">NS</div></div></header>
+   <header className="portal-topbar"><button className="mobile-menu" onClick={()=>setOpen(true)}><Menu/></button><div className="crumb"><span>EduVerse</span><ChevronRight size={15}/><b>{cfg.label}</b></div><div className="top-actions"><div className="search-mini"><Search size={17}/><input placeholder="Tìm kiếm..."/></div><button className="icon-btn"><Bell size={19}/><i/></button><div className="top-avatar">{initials}</div></div></header>
    <main className="portal-content"><Outlet/></main>
   </section>
  </div>
