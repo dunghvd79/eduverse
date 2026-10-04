@@ -19,7 +19,7 @@ const {
 
 async function runMigrateAndSeed() {
   console.log('🚀 Bắt đầu quá trình Đồng bộ 18 Bảng CSDL lên Neon.tech (AWS Singapore)...');
-  
+
   try {
     // 1. Sync models to database (Create/Alter tables)
     await sequelize.sync({ alter: true });

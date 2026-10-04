@@ -21,9 +21,18 @@ async function startServer() {
     process.exit(1);
   }
 
-  app.listen(PORT, () => {
+  const server = app.listen(PORT, () => {
     console.log(`✨ EduVerse Server đang chạy tại: http://localhost:${PORT}`);
     console.log(`🩺 Health check: http://localhost:${PORT}/api/v1/health`);
+  });
+
+  server.on('error', (err) => {
+    if (err.code === 'EADDRINUSE') {
+      console.error(`❌ Cổng ${PORT} đang bị chiếm dụng bởi tiến trình khác! Vui lòng tắt tiến trình cũ.`);
+    } else {
+      console.error('❌ Lỗi khởi động Server:', err);
+    }
+    process.exit(1);
   });
 }
 
