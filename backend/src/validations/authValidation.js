@@ -6,7 +6,7 @@ const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^()_+\-=\[
 const passwordMessage = 'Mật khẩu phải từ 8 đến 32 ký tự, bao gồm ít nhất 1 chữ hoa, 1 chữ thường, 1 số và 1 ký tự đặc biệt';
 
 export const registerSchema = Joi.object({
-  email: Joi.string().email().max(255).required().messages({
+  email: Joi.string().trim().lowercase().email().max(255).required().messages({
     'string.email': 'Địa chỉ email không đúng định dạng',
     'string.empty': 'Email không được để trống',
     'any.required': 'Email là trường bắt buộc'
@@ -25,7 +25,7 @@ export const registerSchema = Joi.object({
 });
 
 export const verifyOtpSchema = Joi.object({
-  email: Joi.string().email().required().messages({
+  email: Joi.string().trim().lowercase().email().max(255).required().messages({
     'string.email': 'Địa chỉ email không đúng định dạng',
     'any.required': 'Email là trường bắt buộc'
   }),
@@ -37,19 +37,21 @@ export const verifyOtpSchema = Joi.object({
 });
 
 export const resendOtpSchema = Joi.object({
-  email: Joi.string().email().required().messages({
+  email: Joi.string().trim().lowercase().email().max(255).required().messages({
     'string.email': 'Địa chỉ email không đúng định dạng',
     'any.required': 'Email là trường bắt buộc'
   })
 });
 
 export const loginSchema = Joi.object({
-  email: Joi.string().email().required().messages({
+  email: Joi.string().trim().lowercase().email().max(255).required().messages({
     'string.email': 'Địa chỉ email không đúng định dạng',
+    'string.empty': 'Email không được để trống',
     'any.required': 'Email là trường bắt buộc'
   }),
-  password: Joi.string().required().messages({
+  password: Joi.string().max(128).required().messages({
     'string.empty': 'Mật khẩu không được để trống',
+    'string.max': 'Mật khẩu không được vượt quá 128 ký tự',
     'any.required': 'Mật khẩu là trường bắt buộc'
   })
 });
@@ -59,7 +61,7 @@ export const refreshTokenSchema = Joi.object({
 });
 
 export const forgotPasswordSchema = Joi.object({
-  email: Joi.string().email().required().messages({
+  email: Joi.string().trim().lowercase().email().max(255).required().messages({
     'string.email': 'Địa chỉ email không đúng định dạng',
     'any.required': 'Email là trường bắt buộc'
   })
