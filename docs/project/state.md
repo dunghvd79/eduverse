@@ -1,14 +1,14 @@
 # 🧭 Trạng Thái Tiến Độ Dự Án (Project State)
 
-> **Cập nhật lần cuối:** 01/10/2026  
+> **Cập nhật lần cuối:** 04/10/2026  
 > **Người cập nhật:** dunghvd79, Hoàng Ngọc Sơn & AI Assistant  
-> **Giai đoạn hiện tại:** Phase 1 — Đã xong 100% Frontend (37 màn hình) & Hoàn thành Module Authentication (10/10 Endpoint Chuẩn Enterprise, Dual-Token JWT, Token Rotation, Rate Limiting, OTP)
+> **Giai đoạn hiện tại:** Phase 1 — Đã xong 100% Frontend (37 màn hình) & Hoàn thành Module Authentication (Backend 10/10 API + Nối Frontend Login Form)
 
 ---
 
 ## 1. Tóm Tắt Trạng Thái Hiện Tại
 1. Dự án đã **hoàn thành toàn diện 100% Phase 0 — Đặc Tả Kiến Trúc & Thiết Kế Hệ Thống** (Use Cases, ERD 18 bảng, Sequence Diagrams, 8/8 API Docs, C4 Architecture, Master Frontend Blueprint, Design System Tokens, Wireframes, Sitemap).
-2. **Tiến độ Phase 1 (Frontend):** Hoàn thành **100% (37/37 Màn hình)** và **6 Master Layouts**, kiểm thử build 2001 modules không lỗi.
+2. **Tiến độ Phase 1 (Frontend):** Hoàn thành **100% (37/37 Màn hình)** và **6 Master Layouts**, kiểm thử build 2061 modules không lỗi. Đã tích hợp Zustand Auth Store & Axios Interceptor.
 3. **Tiến độ Phase 1 (Backend & Database):**
    - Khởi tạo kiến trúc mã nguồn Backend Express.js chuẩn ES Modules (`backend/`).
    - Kết nối thành công tới **Cloud Database Neon.tech (hạ tầng AWS Singapore)** qua giao thức mã hóa SSL.
@@ -19,69 +19,28 @@
      - Cơ chế bảo mật JWT kép: 15-phút Access Token (RAM/Memory) + 7-ngày Refresh Token (HttpOnly Cookie, Token Rotation).
      - Quản lý vòng đời token tập trung qua bảng `user_tokens` (băm SHA-256 an toàn).
      - Middleware chống Brute-Force Rate Limiting (`express-rate-limit`) và Middleware xác thực Joi (`joi`).
-     - Bộ kiểm thử tự động End-to-End (`testAuth.js`) chạy 100% thành công trên Live Database Neon.tech.
+     - Nối thành công Form Đăng nhập Frontend ([`LoginPage.jsx`](file:///e:/2026%20Year/Kì_1_Năm_4/Do_An_Lien_Nganh/eduverse/frontend/src/pages/auth/LoginPage.jsx)) vào API Backend, tích hợp Widget chọn nhanh 4 tài khoản mẫu, kiểm thử điều hướng theo Role (Admin, Teacher, Manager, Student) thành công 100%.
 
 ## 2. Các Việc Đã Hoàn Thành ✅
-- [x] Phân tích đặc tả bài toán từ tài liệu thầy gửi (`ĐẶC TẢ SƠ BỘ YÊU CẦU HỆ THỐNG.docx`).
-- [x] Chốt tên dự án: **EduVerse** (`eduverse`).
-- [x] Chốt Tech stack: Express.js + React/Vite (JavaScript ES Modules) + PostgreSQL/Sequelize + Tailwind/Radix UI/Sonner + AWS S3 + Gemini API + Docker.
-- [x] Chốt mô hình phân quyền: 4 role (`student`, `teacher`, `training_manager`, `admin`) — mỗi user 1 role.
-- [x] Khởi tạo repo Git, kết nối remote và push lên GitHub (`https://github.com/dunghvd79/eduverse`).
-- [x] Thiết lập hệ thống lưu ngữ cảnh tự động cho AI (`AGENTS.md`, `state.md`, `context-local.md`).
-- [x] **Trọn bộ Phân tích & Đặc tả Use Case chuẩn Enterprise:**
-  - `docs/use-cases/use-case-diagram.md`: Biểu đồ tổng quan hệ thống (Level-0 Package Diagram).
-  - `docs/use-cases/use-case-guidelines.md`: Bộ quy chuẩn thiết kế Use Case theo chuẩn OMG UML 2.5 & Alistair Cockburn.
-  - `docs/use-cases/use-case-decisions.md`: Quyết định mô hình phân quyền, phân cấp kiến trúc.
-  - `docs/use-cases/actor-student.md`: Đặc tả chi tiết hành vi và kịch bản cho Học viên.
-  - `docs/use-cases/actor-teacher.md`: Đặc tả chi tiết hành vi và kịch bản cho Giảng viên (bao gồm quản lý đề thi, câu hỏi hàng loạt, sinh đề AI).
-  - `docs/use-cases/actor-manager.md`: Đặc tả chi tiết cho Quản lý đào tạo (phê duyệt khóa học).
-  - `docs/use-cases/actor-admin.md`: Đặc tả chi tiết cho Quản trị viên (quản trị hệ thống, cấp tài khoản).
-- [x] **Trọn bộ Thiết kế Cơ sở Dữ liệu (Database Design):**
-  - `docs/database/database-decisions.md`: Quyết định PK UUID v4, Soft Delete, Audit Fields, Naming Conventions.
-  - `docs/database/erd.md`: Sơ đồ ERD 15 thực thể chuẩn 3NF, phân tách mối quan hệ rõ ràng.
-  - `docs/database/schema.md`: Đặc tả chi tiết từng bảng, kiểu dữ liệu PostgreSQL, Constraints, Indexes.
-  - `docs/database/seed-data.md`: Dữ liệu mẫu (Users mặc định, Khóa học mẫu, Lớp học mẫu).
-- [x] **Hệ thống Sơ đồ Tuần tự Nghiệp vụ Cốt lõi (Sequence Diagrams — Đã đồng bộ 100% Express.js & Sequelize):**
-  - `docs/sequences/seq-template.md`: Mẫu chuẩn thiết kế 6 layers với Express Controller, Service, Sequelize Models, Joi validation.
-  - `docs/sequences/seq-auth-001.md`: Đăng ký tài khoản học viên & xác thực Email kích hoạt.
-  - `docs/sequences/seq-auth-002.md`: Đăng nhập hệ thống & cấp phát JWT qua Cookie HttpOnly + Zustand RAM.
-  - `docs/sequences/seq-quiz-001.md`: Làm bài kiểm tra trắc nghiệm & Tự động chấm điểm.
-  - `docs/sequences/seq-assign-001.md`: Học viên nộp bài tập file S3 qua Presigned URL.
-  - `docs/sequences/seq-ai-001.md`: Giảng viên dùng Google Gemini AI tự động sinh câu hỏi trắc nghiệm.
-- [x] **Đặc tả API (API Specifications - Hoàn thành 8/8 tài liệu, 101 Endpoints):**
-  - [x] `docs/api/api-conventions.md`: Quy chuẩn RESTful Envelope Pattern, Error codes, Phân trang, Cookie chính sách.
-  - [x] `docs/api/api-auth.md`: Xác thực, JWT, Refresh Token, Đổi/Quên mật khẩu.
-  - [x] `docs/api/api-users.md`: 12 Endpoints hoàn chỉnh.
-  - [x] `docs/api/api-courses.md`: 21 Endpoints hoàn chỉnh.
-  - [x] `docs/api/api-classes.md`: 13 Endpoints hoàn chỉnh.
-  - [x] `docs/api/api-quizzes.md`: 20 Endpoints hoàn chỉnh.
-  - [x] `docs/api/api-assignments.md`: 18 Endpoints hoàn chỉnh.
-  - [x] `docs/api/api-uploads.md`: 7 Endpoints hoàn chỉnh.
-- [x] **Nhóm tài liệu Kiến trúc Hệ thống (Architecture Docs — Hoàn thành 3/3):**
-  - [x] `docs/architecture/system-architecture.md`: Sơ đồ C4 Level 1 & Level 2, cấu hình Docker Compose.
-  - [x] `docs/architecture/tech-stack.md`: Bảng quyết định kỹ thuật Express.js + React JavaScript, Sequelize, Redis, Socket.IO.
-  - [x] `docs/architecture/design-decisions.md`: 9 ADR chi tiết.
-- [x] **Bộ ba Tài liệu Đặc tả UI/UX Chuẩn Enterprise (Đã hoàn thiện & nghiệm thu 26/09/2026):**
-  - [x] `docs/ui/frontend-blueprint.md`: Master Frontend Blueprint (Prompt-ready) — Khóa 37 Màn hình (SCR-01 đến SCR-37), 6 Master Layout Shells, State Management (Zustand + React Query v5), Axios Instance & Interceptors, Toaster (Sonner), Bảo mật Whitelist S3 (Max 25MB, loại bỏ `.rar`), Quiz Integrity.
-  - [x] `docs/ui/design-system.md`: Design Tokens là Single Source of Truth — Khóa bảng màu `#1168bd` (Primary), `#0c2d48` (Secondary), `#0ea5e9` (Tertiary), Semantic Status (Success `#10b981`, Warning `#f59e0b`, Error `#ba1a1a`), Phông chữ `Inter`, Utility `.tabular-number`, Skeleton Shimmer Gradient (loại bỏ animate-pulse), Tích hợp 100% Tokens vào `tailwind.config.js` (kèm `screens` và `maxWidth.app = 1600px`).
-  - [x] `docs/ui/wireframes.md`: Bố cục chi tiết 13 màn hình cốt lõi (WF-01 đến WF-13) khớp tham chiếu Blueprint, chuẩn responsive Mobile-first (Base styles, `md`, `lg`, `xl`), tách biệt 1 route = 1 screen (WF-11 SCR-30, WF-12 SCR-31, WF-13 SCR-35), cơ chế Optimistic Updates có Rollback khi mutation lỗi.
-  - [x] `docs/ui/sitemap.md`: Sơ đồ phân cấp luồng trang người dùng.
-- [x] **Triển khai Toàn Bộ Mã Nguồn Frontend (Phase 1 — Hoàn thành 100% 37/37 Màn hình & 6 Master Layouts):**
-  - [x] Khởi tạo dự án `frontend/` (React 18 + Vite 5 + Tailwind CSS v3.4.17 + Lucide Icons + React Router DOM v6).
-  - [x] Tích hợp 100% Design Tokens từ `design-system.md` vào `tailwind.config.js` và `index.css`.
-  - [x] Triển khai và tích hợp đầy đủ 6 Master Layouts: `PublicLayout`, `AuthLayout`, `StudentLayout`, `TeacherLayout`, `ManagerLayout`, `AdminLayout`.
-  - [x] Triển khai trọn bộ 37 Màn hình độc lập (SCR-01 đến SCR-37) khớp 1:1 với lộ trình `frontend-blueprint.md`.
-  - [x] Hợp nhất thành công toàn bộ mã nguồn nhánh `feature-ngocson` vào `feature-dung`, giải quyết conflict `AppRoutes.jsx`, fix toàn bộ lỗi import icon Lucide.
-  - [x] Kiểm thử build đạt 2001/2001 modules thành công (0 warning, 0 error), đẩy lên `origin/feature-dung`.
+- [x] Toàn bộ Phase 0 (Use cases, ERD, Schema, Sequences, API Docs, Blueprint, Wireframes).
+- [x] Toàn bộ 37 màn hình UI tĩnh Frontend (React 18 + Vite + Tailwind CSS).
+- [x] Khởi tạo CSDL Neon.tech PostgreSQL (18 bảng, đồng bộ & seed 7 user).
+- [x] Tách cấu trúc 18 Models Sequelize sạch sẽ kèm quan hệ 1:1, 1:N, M:N.
+- [x] Backend Module Auth: 10 API chuẩn RESTful Envelope Pattern.
+- [x] Frontend Auth Integration: Kết nối Form Login, lưu Access Token trong RAM qua Zustand, HttpOnly Cookie cho Refresh Token.
 
-## 3. Việc Đang Làm / Chuẩn Bị Làm Ngay ⏳
-1. **Hợp nhất mã nguồn Frontend vào `main`:**
-   - Mở Pull Request đưa `feature-dung` vào `main` để làm baseline vững chắc cho toàn bộ dự án.
-2. **Khởi tạo và Triển khai Mã Nguồn Backend (`backend/`):**
-   - Thiết lập cấu trúc mã nguồn Express.js chuẩn 6-layers (Config, Models, Services, Controllers, Routes, Middlewares).
-   - Kết nối PostgreSQL với Sequelize ORM, khởi tạo Database Migrations theo đúng ERD 18 bảng.
-   - Cấu hình Middleware bảo mật tập trung (CORS, Helmet, Rate Limit, Error Handler, Cookie Parser).
-   - Triển khai Module Xác thực (Auth Service): Đăng ký, Đăng nhập JWT qua Cookie HttpOnly + Access Token RAM, Refresh Token Rotation, Gửi mã OTP kích hoạt qua Email.
+## 3. Việc Đang Làm / Chuẩn Bị Làm Ngay Kế Tiếp ⏳
+1. **Nối nốt các màn hình Auth còn lại trên Frontend:**
+   - `RegisterPage.jsx` (Đăng ký học viên) & `VerifyOtpPage.jsx` (Nhập mã OTP 6 số kích hoạt tài khoản).
+   - `ForgotPasswordPage.jsx` & `ResetPasswordPage.jsx` (Quên/Đặt lại mật khẩu).
+2. **Triển khai Module Khóa học & Giáo trình (Course Management - `api-courses.md`):**
+   - API Quản lý Khóa học (CRUD Course, danh mục category, tìm kiếm/lọc).
+   - API Quản lý Chương học (Chapters) & Bài học (Lessons: Video, Lý thuyết).
+   - Quy trình Giảng viên gửi duyệt $\rightarrow$ Quản lý đào tạo phê duyệt/từ chối.
+3. **Triển khai Module Lớp học & Thành viên (Classes & Enrollments - `api-classes.md`):**
+   - Mở lớp học theo khóa học, sinh mã ghi danh `class_code`, học viên tham gia lớp.
+4. **Triển khai Module Trắc nghiệm & Đề thi (Quizzes - `api-quizzes.md`):**
+   - Ngân hàng câu hỏi, tạo đề, lên lịch mở thi theo lớp, học viên làm bài & hệ thống tự động chấm điểm.
 
 ## 4. Ghi Chú Kỹ Thuật Quan Trọng
 - Toàn bộ diagram chỉ dùng các loại Mermaid phổ biến (`flowchart`, `sequenceDiagram`, `erDiagram`). Tránh dùng `gitgraph`.
