@@ -27,19 +27,23 @@
 - [x] Khởi tạo CSDL Neon.tech PostgreSQL (18 bảng, đồng bộ & seed 7 user).
 - [x] Tách cấu trúc 18 Models Sequelize sạch sẽ kèm quan hệ 1:1, 1:N, M:N.
 - [x] Backend Module Auth: 10 API chuẩn RESTful Envelope Pattern.
-- [x] Frontend Auth Integration: Kết nối Form Login, lưu Access Token trong RAM qua Zustand, HttpOnly Cookie cho Refresh Token.
+- [x] Frontend Auth Integration: Kết nối thành công 100% trọn bộ 5/5 màn hình Authentication vào API Backend thật:
+  - `LoginPage.jsx`: Đăng nhập, widget chọn nhanh 4 role, phân quyền điều hướng đúng Dashboard theo vai trò.
+  - `RegisterPage.jsx`: Đăng ký tài khoản học viên, kiểm tra độ mạnh mật khẩu, kết nối API sinh OTP.
+  - `VerifyOtpPage.jsx`: Nhập mã OTP 6 số (hỗ trợ paste nhanh, đếm ngược gửi lại mã), kích hoạt tài khoản và tự động cấp phiên đăng nhập.
+  - `ForgotPasswordPage.jsx`: Nhập email gửi yêu cầu cấp mã token reset mật khẩu.
+  - `ResetPasswordPage.jsx`: Nhập token và mật khẩu mới để đặt lại mật khẩu thành công.
+- [x] Bổ sung tính năng tiện ích UI: Icon hình con mắt (Show/Hide password toggle) trên tất cả các form nhập mật khẩu.
+- [x] Tối ưu môi trường Dev & CSDL: Cấu hình chuẩn `sslmode=verify-full` kết nối an toàn Neon PostgreSQL và xử lý bắt lỗi cổng 5000 ổn định.
 
 ## 3. Việc Đang Làm / Chuẩn Bị Làm Ngay Kế Tiếp ⏳
-1. **Nối nốt các màn hình Auth còn lại trên Frontend:**
-   - `RegisterPage.jsx` (Đăng ký học viên) & `VerifyOtpPage.jsx` (Nhập mã OTP 6 số kích hoạt tài khoản).
-   - `ForgotPasswordPage.jsx` & `ResetPasswordPage.jsx` (Quên/Đặt lại mật khẩu).
-2. **Triển khai Module Khóa học & Giáo trình (Course Management - `api-courses.md`):**
+1. **Triển khai Module Khóa học & Giáo trình (Course Management - `api-courses.md`):**
    - API Quản lý Khóa học (CRUD Course, danh mục category, tìm kiếm/lọc).
    - API Quản lý Chương học (Chapters) & Bài học (Lessons: Video, Lý thuyết).
    - Quy trình Giảng viên gửi duyệt $\rightarrow$ Quản lý đào tạo phê duyệt/từ chối.
-3. **Triển khai Module Lớp học & Thành viên (Classes & Enrollments - `api-classes.md`):**
+2. **Triển khai Module Lớp học & Thành viên (Classes & Enrollments - `api-classes.md`):**
    - Mở lớp học theo khóa học, sinh mã ghi danh `class_code`, học viên tham gia lớp.
-4. **Triển khai Module Trắc nghiệm & Đề thi (Quizzes - `api-quizzes.md`):**
+3. **Triển khai Module Trắc nghiệm & Đề thi (Quizzes - `api-quizzes.md`):**
    - Ngân hàng câu hỏi, tạo đề, lên lịch mở thi theo lớp, học viên làm bài & hệ thống tự động chấm điểm.
 
 ## 4. Ghi Chú Kỹ Thuật Quan Trọng

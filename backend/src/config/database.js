@@ -41,10 +41,4 @@ export const testConnection = async () => {
   }
 };
 
-// Run directly check
-if (process.argv[1] === fileURLToPath(import.meta.url)) {
-  testConnection().then((success) => {
-    if (success) process.exit(0);
-    else process.exit(1);
-  });
-}
+
