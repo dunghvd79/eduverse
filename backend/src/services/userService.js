@@ -59,43 +59,8 @@ export const updateMe = async (userId, updateData) => {
 
 /**
  * 3. Self change account password
+ * Logic nằm ở authService.changePassword (dùng chung với PATCH /auth/change-password)
  */
-export const changePassword = async (userId, { currentPassword, newPassword }) => {
-  const user = await User.findByPk(userId);
-  if (!user) {
-    throw new AppError('Không tìm thấy tài khoản người dùng', 404, 'Not Found');
-  }
-
-  const isMatch = await bcrypt.compare(currentPassword, user.password_hash);
-  if (!isMatch) {
-    throw new AppError('Mật khẩu hiện tại không chính xác', 400, 'Bad Request');
-  }
-
-  const isSame = await bcrypt.compare(newPassword, user.password_hash);
-  if (isSame) {
-    throw new AppError('Mật khẩu mới không được trùng với mật khẩu cũ', 400, 'Bad Request');
-  }
-
-  const salt = await bcrypt.genSalt(10);
-  const password_hash = await bcrypt.hash(newPassword, salt);
-
-  await user.update({
-    password_hash,
-    must_change_password: false
-  });
-
-  // Revoke all refresh tokens on other sessions
-  await UserToken.update(
-    { is_used: true },
-    { where: { user_id: user.id, token_type: 'refresh_token', is_used: false } }
-  );
-
-  return {
-    passwordChangedAt: new Date().toISOString(),
-    mustChangePassword: false,
-    revokedOtherSessions: true
-  };
-};
 
 /**
  * 4. Get public profile (e.g. for Teacher / Instructor view)

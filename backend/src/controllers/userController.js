@@ -1,5 +1,7 @@
 import * as userService from '../services/userService.js';
+import * as authService from '../services/authService.js';
 import { sendSuccess } from '../utils/response.js';
+import { setRefreshCookie } from '../utils/authCookies.js';
 
 /**
  * 1. GET /api/v1/users/me (and /me/profile)
@@ -30,7 +32,12 @@ export const updateMe = async (req, res, next) => {
  */
 export const changePassword = async (req, res, next) => {
   try {
-    const data = await userService.changePassword(req.user.id, req.body);
+    const { refreshToken, ...data } = await authService.changePassword({
+      user: req.user,
+      currentPassword: req.body.currentPassword,
+      newPassword: req.body.newPassword
+    });
+    setRefreshCookie(res, refreshToken);
     return sendSuccess(
       res,
       200,

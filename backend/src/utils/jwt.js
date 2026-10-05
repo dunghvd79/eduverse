@@ -1,10 +1,12 @@
+import '../config/env.js';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'eduverse_jwt_super_secret_access_key_2026_!@#';
+// Không có giá trị dự phòng: env.js đã dừng server nếu thiếu secret
+const JWT_SECRET = process.env.JWT_SECRET;
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '15m';
 
-const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET || 'eduverse_refresh_super_secret_refresh_key_2026_$%^';
+const REFRESH_TOKEN_SECRET = process.env.REFRESH_TOKEN_SECRET;
 const REFRESH_TOKEN_EXPIRES_IN = process.env.REFRESH_TOKEN_EXPIRES_IN || '7d';
 
 /**
@@ -43,10 +45,19 @@ export const hashToken = (token) => {
 };
 
 /**
- * Generate a random 6-digit OTP string
+ * Compute hash of an OTP bound to its owner.
+ * OTP chỉ có 900.000 giá trị nên phải gắn user_id để hai người nhận cùng mã
+ * không sinh ra cùng token_hash (cột token_hash là UNIQUE).
+ */
+export const hashOtp = (userId, otp) => {
+  return hashToken(`${userId}:${otp}`);
+};
+
+/**
+ * Generate a cryptographically secure 6-digit OTP string
  */
 export const generateOtp = () => {
-  return Math.floor(100000 + Math.random() * 900000).toString();
+  return crypto.randomInt(100000, 1000000).toString();
 };
 
 /**
