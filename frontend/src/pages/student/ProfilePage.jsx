@@ -33,6 +33,7 @@ const AVATAR_PRESETS = [
 export default function ProfilePage() {
   const storeUser = useAuthStore((state) => state.user);
   const updateUserInStore = useAuthStore((state) => state.updateUser);
+  const setAccessToken = useAuthStore((state) => state.setAccessToken);
 
   const [loading, setLoading] = useState(true);
   const [profileData, setProfileData] = useState({
@@ -170,11 +171,15 @@ export default function ProfilePage() {
 
     try {
       setIsChangingPass(true);
-      await userService.changePassword({
+      const result = await userService.changePassword({
         currentPassword: passwordData.currentPassword,
         newPassword: passwordData.newPassword,
         confirmPassword: passwordData.confirmPassword
       });
+
+      // Backend cấp cặp token mới cho phiên hiện tại sau khi thu hồi các phiên cũ
+      if (result?.accessToken) setAccessToken(result.accessToken);
+      updateUserInStore({ mustChangePassword: false });
 
       setPasswordSuccess('Đổi mật khẩu thành công! Các phiên đăng nhập trên thiết bị khác đã được thu hồi an toàn.');
       setPasswordData({ currentPassword: '', newPassword: '', confirmPassword: '' });
@@ -377,6 +382,12 @@ export default function ProfilePage() {
           </p>
 
           <form onSubmit={handleChangePassword}>
+            {storeUser?.mustChangePassword && (
+              <div className="flex items-center gap-2 p-3 mb-4 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm">
+                <AlertCircle size={18} className="flex-shrink-0" />
+                <span>Tài khoản của bạn đang dùng mật khẩu tạm do quản trị viên cấp. Vui lòng đổi mật khẩu mới để tiếp tục sử dụng hệ thống.</span>
+              </div>
+            )}
             {passwordSuccess && (
               <div className="flex items-center gap-2 p-3 mb-4 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-700 text-sm">
                 <CheckCircle2 size={18} className="flex-shrink-0" />

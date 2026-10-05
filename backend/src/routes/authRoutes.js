@@ -1,21 +1,22 @@
 import { Router } from 'express';
 import * as authController from '../controllers/authController.js';
-import { 
-  validate, 
-  registerSchema, 
-  verifyOtpSchema, 
-  resendOtpSchema, 
-  loginSchema, 
-  refreshTokenSchema, 
-  forgotPasswordSchema, 
-  resetPasswordSchema, 
-  changePasswordSchema 
+import {
+  validate,
+  registerSchema,
+  verifyOtpSchema,
+  resendOtpSchema,
+  loginSchema,
+  refreshTokenSchema,
+  forgotPasswordSchema,
+  resetPasswordSchema,
+  changePasswordSchema
 } from '../validations/authValidation.js';
-import { 
-  loginLimiter, 
-  registerLimiter, 
-  resendOtpLimiter, 
-  forgotPasswordLimiter 
+import {
+  loginLimiter,
+  registerLimiter,
+  resendOtpLimiter,
+  forgotPasswordLimiter,
+  verifyOtpLimiter
 } from '../middlewares/rateLimiter.js';
 import { authenticateToken } from '../middlewares/authMiddleware.js';
 
@@ -23,15 +24,16 @@ const router = Router();
 
 // Public routes
 router.post('/register', registerLimiter, validate(registerSchema), authController.register);
-router.post('/verify-otp', validate(verifyOtpSchema), authController.verifyOtp);
+router.post('/verify-otp', verifyOtpLimiter, validate(verifyOtpSchema), authController.verifyOtp);
 router.post('/resend-otp', resendOtpLimiter, validate(resendOtpSchema), authController.resendOtp);
 router.post('/login', loginLimiter, validate(loginSchema), authController.login);
 router.post('/refresh-token', validate(refreshTokenSchema), authController.refreshToken);
 router.post('/forgot-password', forgotPasswordLimiter, validate(forgotPasswordSchema), authController.forgotPassword);
 router.post('/reset-password', validate(resetPasswordSchema), authController.resetPassword);
+// Logout xác định phiên qua Refresh Token cookie, không cần Access Token còn hạn
+router.post('/logout', authController.logout);
 
 // Authenticated routes
-router.post('/logout', authenticateToken, authController.logout);
 router.patch('/change-password', authenticateToken, validate(changePasswordSchema), authController.changePassword);
 router.get('/me', authenticateToken, authController.getMe);
 

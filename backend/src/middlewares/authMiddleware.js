@@ -2,6 +2,15 @@ import { verifyAccessToken } from '../utils/jwt.js';
 import { sendError } from '../utils/response.js';
 import { User } from '../models/index.js';
 
+// Các API vẫn được gọi khi tài khoản đang dùng mật khẩu tạm (must_change_password = true)
+const MUST_CHANGE_PASSWORD_ALLOWLIST = new Set([
+  'GET /api/v1/auth/me',
+  'PATCH /api/v1/auth/change-password',
+  'GET /api/v1/users/me',
+  'GET /api/v1/users/me/profile',
+  'PATCH /api/v1/users/me/password'
+]);
+
 /**
  * Middleware: Verify JWT Access Token in Authorization header
  */
@@ -32,6 +41,13 @@ export const authenticateToken = async (req, res, next) => {
     if (!user.is_active) {
       const reasonMsg = user.block_reason ? `: ${user.block_reason}` : '';
       return sendError(res, 403, 'Forbidden', `Tài khoản của bạn đã bị khóa${reasonMsg}`);
+    }
+
+    if (user.must_change_password) {
+      const routeKey = `${req.method} ${req.baseUrl}${req.path}`.replace(/\/$/, '');
+      if (!MUST_CHANGE_PASSWORD_ALLOWLIST.has(routeKey)) {
+        return sendError(res, 403, 'Forbidden', 'Bạn cần đổi mật khẩu tạm thời trước khi tiếp tục sử dụng hệ thống.', ['MUST_CHANGE_PASSWORD']);
+      }
     }
 
     // Attach user to request

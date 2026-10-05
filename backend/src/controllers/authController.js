@@ -1,30 +1,6 @@
 import * as authService from '../services/authService.js';
 import { sendSuccess } from '../utils/response.js';
-
-/**
- * Helper to set secure HttpOnly cookie for Refresh Token
- */
-const setRefreshCookie = (res, token) => {
-  res.cookie('refreshToken', token, {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
-    path: '/api/v1/auth',
-    maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
-  });
-};
-
-/**
- * Helper to clear Refresh Token cookie
- */
-const clearRefreshCookie = (res) => {
-  res.clearCookie('refreshToken', {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === 'production',
-    sameSite: process.env.NODE_ENV === 'production' ? 'strict' : 'lax',
-    path: '/api/v1/auth'
-  });
-};
+import { setRefreshCookie, clearRefreshCookie } from '../utils/authCookies.js';
 
 /**
  * POST /api/v1/auth/register
@@ -122,7 +98,6 @@ export const logout = async (req, res, next) => {
   try {
     const incomingToken = req.cookies?.refreshToken || req.body?.refreshToken;
     await authService.logout({
-      userId: req.user.id,
       incomingToken,
       allDevices: req.body?.allDevices === true
     });
@@ -177,12 +152,13 @@ export const resetPassword = async (req, res, next) => {
  */
 export const changePassword = async (req, res, next) => {
   try {
-    const result = await authService.changePassword({
+    const { refreshToken, ...result } = await authService.changePassword({
       user: req.user,
       currentPassword: req.body.currentPassword,
       newPassword: req.body.newPassword
     });
-    clearRefreshCookie(res);
+    // Phiên hiện tại nhận Refresh Token mới, các thiết bị khác bị thu hồi
+    setRefreshCookie(res, refreshToken);
     return sendSuccess(
       res,
       200,

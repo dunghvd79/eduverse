@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { useAuthStore } from '../stores/useAuthStore';
+import { useAuthStore, refreshAccessToken } from '../stores/useAuthStore';
 
 export const api = axios.create({
   baseURL: '/api/v1',
@@ -55,8 +55,7 @@ api.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        const res = await axios.post('/api/v1/auth/refresh-token', {}, { withCredentials: true });
-        const newAccessToken = res.data?.data?.accessToken;
+        const newAccessToken = await refreshAccessToken();
         useAuthStore.getState().setAccessToken(newAccessToken);
 
         processQueue(null, newAccessToken);
@@ -69,6 +68,11 @@ api.interceptors.response.use(
       } finally {
         isRefreshing = false;
       }
+    }
+
+    // Backend chặn vì tài khoản đang dùng mật khẩu tạm -> PortalLayout sẽ chuyển sang trang Hồ sơ
+    if (error.response?.data?.errors?.includes('MUST_CHANGE_PASSWORD')) {
+      useAuthStore.getState().updateUser({ mustChangePassword: true });
     }
 
     return Promise.reject(error.response?.data || error);

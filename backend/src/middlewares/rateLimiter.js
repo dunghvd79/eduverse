@@ -1,4 +1,4 @@
-import rateLimit from 'express-rate-limit';
+import rateLimit, { ipKeyGenerator } from 'express-rate-limit';
 import { sendError } from '../utils/response.js';
 
 /**
@@ -42,4 +42,19 @@ export const forgotPasswordLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   handler: createRateLimitHandler('Vượt quá giới hạn yêu cầu đặt lại mật khẩu. Vui lòng thử lại sau 1 giờ.')
+});
+
+// 5. Verify OTP Limiter: Max 5 wrong attempts per 15 minutes per email
+// Tính theo email (không theo IP) để chặn dò OTP của một tài khoản dù đổi IP liên tục
+export const verifyOtpLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 5,
+  skipSuccessfulRequests: true,
+  standardHeaders: true,
+  legacyHeaders: false,
+  keyGenerator: (req) => {
+    const email = typeof req.body?.email === 'string' ? req.body.email.trim().toLowerCase() : '';
+    return email ? `otp:${email}` : ipKeyGenerator(req.ip);
+  },
+  handler: createRateLimitHandler('Bạn đã nhập sai mã OTP quá nhiều lần. Vui lòng thử lại sau 15 phút hoặc yêu cầu gửi lại mã mới.')
 });

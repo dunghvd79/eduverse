@@ -1,7 +1,10 @@
 import React, {useState} from 'react';
-import {NavLink, Outlet, useLocation, useNavigate} from 'react-router-dom';
+import {NavLink, Navigate, Outlet, useLocation, useNavigate} from 'react-router-dom';
 import {BookOpen, LayoutDashboard, GraduationCap, Users, ClipboardCheck, FileText, BarChart3, Settings, ShieldCheck, FolderTree, Sparkles, Menu, X, Search, Bell, ChevronRight, LogOut, UserCircle} from 'lucide-react';
 import { useAuthStore } from '../../stores/useAuthStore';
+
+// Ánh xạ role trong DB sang tiền tố URL của portal
+const PORTAL_BY_ROLE = { student: 'student', teacher: 'teacher', training_manager: 'manager', admin: 'admin' };
 
 const roleConfig={
  student:{label:'Học viên',color:'blue',links:[
@@ -23,6 +26,8 @@ export function PortalLayout({role}) {
  const nav = useNavigate();
  const user = useAuthStore((state) => state.user);
  const logout = useAuthStore((state) => state.logout);
+ const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+ const isInitializing = useAuthStore((state) => state.isInitializing);
 
  const handleLogout = async (e) => {
    e.preventDefault();
@@ -39,6 +44,22 @@ export function PortalLayout({role}) {
 
  const displayName = user?.fullName || (role==='student'?'Học viên':role==='teacher'?'Giảng viên':role==='manager'?'Quản lý':'Admin');
  const initials = getInitials(displayName);
+
+ // Route guard: phải đăng nhập, đúng portal của role, và đổi mật khẩu tạm trước khi dùng hệ thống
+ if (isInitializing) {
+   return <div className="min-h-screen flex items-center justify-center text-slate-500">Đang khôi phục phiên đăng nhập...</div>;
+ }
+ if (!isAuthenticated || !user) {
+   return <Navigate to="/auth/login" replace state={{ from: location.pathname }} />;
+ }
+ const userPortal = PORTAL_BY_ROLE[user.role];
+ if (userPortal !== role) {
+   return <Navigate to={`/${userPortal}/dashboard`} replace />;
+ }
+ const profilePath = `/${userPortal}/profile`;
+ if (user.mustChangePassword && location.pathname !== profilePath) {
+   return <Navigate to={profilePath} replace />;
+ }
 
  return <div className="portal-shell">
   <aside className={`portal-sidebar ${open?'is-open':''}`}>

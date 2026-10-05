@@ -1,8 +1,12 @@
 import React, {useState} from 'react';
 import {BookOpen, Clock3, Trophy, CalendarDays, Users, PlayCircle, Plus, Upload, Search, MoreHorizontal, CheckCircle2, AlertCircle, Sparkles, FileSpreadsheet, Download, Filter, Eye, Lock, Server, Database, HardDrive, ShieldCheck, Mail, Save, UserPlus, SlidersHorizontal} from 'lucide-react';
 import {PortalHeader,Button,StatCard,Progress,Card,SectionTitle,Table,Badge,Field} from '../../components/portal/PortalUI';
+import { useAuthStore } from '../../stores/useAuthStore';
 
-export default function StudentDashboardPage(){return <><PortalHeader eyebrow="STUDENT PORTAL" title="Chào mừng trở lại, Ngọc Sơn 👋" desc="Tiếp tục lộ trình học tập và theo dõi tiến độ của bạn." actions={<Button><PlayCircle size={17}/> Tiếp tục học</Button>}/><div className="stats-grid">
+export default function StudentDashboardPage(){
+  const user = useAuthStore((state) => state.user);
+  const displayName = user?.fullName || 'Học viên';
+  return <><PortalHeader eyebrow="STUDENT PORTAL" title={`Chào mừng trở lại, ${displayName} 👋`} desc="Tiếp tục lộ trình học tập và theo dõi tiến độ của bạn." actions={<Button><PlayCircle size={17}/> Tiếp tục học</Button>}/><div className="stats-grid">
 <StatCard icon={BookOpen} label="Khóa học đang học" value="6" trend="+2 tháng này"/><StatCard icon={Clock3} label="Giờ học tuần này" value="12.5h" trend="+18%"/><StatCard icon={Trophy} label="Điểm trung bình" value="8.6" trend="+0.4"/><StatCard icon={CalendarDays} label="Bài sắp đến hạn" value="4" sub="Trong 7 ngày"/></div>
 <div className="dashboard-grid"><Card><SectionTitle title="Tiến độ học tập" action={<Button variant="ghost">Xem chi tiết</Button>}/>{[['IELTS Intensive Reading',78],['Lập trình Web',62],['Cơ sở dữ liệu',45]].map(x=><div className="progress-row" key={x[0]}><div><b>{x[0]}</b><span>{x[1]}%</span></div><Progress value={x[1]}/></div>)}</Card>
 <Card><SectionTitle title="Việc cần làm"/><div className="task-list">{['Quiz Chương 4 — Cơ sở dữ liệu','Assignment React UI','IELTS Reading Test 04','Bài thảo luận tuần 6'].map((x,i)=><div className="task" key={x}><div className="task-dot"/><div><b>{x}</b><small>{i+1} ngày nữa · {i%2?'Bài tập':'Quiz'}</small></div><span>›</span></div>)}</div></Card></div>
