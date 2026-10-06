@@ -27,11 +27,13 @@ export const registerSchema = Joi.object({
 export const verifyOtpSchema = Joi.object({
   email: Joi.string().trim().lowercase().email().max(255).required().messages({
     'string.email': 'Địa chỉ email không đúng định dạng',
+    'string.empty': 'Email không được để trống',
     'any.required': 'Email là trường bắt buộc'
   }),
-  otp: Joi.string().length(6).pattern(/^\d+$/).required().messages({
+  otp: Joi.string().trim().length(6).pattern(/^\d+$/).required().messages({
     'string.length': 'Mã OTP phải gồm đúng 6 chữ số',
     'string.pattern.base': 'Mã OTP chỉ được chứa các ký tự số',
+    'string.empty': 'Mã OTP không được để trống',
     'any.required': 'Mã OTP là trường bắt buộc'
   })
 });
@@ -39,6 +41,7 @@ export const verifyOtpSchema = Joi.object({
 export const resendOtpSchema = Joi.object({
   email: Joi.string().trim().lowercase().email().max(255).required().messages({
     'string.email': 'Địa chỉ email không đúng định dạng',
+    'string.empty': 'Email không được để trống',
     'any.required': 'Email là trường bắt buộc'
   })
 });
