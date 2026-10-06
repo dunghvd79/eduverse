@@ -42,7 +42,7 @@ export const verifyOtp = async (req, res, next) => {
  */
 export const resendOtp = async (req, res, next) => {
   try {
-    await authService.resendOtp(req.body);
+    await authService.resendOtp({ email: req.body.email });
     return sendSuccess(
       res,
       200,
@@ -77,7 +77,8 @@ export const login = async (req, res, next) => {
  */
 export const refreshToken = async (req, res, next) => {
   try {
-    const incomingToken = req.cookies?.refreshToken || req.body?.refreshToken;
+    const rawToken = req.cookies?.refreshToken || req.body?.refreshToken;
+    const incomingToken = typeof rawToken === 'string' ? rawToken.trim() : null;
     const { accessToken, refreshToken: newRefreshToken } = await authService.refreshSession({ incomingToken });
     setRefreshCookie(res, newRefreshToken);
     return sendSuccess(
@@ -87,6 +88,8 @@ export const refreshToken = async (req, res, next) => {
       { accessToken }
     );
   } catch (error) {
+    // Nếu refresh thất bại (hết hạn, không hợp lệ), xóa sạch cookie chết trên trình duyệt
+    clearRefreshCookie(res);
     next(error);
   }
 };
@@ -96,12 +99,21 @@ export const refreshToken = async (req, res, next) => {
  */
 export const logout = async (req, res, next) => {
   try {
-    const incomingToken = req.cookies?.refreshToken || req.body?.refreshToken;
-    await authService.logout({
-      incomingToken,
-      allDevices: req.body?.allDevices === true
-    });
+    // 1. Luôn giải phóng cookie trên trình duyệt trước tiên để đảm bảo an toàn cho client
     clearRefreshCookie(res);
+
+    // 2. Chuẩn hóa token và lọc chỉ nhận chuỗi ký tự hợp lệ
+    const rawToken = req.cookies?.refreshToken || req.body?.refreshToken;
+    const incomingToken = typeof rawToken === 'string' ? rawToken.trim() : null;
+
+    // 3. Vô hiệu hóa phiên trong Database
+    if (incomingToken) {
+      await authService.logout({
+        incomingToken,
+        allDevices: req.body?.allDevices === true
+      });
+    }
+
     return sendSuccess(
       res,
       200,

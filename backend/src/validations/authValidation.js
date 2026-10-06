@@ -42,6 +42,7 @@ export const resendOtpSchema = Joi.object({
   email: Joi.string().trim().lowercase().email().max(255).required().messages({
     'string.email': 'Địa chỉ email không đúng định dạng',
     'string.empty': 'Email không được để trống',
+    'string.max': 'Email không được vượt quá 255 ký tự',
     'any.required': 'Email là trường bắt buộc'
   })
 });
