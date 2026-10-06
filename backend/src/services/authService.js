@@ -139,6 +139,11 @@ export const verifyOtp = async ({ email, otp }) => {
     throw new AppError('Không tìm thấy tài khoản với email này', 404, 'Not Found');
   }
 
+  if (!user.is_active) {
+    const reason = user.block_reason ? `: ${user.block_reason}` : '';
+    throw new AppError(`Tài khoản của bạn đã bị khóa${reason}`, 403, 'Forbidden');
+  }
+
   if (user.email_verified) {
     throw new AppError('Tài khoản đã được kích hoạt email từ trước', 400, 'Bad Request');
   }
@@ -184,6 +189,11 @@ export const resendOtp = async ({ email }) => {
   const user = await User.findOne({ where: { email: normalizedEmail } });
   if (!user) {
     throw new AppError('Không tìm thấy tài khoản', 404, 'Not Found');
+  }
+
+  if (!user.is_active) {
+    const reason = user.block_reason ? `: ${user.block_reason}` : '';
+    throw new AppError(`Tài khoản của bạn đã bị khóa${reason}`, 403, 'Forbidden');
   }
 
   if (user.email_verified) {
