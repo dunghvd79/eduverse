@@ -312,19 +312,22 @@ export const forgotPassword = async ({ email }) => {
   const normalizedEmail = email ? email.trim().toLowerCase() : '';
   const user = await User.findOne({ where: { email: normalizedEmail } });
   if (user && user.is_active) {
-    // Invalidate old reset tokens
-    await UserToken.update(
-      { is_used: true },
-      { where: { user_id: user.id, token_type: 'password_reset', is_used: false } }
-    );
-
     const resetToken = generateSecureRandomToken(32);
-    await UserToken.create({
-      user_id: user.id,
-      token_hash: hashToken(resetToken),
-      token_type: 'password_reset',
-      expires_at: new Date(Date.now() + 15 * 60 * 1000), // 15 mins
-      is_used: false
+
+    // Bọc trong Transaction nguyên tử: Hủy token cũ và Tạo token mới cùng lúc
+    await sequelize.transaction(async (t) => {
+      await UserToken.update(
+        { is_used: true },
+        { where: { user_id: user.id, token_type: 'password_reset', is_used: false }, transaction: t }
+      );
+
+      await UserToken.create({
+        user_id: user.id,
+        token_hash: hashToken(resetToken),
+        token_type: 'password_reset',
+        expires_at: new Date(Date.now() + 15 * 60 * 1000), // 15 mins
+        is_used: false
+      }, { transaction: t });
     });
 
     console.log(`\n🔗 [DEV RESET PASSWORD LINK] http://localhost:5173/reset-password?token=${resetToken}\n`);
@@ -356,6 +359,11 @@ export const resetPassword = async ({ token, newPassword }) => {
     throw new AppError('Không tìm thấy tài khoản người dùng', 404, 'Not Found');
   }
 
+  if (!user.is_active) {
+    const reason = user.block_reason ? `: ${user.block_reason}` : '';
+    throw new AppError(`Tài khoản của bạn đã bị khóa${reason}`, 403, 'Forbidden');
+  }
+
   const password_hash = await bcrypt.hash(newPassword, 10);
 
   await sequelize.transaction(async (t) => {
@@ -363,7 +371,11 @@ export const resetPassword = async ({ token, newPassword }) => {
       throw new AppError('Liên kết đặt lại mật khẩu không hợp lệ hoặc đã hết hạn', 400, 'Bad Request');
     }
 
-    await user.update({ password_hash }, { transaction: t });
+    await user.update({
+      password_hash,
+      must_change_password: false,
+      email_verified: true
+    }, { transaction: t });
 
     // Revoke all refresh tokens
     await UserToken.update(

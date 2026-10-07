@@ -17,7 +17,9 @@ import {
   resendOtpLimiter,
   forgotPasswordLimiter,
   verifyOtpLimiter,
-  refreshTokenLimiter
+  refreshTokenLimiter,
+  resetPasswordLimiter,
+  changePasswordLimiter
 } from '../middlewares/rateLimiter.js';
 import { authenticateToken } from '../middlewares/authMiddleware.js';
 
@@ -30,12 +32,12 @@ router.post('/resend-otp', resendOtpLimiter, validate(resendOtpSchema), authCont
 router.post('/login', loginLimiter, validate(loginSchema), authController.login);
 router.post('/refresh-token', refreshTokenLimiter, validate(refreshTokenSchema), authController.refreshToken);
 router.post('/forgot-password', forgotPasswordLimiter, validate(forgotPasswordSchema), authController.forgotPassword);
-router.post('/reset-password', validate(resetPasswordSchema), authController.resetPassword);
+router.post('/reset-password', resetPasswordLimiter, validate(resetPasswordSchema), authController.resetPassword);
 // Logout xác định phiên qua Refresh Token cookie, không cần Access Token còn hạn
 router.post('/logout', authController.logout);
 
 // Authenticated routes
-router.patch('/change-password', authenticateToken, validate(changePasswordSchema), authController.changePassword);
+router.patch('/change-password', authenticateToken, changePasswordLimiter, validate(changePasswordSchema), authController.changePassword);
 router.get('/me', authenticateToken, authController.getMe);
 
 export default router;
