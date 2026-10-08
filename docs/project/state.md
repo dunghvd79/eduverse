@@ -1,80 +1,68 @@
 # 🧭 Trạng Thái Tiến Độ Dự Án (Project State)
 
-> **Cập nhật lần cuối:** 26/09/2026  
-> **Người cập nhật:** dunghvd79 & AI Assistant  
-> **Giai đoạn hiện tại:** Chuyển giao từ Phase 0 (Hoàn tất 100% Đặc tả Thiết kế) sang Phase 1 (Khởi tạo Project)
+> **Cập nhật lần cuối:** 05/10/2026  
+> **Người cập nhật:** dunghvd79, Hoàng Ngọc Sơn & AI Assistant  
+> **Giai đoạn hiện tại:** Phase 1 — Hoàn thành Sprint 2 + Đợt rà soát & vá bảo mật Module Auth; đang triển khai Sprint 3 (Courses/Chapters/Lessons)
 
 ---
 
 ## 1. Tóm Tắt Trạng Thái Hiện Tại
-Dự án đã **hoàn thành toàn diện 100% Phase 0 — Đặc Tả Kiến Trúc & Thiết Kế Hệ Thống**. Bao gồm:
-1. Phân tích nghiệp vụ (Use Cases 4 Actor).
-2. Thiết kế CSDL (ERD & Physical Schema 18 bảng, Seed data).
-3. Biểu đồ tuần tự nghiệp vụ cốt lõi (Sequence Diagrams).
-4. Trọn bộ 8/8 tài liệu Đặc tả API (101 Endpoints).
-5. 3/3 tài liệu Kiến trúc Hệ thống (System Architecture, Tech Stack, Design Decisions).
-6. **Trọn bộ Bộ ba Đặc tả UI/UX Chuẩn Enterprise (Đã nghiệm thu & đồng bộ 100% Single Source of Truth)**: `frontend-blueprint.md`, `design-system.md`, `wireframes.md`, `sitemap.md`.
-
-Hệ thống đã đạt độ chín muồi về mặt đặc tả kỹ thuật, không còn bất kỳ điểm xung đột hay mơ hồ nào giữa Backend và Frontend, sẵn sàng bước ngay vào **Phase 1: Khởi tạo dự án & Triển khai mã nguồn**.
+1. Dự án đã **hoàn thành toàn diện 100% Phase 0 — Đặc Tả Kiến Trúc & Thiết Kế Hệ Thống** (Use Cases, ERD 18 bảng, Sequence Diagrams, 8/8 API Docs, C4 Architecture, Master Frontend Blueprint, Design System Tokens, Wireframes, Sitemap).
+2. **Tiến độ Phase 1 (Frontend):** Hoàn thành **100% (37/37 Màn hình)** và **6 Master Layouts**, kiểm thử build 2062 modules không lỗi. Đã tích hợp Zustand Auth Store & Axios Interceptor.
+3. **Tiến độ Phase 1 (Backend & Database):**
+   - Khởi tạo kiến trúc mã nguồn Backend Express.js chuẩn ES Modules (`backend/`).
+   - Kết nối thành công tới **Cloud Database Neon.tech (hạ tầng AWS Singapore)** qua giao thức mã hóa SSL.
+   - Định nghĩa trọn bộ **18 Sequelize Models** với ràng buộc khóa ngoại, UUID v4, indexes và xóa mềm (Soft Delete).
+   - Chạy script đồng bộ và nạp dữ liệu mẫu (`migrateAndSeed.js`): Khởi tạo thành công toàn bộ 18 bảng, nạp 7 tài khoản người dùng 4 role (mật khẩu mặc định `EduVerse@2026`).
+   - **Triển khai Hoàn Tất 100% Module Xác Thực (Authentication & Session - Sprint 2, Phần 1):** 10/10 endpoints theo chuẩn `docs/api/api-auth.md`, JWT kép, Rate limiter, kết nối trọn bộ 5/5 màn hình Auth.
+   - **Triển khai Hoàn Tất 100% Module Quản Lý Người Dùng & Hồ Sơ Cá Nhân (Users & RBAC - Sprint 2, Phần 2):**
+     - Đầy đủ các endpoints theo chuẩn `docs/api/api-users.md` (`GET/PATCH /users/me`, `PATCH /users/me/password`, `GET /users/:id/profile`, `GET /users`, `POST /users`, `GET /users/:id`, `PATCH /users/:id`, `PATCH /users/:id/status`, `POST /users/:id/reset-password`, `DELETE /users/:id`).
+     - Tích hợp trang **Hồ sơ cá nhân đa vai trò** (`/student/profile`, `/teacher/profile`, `/manager/profile`, `/admin/profile`): xem/sửa họ tên, SĐT, bio, chọn nhanh preset avatar, đổi mật khẩu an toàn với tính năng thu hồi phiên thiết bị khác.
+     - Tích hợp trang **Admin Console Quản lý người dùng** (`/admin/users`): bảng dữ liệu phân trang, lọc theo 4 vai trò, lọc trạng thái hoạt động/đã khóa, tìm kiếm linh hoạt, tạo tài khoản sinh mật khẩu tạm, khóa/mở khóa tài khoản kèm lý do vi phạm, đặt lại mật khẩu khẩn cấp và xóa mềm.
+   - **Rà soát & vá bảo mật Module Auth (05/10/2026):** sửa 7 lỗi, kiểm thử tích hợp 16/16 kịch bản đạt (xem mục 2 và mục 4).
+   - **Sprint 3 (đang làm, chưa commit):** đã có `courseService.js` (9 hàm), `chapterService.js` (5 hàm), `courseValidation.js`, `utils/slugify.js`. Còn thiếu: `lessonService`, Lesson Progress, controllers + routes (chưa mount vào `app.js`), nối frontend.
 
 ## 2. Các Việc Đã Hoàn Thành ✅
-- [x] Phân tích đặc tả bài toán từ tài liệu thầy gửi (`ĐẶC TẢ SƠ BỘ YÊU CẦU HỆ THỐNG.docx`).
-- [x] Chốt tên dự án: **EduVerse** (`eduverse`).
-- [x] Chốt Tech stack: Express.js + React/Vite (JavaScript ES Modules) + PostgreSQL/Sequelize + Tailwind/Radix UI/Sonner + AWS S3 + Gemini API + Docker.
-- [x] Chốt mô hình phân quyền: 4 role (`student`, `teacher`, `training_manager`, `admin`) — mỗi user 1 role.
-- [x] Khởi tạo repo Git, kết nối remote và push lên GitHub (`https://github.com/dunghvd79/eduverse`).
-- [x] Thiết lập hệ thống lưu ngữ cảnh tự động cho AI (`AGENTS.md`, `state.md`, `context-local.md`).
-- [x] **Trọn bộ Phân tích & Đặc tả Use Case chuẩn Enterprise:**
-  - `docs/use-cases/use-case-diagram.md`: Biểu đồ tổng quan hệ thống (Level-0 Package Diagram).
-  - `docs/use-cases/use-case-guidelines.md`: Bộ quy chuẩn thiết kế Use Case theo chuẩn OMG UML 2.5 & Alistair Cockburn.
-  - `docs/use-cases/use-case-decisions.md`: Quyết định mô hình phân quyền, phân cấp kiến trúc.
-  - `docs/use-cases/actor-student.md`: Đặc tả chi tiết hành vi và kịch bản cho Học viên.
-  - `docs/use-cases/actor-teacher.md`: Đặc tả chi tiết hành vi và kịch bản cho Giảng viên (bao gồm quản lý đề thi, câu hỏi hàng loạt, sinh đề AI).
-  - `docs/use-cases/actor-manager.md`: Đặc tả chi tiết cho Quản lý đào tạo (phê duyệt khóa học).
-  - `docs/use-cases/actor-admin.md`: Đặc tả chi tiết cho Quản trị viên (quản trị hệ thống, cấp tài khoản).
-- [x] **Trọn bộ Thiết kế Cơ sở Dữ liệu (Database Design):**
-  - `docs/database/database-decisions.md`: Quyết định PK UUID v4, Soft Delete, Audit Fields, Naming Conventions.
-  - `docs/database/erd.md`: Sơ đồ ERD 15 thực thể chuẩn 3NF, phân tách mối quan hệ rõ ràng.
-  - `docs/database/schema.md`: Đặc tả chi tiết từng bảng, kiểu dữ liệu PostgreSQL, Constraints, Indexes.
-  - `docs/database/seed-data.md`: Dữ liệu mẫu (Users mặc định, Khóa học mẫu, Lớp học mẫu).
-- [x] **Hệ thống Sơ đồ Tuần tự Nghiệp vụ Cốt lõi (Sequence Diagrams — Đã đồng bộ 100% Express.js & Sequelize):**
-  - `docs/sequences/seq-template.md`: Mẫu chuẩn thiết kế 6 layers với Express Controller, Service, Sequelize Models, Joi validation.
-  - `docs/sequences/seq-auth-001.md`: Đăng ký tài khoản học viên & xác thực Email kích hoạt.
-  - `docs/sequences/seq-auth-002.md`: Đăng nhập hệ thống & cấp phát JWT qua Cookie HttpOnly + Zustand RAM.
-  - `docs/sequences/seq-quiz-001.md`: Làm bài kiểm tra trắc nghiệm & Tự động chấm điểm.
-  - `docs/sequences/seq-assign-001.md`: Học viên nộp bài tập file S3 qua Presigned URL.
-  - `docs/sequences/seq-ai-001.md`: Giảng viên dùng Google Gemini AI tự động sinh câu hỏi trắc nghiệm.
-- [x] **Đặc tả API (API Specifications - Hoàn thành 8/8 tài liệu, 101 Endpoints):**
-  - [x] `docs/api/api-conventions.md`: Quy chuẩn RESTful Envelope Pattern, Error codes, Phân trang, Cookie chính sách.
-  - [x] `docs/api/api-auth.md`: Xác thực, JWT, Refresh Token, Đổi/Quên mật khẩu.
-  - [x] `docs/api/api-users.md`: 12 Endpoints hoàn chỉnh.
-  - [x] `docs/api/api-courses.md`: 21 Endpoints hoàn chỉnh.
-  - [x] `docs/api/api-classes.md`: 13 Endpoints hoàn chỉnh.
-  - [x] `docs/api/api-quizzes.md`: 20 Endpoints hoàn chỉnh.
-  - [x] `docs/api/api-assignments.md`: 18 Endpoints hoàn chỉnh.
-  - [x] `docs/api/api-uploads.md`: 7 Endpoints hoàn chỉnh.
-- [x] **Nhóm tài liệu Kiến trúc Hệ thống (Architecture Docs — Hoàn thành 3/3):**
-  - [x] `docs/architecture/system-architecture.md`: Sơ đồ C4 Level 1 & Level 2, cấu hình Docker Compose.
-  - [x] `docs/architecture/tech-stack.md`: Bảng quyết định kỹ thuật Express.js + React JavaScript, Sequelize, Redis, Socket.IO.
-  - [x] `docs/architecture/design-decisions.md`: 9 ADR chi tiết.
-- [x] **Bộ ba Tài liệu Đặc tả UI/UX Chuẩn Enterprise (Đã hoàn thiện & nghiệm thu 26/09/2026):**
-  - [x] `docs/ui/frontend-blueprint.md`: Master Frontend Blueprint (Prompt-ready) — Khóa 37 Màn hình (SCR-01 đến SCR-37), 6 Master Layout Shells, State Management (Zustand + React Query v5), Axios Instance & Interceptors, Toaster (Sonner), Bảo mật Whitelist S3 (Max 25MB, loại bỏ `.rar`), Quiz Integrity.
-  - [x] `docs/ui/design-system.md`: Design Tokens là Single Source of Truth — Khóa bảng màu `#1168bd` (Primary), `#0c2d48` (Secondary), `#0ea5e9` (Tertiary), Semantic Status (Success `#10b981`, Warning `#f59e0b`, Error `#ba1a1a`), Phông chữ `Inter`, Utility `.tabular-number`, Skeleton Shimmer Gradient (loại bỏ animate-pulse), Tích hợp 100% Tokens vào `tailwind.config.js` (kèm `screens` và `maxWidth.app = 1600px`).
-  - [x] `docs/ui/wireframes.md`: Bố cục chi tiết 13 màn hình cốt lõi (WF-01 đến WF-13) khớp tham chiếu Blueprint, chuẩn responsive Mobile-first (Base styles, `md`, `lg`, `xl`), tách biệt 1 route = 1 screen (WF-11 SCR-30, WF-12 SCR-31, WF-13 SCR-35), cơ chế Optimistic Updates có Rollback khi mutation lỗi.
-  - [x] `docs/ui/sitemap.md`: Sơ đồ phân cấp luồng trang người dùng.
+- [x] Toàn bộ Phase 0 (Use cases, ERD, Schema, Sequences, API Docs, Blueprint, Wireframes).
+- [x] Toàn bộ 37 màn hình UI tĩnh Frontend (React 18 + Vite + Tailwind CSS).
+- [x] Khởi tạo CSDL Neon.tech PostgreSQL (18 bảng, đồng bộ & seed 7 user).
+- [x] Tách cấu trúc 18 Models Sequelize sạch sẽ kèm quan hệ 1:1, 1:N, M:N.
+- [x] Backend Module Auth: 10 API chuẩn RESTful Envelope Pattern.
+- [x] Frontend Auth Integration: Kết nối thành công 100% trọn bộ 5/5 màn hình Authentication vào API Backend thật.
+- [x] **Backend Module Users & RBAC:** Trọn bộ API Hồ sơ cá nhân (`/users/me`), Quản trị người dùng toàn trường (`/users`), Khóa/Mở khóa có lý do, Đặt lại mật khẩu khẩn cấp và Xóa mềm.
+- [x] **Frontend Profile Integration:** Kết nối thành công trang Hồ sơ cá nhân cho cả 4 Portal (`Student`, `Teacher`, `Manager`, `Admin`), tự động đồng bộ tức thì tên & avatar lên Topbar và Sidebar.
+- [x] **Frontend Admin Console Integration:** Kết nối màn hình `/admin/users` với API thật, hỗ trợ lọc tab vai trò, lọc trạng thái, tìm kiếm, phân trang, và 4 popup tác vụ quản trị.
+- [x] Kiểm thử tự động E2E luồng đăng nhập Admin, xem bảng người dùng, tạo tài khoản mới sinh mật khẩu tạm, và cập nhật hồ sơ cá nhân thành công 100%.
+- [x] **Vá bảo mật Module Auth (05/10/2026):**
+  - Chống dò OTP: thêm `verifyOtpLimiter` (5 lần sai / 15 phút / email); OTP sinh bằng `crypto.randomInt`.
+  - Sửa lỗi trùng `token_hash` UNIQUE khiến đăng ký thất bại ngẫu nhiên: OTP băm kèm `user_id`, OTP cũ bị xóa hẳn mỗi lần gửi mã mới (không cần migration DB).
+  - Đổi mật khẩu không còn đăng xuất chính phiên hiện tại: thu hồi phiên cũ rồi cấp cặp token mới; gộp `PATCH /auth/change-password` và `PATCH /users/me/password` về một hàm `authService.changePassword`.
+  - Thực thi `must_change_password`: backend chặn API (403 `MUST_CHANGE_PASSWORD`), frontend tự chuyển về trang Hồ sơ.
+  - Tiêu thụ token nguyên tử (refresh / OTP / reset) chống dùng lại token khi request song song; các luồng nhiều bước chạy trong transaction.
+  - Bỏ secret JWT dự phòng ghi cứng; thêm `config/env.js` kiểm tra biến môi trường bắt buộc và dừng server nếu thiếu.
+  - Sửa lỗi Logout không hoạt động (frontend gọi không kèm Access Token → 401, refresh token không bị thu hồi): logout giờ xác định phiên qua cookie.
+  - Frontend: khôi phục phiên khi tải lại trang (`initializeAuth` gọi ở `App.jsx`), route guard trong `PortalLayout` (bắt đăng nhập, đúng portal theo role), refresh token single-flight + retry cho nhiều tab.
 
-## 3. Việc Đang Làm / Chuẩn Bị Làm Ngay (Kế hoạch Phase 1) ⏳
-1. **Khởi tạo mã nguồn Frontend (`frontend/`):**
-   - Setup dự án React 18 + Vite (JavaScript `.jsx`).
-   - Cài đặt và cấu hình Tailwind CSS với 100% Design Tokens từ `design-system.md`.
-   - Cài đặt các thư viện lõi: Lucide React Icons, Radix UI Primitives, Sonner Toast, React Router v6, Zustand, TanStack React Query v5, Axios, React Hook Form, Joi, DOMPurify.
-   - Xây dựng hệ thống Common Components cơ sở (Button, Input, Modal, Toaster wrapper, Skeleton Shimmer).
-2. **Khởi tạo mã nguồn Backend (`backend/`):**
-   - Setup Express.js (ES Modules), Sequelize ORM, PostgreSQL connection, Redis client.
-   - Cấu hình Middleware tập trung (CORS, Helmet, Rate Limit, Error Handler, Cookie Parser).
-3. **Triển khai Nhóm Màn hình Public & Auth (SCR-01 đến SCR-08).**
+## 3. Việc Đang Làm / Chuẩn Bị Làm Ngay Kế Tiếp ⏳
+0. **Backlog bảo mật Auth còn lại (mức thấp–trung bình, chưa sửa):**
+   - Đăng ký lại email chưa xác thực vẫn ghi đè mật khẩu → nên chỉ gửi lại OTP, đặt mật khẩu sau khi xác thực.
+   - `loginLimiter` đếm cả lần đăng nhập thành công và chỉ theo IP → thêm `skipSuccessfulRequests`, key theo IP + email.
+   - `verifyOtp` chưa kiểm tra `is_active`; `verify-otp`/`resend-otp` trả 404 làm lộ email tồn tại; login lộ thời gian phản hồi khi email không tồn tại.
+   - Regex mật khẩu từ chối các ký tự `~ ' " / \` và dấu cách.
+   - Rate limiter đang lưu in-memory (chưa dùng Redis như tài liệu tech-stack).
+1. **Triển khai Sprint 3: Module Khóa học & Giáo trình (Courses, Chapters, Lessons - `api-courses.md`):**
+   - API Quản lý Danh mục khóa học (Categories) & Khóa học (CRUD Course, thumbnail, tìm kiếm/lọc, trạng thái `DRAFT`, `PENDING`, `PUBLISHED`).
+   - API Quản lý Chương học (Chapters) & Bài học (Lessons: Video URL, tài liệu đính kèm, lý thuyết).
+   - Quy trình Giảng viên gửi duyệt $\rightarrow$ Quản lý đào tạo phê duyệt/từ chối.
+   - Nối giao diện Soạn thảo đề cương (`/teacher/courses/:id/curriculum`), Duyệt khóa học (`/manager/approvals`), và Trình học tập (`/student/courses/:courseId/learn/:lessonId`).
+2. **Triển khai Sprint 4: Module Lớp học & Thành viên (Classes, Enrollments - `api-classes.md`).**
+3. **Triển khai Sprint 5: Module Trắc nghiệm & Đề thi (Quizzes, Gemini AI - `api-quizzes.md`).**
 
 ## 4. Ghi Chú Kỹ Thuật Quan Trọng
+- **Biến môi trường:** mọi module cần `process.env` phải import `backend/src/config/env.js` (đã được import trong `server.js`, `config/database.js`, `utils/jwt.js`). Không dùng giá trị secret dự phòng.
+- **Route mới cần mở khi `must_change_password = true`:** thêm vào `MUST_CHANGE_PASSWORD_ALLOWLIST` trong `middlewares/authMiddleware.js`.
+- **Route guard frontend:** toàn bộ 4 portal đi qua `PortalLayout` (`components/portal/PortalUI.jsx`) — kiểm tra đăng nhập, role ↔ portal (`training_manager` → `/manager`), và bắt đổi mật khẩu tạm.
+- **Refresh token chỉ dùng 1 lần:** frontend phải gọi qua `refreshAccessToken()` trong `stores/useAuthStore.js`, không tự gọi `axios.post('/auth/refresh-token')`.
 - Toàn bộ diagram chỉ dùng các loại Mermaid phổ biến (`flowchart`, `sequenceDiagram`, `erDiagram`). Tránh dùng `gitgraph`.
 - Tất cả tài liệu viết bằng Markdown trong `docs/` theo chuẩn Docs-as-Code.
 - Đảm bảo 100% Traceability (tính truy vết) đồng bộ giữa Use Case, Sequence Diagram, Database Schema, API Spec, Design System và Frontend Blueprint.

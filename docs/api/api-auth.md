@@ -16,7 +16,7 @@
 | `POST` | `/api/v1/auth/resend-otp` | `[Public]` | Gửi lại mã OTP xác thực email (giới hạn tần suất 3 lần/giờ) |
 | `POST` | `/api/v1/auth/login` | `[Public]` | Đăng nhập hệ thống (nhận Access Token body JSON & HttpOnly Cookie Refresh Token) |
 | `POST` | `/api/v1/auth/refresh-token` | `[Public / Cookie]` | Cấp Access Token mới và xoay vòng Refresh Token (Token Rotation) |
-| `POST` | `/api/v1/auth/logout` | `[Authenticated]` | Đăng xuất, xóa Cookie và thu hồi Refresh Token trong DB |
+| `POST` | `/api/v1/auth/logout` | `[Public + Cookie]` | Đăng xuất, xóa Cookie và thu hồi Refresh Token trong DB (xác định phiên qua cookie `refreshToken`) |
 
 ### 1.2. Khôi phục & Quản lý Mật khẩu (Password Recovery & Management)
 | Method | Endpoint | Quyền hạn | Mô tả chức năng |
@@ -272,9 +272,9 @@
 
 #### `POST /api/v1/auth/logout`
 * **Mô tả chức năng:** Thu hồi Refresh Token trong DB (đánh dấu `is_used = true` trong bảng `user_tokens`) và xóa Cookie `refreshToken` trên trình duyệt bằng cách trả về cờ `Max-Age=0`. Hỗ trợ tùy chọn đăng xuất toàn bộ thiết bị.
-* **Quyền hạn:** `[Authenticated]`
+* **Quyền hạn:** `[Public + Cookie]` — Phiên được xác định qua cookie `refreshToken` (hoặc `refreshToken` trong body), **không yêu cầu Access Token còn hạn**. Nhờ vậy người dùng vẫn đăng xuất được khi Access Token đã hết hạn. Luôn trả `200` kể cả khi không có cookie hoặc token đã bị thu hồi.
 * **Headers:**
-  * `Authorization: Bearer <access_token>`
+  * `Cookie: refreshToken=<refresh_token>`
   * `Content-Type: application/json`
 
 #### Request Body (`LogoutDto`) *(Tùy chọn)*:
@@ -372,7 +372,7 @@
 ### 2.9. Thay đổi mật khẩu khi đang đăng nhập (Change Password)
 
 #### `PATCH /api/v1/auth/change-password`
-* **Mô tả chức năng:** Route bí danh (alias) tương thích của `PATCH /api/v1/users/me/password`. Cho phép người dùng đang đăng nhập đổi mật khẩu, xác thực mật khẩu cũ qua bcrypt, băm mật khẩu mới và tự động vô hiệu hóa toàn bộ Refresh Token trên các thiết bị khác. Tự động chuyển cờ `must_change_password` về `false`.
+* **Mô tả chức năng:** Route bí danh (alias) tương thích của `PATCH /api/v1/users/me/password` (hai route dùng chung một hàm `authService.changePassword`). Cho phép người dùng đang đăng nhập đổi mật khẩu, xác thực mật khẩu cũ qua bcrypt, băm mật khẩu mới, thu hồi toàn bộ Refresh Token cũ rồi **cấp cặp token mới cho phiên hiện tại** — nhờ vậy chỉ các thiết bị khác bị đăng xuất. Tự động chuyển cờ `must_change_password` về `false`. Toàn bộ thao tác chạy trong một transaction.
 * **Quyền hạn:** `[Authenticated]`
 * **Headers:** 
   * `Authorization: Bearer <access_token>`
@@ -394,12 +394,14 @@
 ```
 
 #### Response Thành Công (`200 OK`):
+* **Headers kèm theo:** `Set-Cookie: refreshToken=<new_refresh_token>; Path=/api/v1/auth; HttpOnly` (Refresh Token mới cho phiên hiện tại). Frontend cần thay Access Token trong bộ nhớ bằng `data.accessToken`.
 ```json
 {
   "success": true,
   "statusCode": 200,
   "message": "Đổi mật khẩu thành công. Các phiên đăng nhập trên thiết bị khác đã được thu hồi.",
   "data": {
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
     "passwordChangedAt": "2026-09-24T10:35:00.000Z",
     "mustChangePassword": false,
     "revokedOtherSessions": true
@@ -457,7 +459,7 @@
 
 ### 3.1. Quản lý Token tập trung qua Bảng `user_tokens`
 Toàn bộ mã xác thực ngắn hạn và phiên dài hạn đều được quản lý tập trung trong bảng `user_tokens` với cấu trúc chuẩn:
-- **Mã OTP Kích hoạt Email:** `token_type = 'email_verification'`, TTL 10 phút, mã 6 số được hash SHA-256.
+- **Mã OTP Kích hoạt Email:** `token_type = 'email_verification'`, TTL 10 phút, mã 6 số sinh bằng `crypto.randomInt` (CSPRNG). Giá trị lưu là SHA-256 của chuỗi `"<user_id>:<otp>"` — gắn `user_id` để hai người nhận cùng mã không vi phạm ràng buộc `UNIQUE` của cột `token_hash`. Mỗi lần đăng ký/gửi lại, các OTP cũ của user bị **xóa hẳn** (không chỉ đánh dấu `is_used`).
 - **Mã Đặt lại Mật khẩu:** `token_type = 'password_reset'`, TTL 15 phút, chuỗi ngẫu nhiên 32 bytes hash SHA-256.
 - **Phiên Refresh Token:** `token_type = 'refresh_token'`, TTL 7 ngày, chuỗi JWT refresh băm SHA-256 để kiểm tra tính hợp lệ và thu hồi khi người dùng đăng xuất.
 
@@ -473,5 +475,20 @@ Toàn bộ mã xác thực ngắn hạn và phiên dài hạn đều được qu
 - `POST /api/v1/auth/login`: Tối đa **5 lần / 5 phút** (chống tấn công dò mật khẩu brute-force).
 - `POST /api/v1/auth/register`: Tối đa **5 lần / 1 giờ** cho mỗi địa chỉ IP (chống spam rác tạo tài khoản ảo).
 - `POST /api/v1/auth/resend-otp`: Tối đa **3 lần / 1 giờ** cho mỗi địa chỉ email.
-- `POST /api/v1/auth/verify-otp`: Tối đa **5 lần nhập sai** (sau 5 lần sai, bản ghi OTP tự động bị hủy).
+- `POST /api/v1/auth/verify-otp`: Tối đa **5 lần nhập sai / 15 phút cho mỗi địa chỉ email** (tính theo email chứ không theo IP để chặn dò OTP dù kẻ tấn công đổi IP; lần nhập đúng không bị tính).
 - `POST /api/v1/auth/forgot-password`: Tối đa **3 lần / 1 giờ** cho mỗi địa chỉ email.
+
+### 3.4. Tiêu thụ Token nguyên tử (Atomic Token Consumption)
+Refresh Token, OTP và Reset Token đều chỉ dùng được **một lần**. Việc đánh dấu đã dùng được thực hiện bằng một câu lệnh có điều kiện `UPDATE user_tokens SET is_used = true WHERE id = ? AND is_used = false` và kiểm tra số dòng bị ảnh hưởng. Nếu hai request song song gửi cùng một token, chỉ request đầu tiên thành công, request còn lại nhận `401` (refresh) hoặc `400` (OTP / reset). Frontend gộp các lần gọi refresh đồng thời thành một request và thử lại 1 lần sau 500ms để xử lý trường hợp nhiều tab.
+
+### 3.5. Bắt buộc đổi mật khẩu tạm (`must_change_password`)
+Tài khoản do Admin tạo hoặc được Admin đặt lại mật khẩu có `must_change_password = true`. Khi cờ này bật, middleware `authenticateToken` từ chối mọi API với `403 Forbidden` và `errors: ["MUST_CHANGE_PASSWORD"]`, **trừ** các route sau:
+- `GET /api/v1/auth/me`
+- `PATCH /api/v1/auth/change-password`
+- `GET /api/v1/users/me`, `GET /api/v1/users/me/profile`
+- `PATCH /api/v1/users/me/password`
+
+Phía Frontend, `PortalLayout` tự chuyển người dùng sang trang `/{portal}/profile` cho tới khi đổi mật khẩu thành công.
+
+### 3.6. Biến môi trường bắt buộc
+`DATABASE_URL`, `JWT_SECRET`, `REFRESH_TOKEN_SECRET` được kiểm tra trong `backend/src/config/env.js`. Server **dừng khởi động** nếu thiếu một trong các biến này hoặc nếu hai secret trùng nhau (không còn giá trị secret dự phòng ghi cứng trong mã nguồn).

@@ -153,12 +153,14 @@
 ```
 
 #### Response Thành Công (`200 OK`):
+* **Headers kèm theo:** `Set-Cookie: refreshToken=<new_refresh_token>; Path=/api/v1/auth; HttpOnly` — phiên hiện tại nhận cặp token mới sau khi mọi Refresh Token cũ bị thu hồi. Frontend thay Access Token trong bộ nhớ bằng `data.accessToken`. Logic dùng chung với `PATCH /api/v1/auth/change-password` (`authService.changePassword`).
 ```json
 {
   "success": true,
   "statusCode": 200,
   "message": "Đổi mật khẩu thành công. Các phiên đăng nhập trên thiết bị khác đã được đăng xuất để bảo mật.",
   "data": {
+    "accessToken": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
     "passwordChangedAt": "2026-09-24T14:10:00.000Z",
     "mustChangePassword": false,
     "revokedOtherSessions": true
