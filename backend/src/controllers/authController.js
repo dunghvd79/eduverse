@@ -88,8 +88,11 @@ export const refreshToken = async (req, res, next) => {
       { accessToken }
     );
   } catch (error) {
-    // Nếu refresh thất bại (hết hạn, không hợp lệ), xóa sạch cookie chết trên trình duyệt
-    clearRefreshCookie(res);
+    // Chỉ xóa cookie khi token thực sự chết (sai, hết hạn, tài khoản bị khóa).
+    // Giữ cookie nếu token vừa bị request song song xoay vòng, hoặc lỗi hệ thống (DB tạm mất kết nối).
+    if (error.statusCode === 401 && !error.preserveCookie) {
+      clearRefreshCookie(res);
+    }
     next(error);
   }
 };

@@ -1,6 +1,6 @@
 # 🧭 Trạng Thái Tiến Độ Dự Án (Project State)
 
-> **Cập nhật lần cuối:** 05/10/2026  
+> **Cập nhật lần cuối:** 09/10/2026  
 > **Người cập nhật:** dunghvd79, Hoàng Ngọc Sơn & AI Assistant  
 > **Giai đoạn hiện tại:** Phase 1 — Hoàn thành Sprint 2 + Đợt rà soát & vá bảo mật Module Auth; đang triển khai Sprint 3 (Courses/Chapters/Lessons)
 
@@ -20,6 +20,7 @@
      - Tích hợp trang **Hồ sơ cá nhân đa vai trò** (`/student/profile`, `/teacher/profile`, `/manager/profile`, `/admin/profile`): xem/sửa họ tên, SĐT, bio, chọn nhanh preset avatar, đổi mật khẩu an toàn với tính năng thu hồi phiên thiết bị khác.
      - Tích hợp trang **Admin Console Quản lý người dùng** (`/admin/users`): bảng dữ liệu phân trang, lọc theo 4 vai trò, lọc trạng thái hoạt động/đã khóa, tìm kiếm linh hoạt, tạo tài khoản sinh mật khẩu tạm, khóa/mở khóa tài khoản kèm lý do vi phạm, đặt lại mật khẩu khẩn cấp và xóa mềm.
    - **Rà soát & vá bảo mật Module Auth (05/10/2026):** sửa 7 lỗi, kiểm thử tích hợp 16/16 kịch bản đạt (xem mục 2 và mục 4).
+   - **Gia cố Auth bổ sung (06–09/10/2026):** thêm rate limiter cho refresh/reset/change-password, kiểm tra `is_active` ở verify-otp/resend-otp/reset-password, refactor DRY validation & limiter; sửa lỗi xóa cookie làm đăng xuất nhiều tab và limiter đổi mật khẩu bị bỏ sót (kiểm thử 8/8 + hồi quy 16/16 đạt).
    - **Sprint 3 (đang làm, chưa commit):** đã có `courseService.js` (9 hàm), `chapterService.js` (5 hàm), `courseValidation.js`, `utils/slugify.js`. Còn thiếu: `lessonService`, Lesson Progress, controllers + routes (chưa mount vào `app.js`), nối frontend.
 
 ## 2. Các Việc Đã Hoàn Thành ✅
@@ -42,12 +43,17 @@
   - Bỏ secret JWT dự phòng ghi cứng; thêm `config/env.js` kiểm tra biến môi trường bắt buộc và dừng server nếu thiếu.
   - Sửa lỗi Logout không hoạt động (frontend gọi không kèm Access Token → 401, refresh token không bị thu hồi): logout giờ xác định phiên qua cookie.
   - Frontend: khôi phục phiên khi tải lại trang (`initializeAuth` gọi ở `App.jsx`), route guard trong `PortalLayout` (bắt đăng nhập, đúng portal theo role), refresh token single-flight + retry cho nhiều tab.
+- [x] **Gia cố Auth bổ sung (06–09/10/2026):**
+  - Rate limiter chuẩn hóa bằng factory `createLimiter`: login (5 lần sai / 5 phút / email, bỏ qua lần thành công), refresh-token (30/phút/IP), reset-password (5/15 phút/IP), change-password (5/15 phút/user).
+  - Kiểm tra tài khoản bị khóa (`is_active`) ở verify-otp, resend-otp, reset-password. Reset mật khẩu thành công đồng thời bật `email_verified` và tắt `must_change_password`.
+  - Refresh lỗi chỉ xóa cookie khi token thực sự chết (JWT sai, hết hạn, không tồn tại, tài khoản bị khóa). Token vừa bị request song song xoay vòng (`preserveCookie`) hoặc lỗi hệ thống 5xx thì **giữ cookie** — tránh xóa nhầm cookie mới hợp lệ khiến mọi tab bị đăng xuất.
+  - `changePasswordLimiter` gắn cho cả `PATCH /users/me/password` (endpoint frontend đang dùng), đếm gộp với `PATCH /auth/change-password`.
 
 ## 3. Việc Đang Làm / Chuẩn Bị Làm Ngay Kế Tiếp ⏳
 0. **Backlog bảo mật Auth còn lại (mức thấp–trung bình, chưa sửa):**
    - Đăng ký lại email chưa xác thực vẫn ghi đè mật khẩu → nên chỉ gửi lại OTP, đặt mật khẩu sau khi xác thực.
-   - `loginLimiter` đếm cả lần đăng nhập thành công và chỉ theo IP → thêm `skipSuccessfulRequests`, key theo IP + email.
-   - `verifyOtp` chưa kiểm tra `is_active`; `verify-otp`/`resend-otp` trả 404 làm lộ email tồn tại; login lộ thời gian phản hồi khi email không tồn tại.
+   - `loginLimiter` giờ chỉ tính theo email → một IP vẫn thử 1 mật khẩu trên nhiều email (password spraying). Nên thêm limiter rộng theo IP.
+   - `verify-otp`/`resend-otp` trả 404 làm lộ email tồn tại; login lộ thời gian phản hồi khi email không tồn tại.
    - Regex mật khẩu từ chối các ký tự `~ ' " / \` và dấu cách.
    - Rate limiter đang lưu in-memory (chưa dùng Redis như tài liệu tech-stack).
 1. **Triển khai Sprint 3: Module Khóa học & Giáo trình (Courses, Chapters, Lessons - `api-courses.md`):**
@@ -63,6 +69,8 @@
 - **Route mới cần mở khi `must_change_password = true`:** thêm vào `MUST_CHANGE_PASSWORD_ALLOWLIST` trong `middlewares/authMiddleware.js`.
 - **Route guard frontend:** toàn bộ 4 portal đi qua `PortalLayout` (`components/portal/PortalUI.jsx`) — kiểm tra đăng nhập, role ↔ portal (`training_manager` → `/manager`), và bắt đổi mật khẩu tạm.
 - **Refresh token chỉ dùng 1 lần:** frontend phải gọi qua `refreshAccessToken()` trong `stores/useAuthStore.js`, không tự gọi `axios.post('/auth/refresh-token')`.
+- **Xóa cookie refresh:** controller `refreshToken` chỉ gọi `clearRefreshCookie` khi lỗi `401` và không có cờ `preserveCookie`. Lỗi mới trong `refreshSession` mà không muốn xóa cookie thì đặt `err.preserveCookie = true`.
+- **Nhánh Git:** `feature-dung` đã được merge vào `main` qua PR #7 (08/10/2026). Các commit sau đó trên `feature-dung` (từ `e677acc`) cần PR mới. Các nhánh `feature-ngocson`, `feature-anh`, `feature-manh` nên cập nhật từ `main` thường xuyên để tránh conflict lớn.
 - Toàn bộ diagram chỉ dùng các loại Mermaid phổ biến (`flowchart`, `sequenceDiagram`, `erDiagram`). Tránh dùng `gitgraph`.
 - Tất cả tài liệu viết bằng Markdown trong `docs/` theo chuẩn Docs-as-Code.
 - Đảm bảo 100% Traceability (tính truy vết) đồng bộ giữa Use Case, Sequence Diagram, Database Schema, API Spec, Design System và Frontend Blueprint.

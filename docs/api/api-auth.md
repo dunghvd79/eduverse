@@ -481,6 +481,8 @@ Toàn bộ mã xác thực ngắn hạn và phiên dài hạn đều được qu
 ### 3.4. Tiêu thụ Token nguyên tử (Atomic Token Consumption)
 Refresh Token, OTP và Reset Token đều chỉ dùng được **một lần**. Việc đánh dấu đã dùng được thực hiện bằng một câu lệnh có điều kiện `UPDATE user_tokens SET is_used = true WHERE id = ? AND is_used = false` và kiểm tra số dòng bị ảnh hưởng. Nếu hai request song song gửi cùng một token, chỉ request đầu tiên thành công, request còn lại nhận `401` (refresh) hoặc `400` (OTP / reset). Frontend gộp các lần gọi refresh đồng thời thành một request và thử lại 1 lần sau 500ms để xử lý trường hợp nhiều tab.
 
+Khi `POST /auth/refresh-token` thất bại, server chỉ gửi lệnh xóa cookie (`Max-Age=0`) nếu token thực sự không còn dùng được (JWT sai, hết hạn, không tồn tại, tài khoản bị khóa). Nếu token vừa bị một request song song xoay vòng, hoặc lỗi hệ thống `5xx`, server **giữ nguyên cookie** — vì trình duyệt có thể vừa nhận cookie mới hợp lệ từ request thắng cuộc.
+
 ### 3.5. Bắt buộc đổi mật khẩu tạm (`must_change_password`)
 Tài khoản do Admin tạo hoặc được Admin đặt lại mật khẩu có `must_change_password = true`. Khi cờ này bật, middleware `authenticateToken` từ chối mọi API với `403 Forbidden` và `errors: ["MUST_CHANGE_PASSWORD"]`, **trừ** các route sau:
 - `GET /api/v1/auth/me`
