@@ -70,7 +70,7 @@
 - **Route guard frontend:** toàn bộ 4 portal đi qua `PortalLayout` (`components/portal/PortalUI.jsx`) — kiểm tra đăng nhập, role ↔ portal (`training_manager` → `/manager`), và bắt đổi mật khẩu tạm.
 - **Refresh token chỉ dùng 1 lần:** frontend phải gọi qua `refreshAccessToken()` trong `stores/useAuthStore.js`, không tự gọi `axios.post('/auth/refresh-token')`.
 - **Xóa cookie refresh:** controller `refreshToken` chỉ gọi `clearRefreshCookie` khi lỗi `401` và không có cờ `preserveCookie`. Lỗi mới trong `refreshSession` mà không muốn xóa cookie thì đặt `err.preserveCookie = true`.
-- **Nhánh Git:** `main` mới chỉ có tài liệu Phase 0; toàn bộ code Auth/Users/Sprint 3 nằm trên `feature-dung` (chưa merge). Cần mở PR sớm để các nhánh `feature-ngocson`, `feature-anh`, `feature-manh` tránh conflict lớn.
+- **Nhánh Git:** `feature-dung` đã được merge vào `main` qua PR #7 (08/10/2026). Các commit sau đó trên `feature-dung` (từ `e677acc`) cần PR mới. Các nhánh `feature-ngocson`, `feature-anh`, `feature-manh` nên cập nhật từ `main` thường xuyên để tránh conflict lớn.
 - Toàn bộ diagram chỉ dùng các loại Mermaid phổ biến (`flowchart`, `sequenceDiagram`, `erDiagram`). Tránh dùng `gitgraph`.
 - Tất cả tài liệu viết bằng Markdown trong `docs/` theo chuẩn Docs-as-Code.
 - Đảm bảo 100% Traceability (tính truy vết) đồng bộ giữa Use Case, Sequence Diagram, Database Schema, API Spec, Design System và Frontend Blueprint.
