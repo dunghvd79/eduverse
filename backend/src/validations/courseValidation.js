@@ -102,8 +102,9 @@ export const updateChapterSchema = Joi.object({
  * 7. Reorder Chapters Schema
  */
 export const reorderChaptersSchema = Joi.object({
-  chapterIds: Joi.array().items(Joi.string().uuid()).min(1).required().messages({
+  chapterIds: Joi.array().items(Joi.string().uuid()).min(1).unique().required().messages({
     'array.min': 'Danh sách chương học cần sắp xếp không được để trống',
+    'array.unique': 'Danh sách chương học bị trùng lặp',
     'any.required': 'chapterIds là trường bắt buộc'
   })
 });
@@ -148,8 +149,9 @@ export const updateLessonSchema = Joi.object({
  * 10. Reorder Lessons Schema
  */
 export const reorderLessonsSchema = Joi.object({
-  lessonIds: Joi.array().items(Joi.string().uuid()).min(1).required().messages({
+  lessonIds: Joi.array().items(Joi.string().uuid()).min(1).unique().required().messages({
     'array.min': 'Danh sách bài học cần sắp xếp không được để trống',
+    'array.unique': 'Danh sách bài học bị trùng lặp',
     'any.required': 'lessonIds là trường bắt buộc'
   })
 });

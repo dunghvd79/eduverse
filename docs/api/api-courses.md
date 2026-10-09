@@ -17,7 +17,7 @@
 | `POST` | `/api/v1/courses` | `[Roles: teacher, admin]` | Giảng viên tạo khóa học mới (trạng thái ban đầu `draft`) |
 | `PATCH` | `/api/v1/courses/:id` | `[Roles: teacher, admin]` | Giảng viên cập nhật thông tin khóa học (chủ sở hữu hoặc admin) |
 | `DELETE` | `/api/v1/courses/:id` | `[Roles: teacher, admin]` | Xóa mềm khóa học (`deleted_at = now()`) |
-| `POST` | `/api/v1/courses/:id/publish-request` | `[Roles: teacher]` | Giảng viên gửi yêu cầu phê duyệt khóa học (`draft`/`rejected` $\rightarrow$ `pending`) |
+| `POST` | `/api/v1/courses/:id/publish-request` | `[Roles: teacher, admin]` | Giảng viên (chủ khóa) hoặc Admin gửi yêu cầu phê duyệt khóa học (`draft`/`rejected` $\rightarrow$ `pending`) |
 | `PATCH` | `/api/v1/courses/:id/approve` | `[Roles: training_manager, admin]` | Quản lý đào tạo phê duyệt khóa học (`pending` $\rightarrow$ `published`) |
 | `PATCH` | `/api/v1/courses/:id/reject` | `[Roles: training_manager, admin]` | Quản lý đào tạo từ chối duyệt kèm lý do lưu vào CSDL (`pending` $\rightarrow$ `rejected`) |
 
@@ -347,7 +347,7 @@
 
 #### `POST /api/v1/courses/:id/publish-request`
 * **Mô tả chức năng:** Sau khi soạn thảo xong nội dung (đã có ít nhất 1 chương và 1 bài học), Giảng viên gửi yêu cầu để Quản lý đào tạo xem xét. Trạng thái chuyển từ `draft` (hoặc `rejected`) sang `pending`.
-* **Quyền hạn:** `[Roles: teacher]` (Chủ sở hữu khóa học)
+* **Quyền hạn:** `[Roles: teacher, admin]` — chủ khóa học hoặc Admin *(cập nhật 09/10/2026: Admin được gửi duyệt để khóa học do Admin tạo không bị kẹt ở trạng thái nháp)*
 * **Headers:** `Authorization: Bearer <access_token>`
 
 #### Response Thành Công (`200 OK`):
@@ -941,4 +941,10 @@ Body `{ "categoryIds": ["uuid", ...] }` — phải chứa **đầy đủ và đ�
 Áp dụng cho: `PATCH /courses/:id`, `POST /courses/:courseId/chapters`, `PATCH /chapters/:id`, `PATCH /courses/:courseId/chapters/reorder`, `DELETE /chapters/:id`, `POST /chapters/:chapterId/lessons`, `PATCH /lessons/:id`, `PATCH /chapters/:chapterId/lessons/reorder`, `DELETE /lessons/:id`, `DELETE /courses/:id`.
 
 > **Chưa có:** luồng "mở lại để chỉnh sửa" cho khóa đã `published` (VD: tạo bản nháp phiên bản mới rồi gửi duyệt lại). Cần nhóm thống nhất nghiệp vụ trước khi làm.
+
+### 4.4. Cập nhật sau rà soát (09/10/2026)
+- `GET /chapters/:chapterId/lessons` chỉ trả `id`, `chapterId`, `title`, `lessonType`, `orderIndex` — **không** trả `contentText`/`videoUrl` (nội dung đầy đủ chỉ qua `GET /lessons/:id`, có kiểm tra ghi danh).
+- Chương / bài học thuộc khóa học **đã xóa mềm** trả `404 Not Found` cho mọi thao tác đọc và sửa.
+- `chapterIds` / `lessonIds` khi sắp xếp không được chứa phần tử trùng lặp (`400`).
+- `POST /courses/:id/publish-request`: mở cho `admin` (xem mục 2).
 

@@ -47,8 +47,8 @@ router.post('/courses', ...teacherOrAdmin, validateBody(createCourseSchema), con
 router.patch('/courses/:id', ...teacherOrAdmin, validateIdParam(), validateBody(updateCourseSchema), controller.updateCourse);
 // Xóa mềm khóa học (giảng viên chỉ xóa khi draft/rejected, admin xóa được mọi trạng thái) | Role: chủ khóa (teacher), admin
 router.delete('/courses/:id', ...teacherOrAdmin, validateIdParam(), controller.deleteCourse);
-// Gửi duyệt khóa học (draft/rejected -> pending) | Role: teacher (chủ khóa)
-router.post('/courses/:id/publish-request', authenticateToken, authorizeRoles('teacher'), validateIdParam(), controller.publishRequest);
+// Gửi duyệt khóa học (draft/rejected -> pending) | Role: chủ khóa (teacher), admin
+router.post('/courses/:id/publish-request', ...teacherOrAdmin, validateIdParam(), controller.publishRequest);
 // Phê duyệt khóa học (pending -> published) | Role: training_manager, admin
 router.patch('/courses/:id/approve', ...managerOrAdmin, validateIdParam(), controller.approveCourse);
 // Từ chối khóa học kèm lý do (pending -> rejected) | Role: training_manager, admin
@@ -71,7 +71,7 @@ router.delete('/chapters/:id', ...teacherOrAdmin, validateIdParam(), controller.
 // ==========================================
 // 3. BÀI HỌC (LESSONS)
 // ==========================================
-// Danh sách bài học của chương (chỉ tiêu đề, không có nội dung) | Role: khách + mọi role (khóa chưa published: chủ khóa, manager, admin)
+// Danh sách bài học của chương (chỉ tiêu đề + loại bài, không có nội dung/video) | Role: khách + mọi role (khóa chưa published: chủ khóa, manager, admin)
 router.get('/chapters/:chapterId/lessons', optionalAuthenticateToken, validateIdParam('chapterId'), controller.getLessons);
 // Nội dung đầy đủ bài học (lý thuyết, video) | Role: chủ khóa, manager, admin, giảng viên dạy lớp, học viên đã ghi danh
 router.get('/lessons/:id', authenticateToken, validateIdParam(), controller.getLesson);

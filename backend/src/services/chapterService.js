@@ -83,8 +83,12 @@ export const updateChapter = async (chapterId, data, currentUser) => {
   if (!chapter) {
     throw new AppError('Không tìm thấy chương học', 404, 'Not Found');
   }
+  // Khóa học đã bị xóa mềm -> include Course trả về null
+  if (!chapter.course) {
+    throw new AppError('Không tìm thấy khóa học', 404, 'Not Found');
+  }
 
-  const isOwner = chapter.course && chapter.course.owner_id === currentUser.id;
+  const isOwner = chapter.course.owner_id === currentUser.id;
   const isAdmin = currentUser.role === 'admin';
   if (!isOwner && !isAdmin) {
     throw new AppError('Bạn không có quyền chỉnh sửa chương học này', 403, 'Forbidden');
@@ -152,8 +156,12 @@ export const deleteChapter = async (chapterId, currentUser) => {
   if (!chapter) {
     throw new AppError('Không tìm thấy chương học', 404, 'Not Found');
   }
+  // Khóa học đã bị xóa mềm -> include Course trả về null
+  if (!chapter.course) {
+    throw new AppError('Không tìm thấy khóa học', 404, 'Not Found');
+  }
 
-  const isOwner = chapter.course && chapter.course.owner_id === currentUser.id;
+  const isOwner = chapter.course.owner_id === currentUser.id;
   const isAdmin = currentUser.role === 'admin';
   if (!isOwner && !isAdmin) {
     throw new AppError('Bạn không có quyền xóa chương học này', 403, 'Forbidden');

@@ -10,6 +10,7 @@ import courseRoutes from './routes/courseRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
 import { errorHandler } from './middlewares/errorMiddleware.js';
 import { sendError } from './utils/response.js';
+import { AppError } from './utils/AppError.js';
 
 const app = express();
 
@@ -28,7 +29,8 @@ app.use(cors({
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('CORS policy: Origin not allowed'));
+      // AppError -> errorMiddleware trả 403 thay vì 500
+      callback(new AppError('CORS policy: Origin không được phép truy cập API', 403, 'Forbidden'));
     }
   },
   credentials: true,
