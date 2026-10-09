@@ -1,5 +1,4 @@
 import Joi from 'joi';
-import { sendError } from '../utils/response.js';
 
 // Password policy regex: min 8, max 32, at least 1 uppercase, 1 lowercase, 1 number, 1 special character
 const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^()_+\-=\[\]{}|;:,.<>])[A-Za-z\d@$!%*?&#^()_+\-=\[\]{}|;:,.<>]{8,32}$/;
@@ -94,16 +93,3 @@ export const changePasswordSchema = Joi.object({
     'any.required': 'Mật khẩu xác nhận là bắt buộc'
   })
 });
-
-/**
- * Validation Middleware generator
- */
-export const validate = (schema) => (req, res, next) => {
-  const { error, value } = schema.validate(req.body, { abortEarly: false, stripUnknown: true });
-  if (error) {
-    const errorDetails = error.details.map(detail => detail.message);
-    return sendError(res, 400, 'Bad Request', 'Dữ liệu gửi lên không hợp lệ', errorDetails);
-  }
-  req.body = value;
-  next();
-};
