@@ -9,6 +9,7 @@ import userRoutes from './routes/userRoutes.js';
 import courseRoutes from './routes/courseRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
 import { errorHandler } from './middlewares/errorMiddleware.js';
+import { sendError } from './utils/response.js';
 
 const app = express();
 
@@ -60,6 +61,11 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/categories', categoryRoutes);
 app.use('/api/v1', courseRoutes);
+
+// 404 cho route không tồn tại (trả JSON theo Envelope Pattern thay vì trang HTML mặc định của Express)
+app.use((req, res) => {
+  sendError(res, 404, 'Not Found', `Không tìm thấy API ${req.method} ${req.originalUrl}`);
+});
 
 // Centralized Error Handler (Envelope Pattern)
 app.use(errorHandler);

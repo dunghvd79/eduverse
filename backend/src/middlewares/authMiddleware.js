@@ -7,7 +7,6 @@ const MUST_CHANGE_PASSWORD_ALLOWLIST = new Set([
   'GET /api/v1/auth/me',
   'PATCH /api/v1/auth/change-password',
   'GET /api/v1/users/me',
-  'GET /api/v1/users/me/profile',
   'PATCH /api/v1/users/me/password'
 ]);
 

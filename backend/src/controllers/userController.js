@@ -4,7 +4,7 @@ import { sendSuccess } from '../utils/response.js';
 import { setRefreshCookie } from '../utils/authCookies.js';
 
 /**
- * 1. GET /api/v1/users/me (and /me/profile)
+ * 1. GET /api/v1/users/me
  */
 export const getMe = async (req, res, next) => {
   try {
@@ -16,7 +16,7 @@ export const getMe = async (req, res, next) => {
 };
 
 /**
- * 2. PATCH /api/v1/users/me (and PUT /me/profile)
+ * 2. PATCH /api/v1/users/me
  */
 export const updateMe = async (req, res, next) => {
   try {
