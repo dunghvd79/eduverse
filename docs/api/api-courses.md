@@ -45,6 +45,15 @@
 |:---:|---|:---:|---|
 | `POST` | `/api/v1/classes/:classId/lessons/:lessonId/progress` | `[Roles: student]` | Học viên đánh dấu hoàn thành / hủy hoàn thành bài học lý thuyết/video |
 
+### 1.5. Phân hệ Danh mục Khóa học (Categories) — *bổ sung 09/10/2026*
+| Method | Endpoint | Quyền hạn | Mô tả chức năng |
+|:---:|---|:---:|---|
+| `GET` | `/api/v1/categories` | `[Public / Auth]` | Danh sách danh mục đang hiển thị (kèm `courseCount`). Quản lý/Admin truyền `?includeHidden=true` để xem cả danh mục ẩn |
+| `POST` | `/api/v1/categories` | `[Roles: training_manager, admin]` | Tạo danh mục (slug tự sinh từ tên) |
+| `PATCH` | `/api/v1/categories/reorder` | `[Roles: training_manager, admin]` | Sắp xếp lại thứ tự hiển thị (gửi đủ toàn bộ `categoryIds`) |
+| `PATCH` | `/api/v1/categories/:id` | `[Roles: training_manager, admin]` | Sửa tên/mô tả/thứ tự, ẩn/hiện danh mục |
+| `DELETE` | `/api/v1/categories/:id` | `[Roles: training_manager, admin]` | Xóa danh mục (chặn `409` nếu còn khóa học sử dụng) |
+
 ---
 
 ## 2. Đặc Tả Chi Tiết Từng Endpoint
@@ -857,4 +866,79 @@
 
 ### 3.4. Thứ tự Ưu tiên Route trong Express Router (Route Precedence)
 - Các route tĩnh và route hành động (`/curriculum`, `/publish-request`, `/approve`, `/reject`) bắt buộc phải được khai báo **TRƯỚC** các route có tham số động `router.get('/:id', ...)` trong Express CourseRouter để tránh bị bắt nhầm tham số URL (Route shadowing).
+
+### Ghi chú triển khai (09/10/2026): Quyền xem nội dung theo trạng thái khóa học
+- `GET /courses/:courseId/chapters` và `GET /chapters/:chapterId/lessons` (`[Public / Auth]`): nếu khóa học **chưa `published`**, chỉ chủ sở hữu, Quản lý đào tạo và Admin được xem; người khác nhận `403 Forbidden` — "Khóa học chưa được công khai".
+- `GET /lessons/:id`: ngoài điều kiện trên, chỉ trả nội dung đầy đủ cho chủ khóa học, Quản lý đào tạo, Admin, giảng viên phụ trách một lớp của khóa học, hoặc học viên có ghi danh `active` vào một lớp của khóa học. Trường hợp khác trả `403 Forbidden`.
+- `PATCH /courses/:courseId/chapters/reorder` và `PATCH /chapters/:chapterId/lessons/reorder`: `chapterIds`/`lessonIds` phải chứa **đầy đủ và đúng** toàn bộ phần tử hiện có, nếu không trả `400 Bad Request`.
+
+---
+
+## 4. Bổ Sung 09/10/2026: Danh mục Khóa học & Khóa Chỉnh sửa
+
+### 4.1. Đặc tả `Categories`
+
+#### `GET /api/v1/categories`
+* **Quyền hạn:** `[Public / Authenticated]`
+* **Query:** `includeHidden` *(boolean, mặc định `false`)* — chỉ có tác dụng với `training_manager`/`admin`.
+* **`courseCount`:** khách, học viên, giảng viên chỉ đếm khóa `published`; Quản lý/Admin đếm mọi trạng thái.
+
+```json
+{
+  "success": true,
+  "statusCode": 200,
+  "message": "Lấy danh sách danh mục thành công",
+  "data": [
+    {
+      "id": "3f0c7a1e-6a0b-4d8e-9a51-2f4b8c6d1e20",
+      "name": "Lập trình",
+      "slug": "lap-trinh",
+      "description": "Các khóa học về lập trình và phát triển phần mềm.",
+      "sortOrder": 1,
+      "isActive": true,
+      "courseCount": 1,
+      "createdAt": "2026-10-09T08:00:00.000Z",
+      "updatedAt": "2026-10-09T08:00:00.000Z"
+    }
+  ],
+  "timestamp": "2026-10-09T08:00:00.000Z"
+}
+```
+
+#### `POST /api/v1/categories` · `PATCH /api/v1/categories/:id`
+| Thuộc tính | Kiểu | Bắt buộc (POST) | Ràng buộc |
+|---|---|:---:|---|
+| `name` | `string` | ✔️ | 2–100 ký tự, không trùng (không phân biệt hoa thường). Đổi tên sẽ sinh lại `slug` |
+| `description` | `string` | ❌ | ≤ 1000 ký tự |
+| `sortOrder` | `integer` | ❌ | ≥ 0. POST không truyền → thêm vào cuối danh sách |
+| `isActive` | `boolean` | ❌ | Mặc định `true` |
+
+`PATCH` phải có ít nhất 1 trường. Lỗi: `409 Conflict` — "Tên danh mục đã tồn tại".
+
+#### `PATCH /api/v1/categories/reorder`
+Body `{ "categoryIds": ["uuid", ...] }` — phải chứa **đầy đủ và đúng** toàn bộ danh mục hiện có (kể cả danh mục ẩn), không trùng lặp; sai → `400`. Thứ tự trong mảng chính là `sortOrder` mới (bắt đầu từ 1).
+
+#### `DELETE /api/v1/categories/:id`
+`409 Conflict` nếu còn khóa học (kể cả đã xóa mềm) tham chiếu — khuyến nghị **ẩn** danh mục thay vì xóa.
+
+### 4.2. Thay đổi trên API Khóa học
+- `POST /courses`, `PATCH /courses/:id`: nhận thêm `categoryId` *(uuid | null)*. Danh mục phải tồn tại và đang hiển thị (`400` nếu không). Khi `PATCH` giữ nguyên danh mục cũ (kể cả đã bị ẩn) thì không kiểm tra lại.
+- `GET /courses` nhận thêm query:
+  * `categoryId` *(uuid)* hoặc `category` *(slug)*: lọc theo danh mục.
+  * `mine` *(boolean)*: chỉ trả khóa học do người dùng hiện tại sở hữu (mọi trạng thái, có thể kết hợp `status`) — dùng cho trang "Khóa học của tôi" của giảng viên.
+- `GET /courses` và `GET /courses/:id` trả thêm `category: { id, name, slug } | null`.
+- `GET /courses/:id/curriculum`: mỗi bài học chỉ gồm `id`, `title`, `lessonType`, `orderIndex`, `quizId`, `assignmentId`, `isCompleted` **đúng theo đặc tả mục 2** — **không** trả `videoUrl`/`contentText` vì đây là API công khai; nội dung đầy đủ lấy qua `GET /lessons/:id` (có kiểm tra ghi danh).
+
+### 4.3. Khóa chỉnh sửa theo trạng thái khóa học
+Để nội dung học viên nhìn thấy luôn là nội dung đã được phê duyệt:
+
+| Trạng thái | Sửa thông tin khóa / chương / bài, sắp xếp, thêm, xóa chương/bài | Xóa khóa học |
+|---|---|---|
+| `draft`, `rejected` | ✅ Chủ sở hữu, Admin | ✅ Chủ sở hữu, Admin |
+| `pending` | ❌ `409 Conflict` — "Khóa học đang chờ duyệt nên không thể chỉnh sửa…" | ❌ Giảng viên · ✅ Admin |
+| `published` | ❌ `409 Conflict` — "Khóa học đã được công khai nên không thể chỉnh sửa nội dung." (áp dụng cả Admin) | ❌ Giảng viên · ✅ Admin (kiểm duyệt) |
+
+Áp dụng cho: `PATCH /courses/:id`, `POST /courses/:courseId/chapters`, `PATCH /chapters/:id`, `PATCH /courses/:courseId/chapters/reorder`, `DELETE /chapters/:id`, `POST /chapters/:chapterId/lessons`, `PATCH /lessons/:id`, `PATCH /chapters/:chapterId/lessons/reorder`, `DELETE /lessons/:id`, `DELETE /courses/:id`.
+
+> **Chưa có:** luồng "mở lại để chỉnh sửa" cho khóa đã `published` (VD: tạo bản nháp phiên bản mới rồi gửi duyệt lại). Cần nhóm thống nhất nghiệp vụ trước khi làm.
 

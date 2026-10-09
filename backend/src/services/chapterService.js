@@ -1,16 +1,18 @@
 import models from '../models/index.js';
 import { AppError } from '../utils/AppError.js';
+import { assertCourseVisible, assertCourseEditable } from './courseService.js';
 
 const { sequelize, Course, Chapter, Lesson } = models;
 
 /**
  * 1. Lấy danh sách các chương của một khóa học
  */
-export const getChapters = async (courseId) => {
+export const getChapters = async (courseId, currentUser = null) => {
   const course = await Course.findByPk(courseId);
   if (!course) {
     throw new AppError('Không tìm thấy khóa học', 404, 'Not Found');
   }
+  assertCourseVisible(course, currentUser);
 
   const chapters = await Chapter.findAll({
     where: { course_id: courseId },
@@ -44,6 +46,7 @@ export const createChapter = async (courseId, data, currentUser) => {
   if (!isOwner && !isAdmin) {
     throw new AppError('Bạn không có quyền thêm chương học vào khóa học này', 403, 'Forbidden');
   }
+  assertCourseEditable(course);
 
   let orderIndex = data.orderIndex;
   if (orderIndex === undefined || orderIndex === null) {
@@ -74,7 +77,7 @@ export const createChapter = async (courseId, data, currentUser) => {
  */
 export const updateChapter = async (chapterId, data, currentUser) => {
   const chapter = await Chapter.findByPk(chapterId, {
-    include: [{ model: Course, attributes: ['id', 'owner_id'] }]
+    include: [{ model: Course, attributes: ['id', 'owner_id', 'status'] }]
   });
 
   if (!chapter) {
@@ -86,6 +89,7 @@ export const updateChapter = async (chapterId, data, currentUser) => {
   if (!isOwner && !isAdmin) {
     throw new AppError('Bạn không có quyền chỉnh sửa chương học này', 403, 'Forbidden');
   }
+  assertCourseEditable(chapter.course);
 
   chapter.title = data.title.trim();
   await chapter.save();
@@ -113,16 +117,16 @@ export const reorderChapters = async (courseId, chapterIds, currentUser) => {
   if (!isOwner && !isAdmin) {
     throw new AppError('Bạn không có quyền sắp xếp lại chương học của khóa này', 403, 'Forbidden');
   }
+  assertCourseEditable(course);
 
   const existingChapters = await Chapter.findAll({
     where: { course_id: courseId }
   });
 
+  // Phải gửi đủ và đúng toàn bộ chương của khóa, nếu không order_index sẽ bị trùng
   const existingIds = new Set(existingChapters.map(c => c.id));
-  for (const id of chapterIds) {
-    if (!existingIds.has(id)) {
-      throw new AppError(`Chương học ${id} không thuộc khóa học này`, 400, 'Bad Request');
-    }
+  if (existingIds.size !== chapterIds.length || chapterIds.some(id => !existingIds.has(id))) {
+    throw new AppError('Danh sách chương sắp xếp không khớp với khóa học', 400, 'Bad Request');
   }
 
   await sequelize.transaction(async (t) => {
@@ -142,7 +146,7 @@ export const reorderChapters = async (courseId, chapterIds, currentUser) => {
  */
 export const deleteChapter = async (chapterId, currentUser) => {
   const chapter = await Chapter.findByPk(chapterId, {
-    include: [{ model: Course, attributes: ['id', 'owner_id'] }]
+    include: [{ model: Course, attributes: ['id', 'owner_id', 'status'] }]
   });
 
   if (!chapter) {
@@ -154,6 +158,7 @@ export const deleteChapter = async (chapterId, currentUser) => {
   if (!isOwner && !isAdmin) {
     throw new AppError('Bạn không có quyền xóa chương học này', 403, 'Forbidden');
   }
+  assertCourseEditable(chapter.course);
 
   await chapter.destroy();
   return true;

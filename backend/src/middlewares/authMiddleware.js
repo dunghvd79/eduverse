@@ -59,6 +59,32 @@ export const authenticateToken = async (req, res, next) => {
 };
 
 /**
+ * Middleware: Optional Authentication (cho route công khai như danh sách/chi tiết khóa học)
+ * Có token hợp lệ -> gắn req.user; không có hoặc token lỗi -> req.user = null và vẫn cho đi tiếp.
+ * Tài khoản bị khóa hoặc đang dùng mật khẩu tạm được coi như khách.
+ */
+export const optionalAuthenticateToken = async (req, res, next) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    req.user = null;
+    return next();
+  }
+
+  try {
+    const token = authHeader.split(' ')[1];
+    const decoded = verifyAccessToken(token);
+    const user = await User.findByPk(decoded.sub);
+
+    req.user = user && user.is_active && !user.must_change_password ? user : null;
+    return next();
+  } catch {
+    req.user = null;
+    return next();
+  }
+};
+
+/**
  * Middleware: Role-based Authorization
  */
 export const authorizeRoles = (...roles) => {
@@ -72,5 +98,6 @@ export const authorizeRoles = (...roles) => {
 
 export default {
   authenticateToken,
+  optionalAuthenticateToken,
   authorizeRoles
 };

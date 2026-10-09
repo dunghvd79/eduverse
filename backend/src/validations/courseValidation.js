@@ -17,6 +17,9 @@ export const createCourseSchema = Joi.object({
   thumbnailUrl: Joi.string().uri().max(500).allow(null, '').optional().messages({
     'string.uri': 'Đường dẫn ảnh đại diện (thumbnailUrl) phải là URL hợp lệ'
   }),
+  categoryId: Joi.string().uuid().allow(null).optional().messages({
+    'string.guid': 'Danh mục khóa học (categoryId) không hợp lệ'
+  }),
   price: Joi.number().min(0).optional().default(0).messages({
     'number.min': 'Học phí phải lớn hơn hoặc bằng 0'
   })
@@ -36,6 +39,9 @@ export const updateCourseSchema = Joi.object({
   thumbnailUrl: Joi.string().uri().max(500).allow(null, '').optional().messages({
     'string.uri': 'Đường dẫn ảnh đại diện (thumbnailUrl) phải là URL hợp lệ'
   }),
+  categoryId: Joi.string().uuid().allow(null).optional().messages({
+    'string.guid': 'Danh mục khóa học (categoryId) không hợp lệ'
+  }),
   price: Joi.number().min(0).optional().messages({
     'number.min': 'Học phí phải lớn hơn hoặc bằng 0'
   })
@@ -49,6 +55,9 @@ export const queryCoursesSchema = Joi.object({
   limit: Joi.number().integer().min(1).max(100).default(10),
   search: Joi.string().allow('').optional(),
   status: Joi.string().valid('draft', 'pending', 'published', 'rejected').optional(),
+  categoryId: Joi.string().uuid().optional(),
+  category: Joi.string().max(120).optional(), // lọc theo slug danh mục
+  mine: Joi.boolean().optional(), // chỉ khóa học do người dùng hiện tại sở hữu
   sortBy: Joi.string().valid('createdAt', 'created_at', 'title', 'price').default('createdAt'),
   sortOrder: Joi.string().valid('ASC', 'DESC', 'asc', 'desc').default('DESC')
 });
@@ -156,6 +165,48 @@ export const updateLessonProgressSchema = Joi.object({
 });
 
 /**
+ * 12. Category Schemas (Danh mục khóa học)
+ */
+const categoryNameField = Joi.string().min(2).max(100).trim().messages({
+  'string.min': 'Tên danh mục phải có ít nhất 2 ký tự',
+  'string.max': 'Tên danh mục không được vượt quá 100 ký tự',
+  'string.empty': 'Tên danh mục không được để trống',
+  'any.required': 'Tên danh mục là trường bắt buộc'
+});
+
+export const createCategorySchema = Joi.object({
+  name: categoryNameField.required(),
+  description: Joi.string().max(1000).allow(null, '').optional().messages({
+    'string.max': 'Mô tả danh mục không được vượt quá 1000 ký tự'
+  }),
+  sortOrder: Joi.number().integer().min(0).optional(),
+  isActive: Joi.boolean().optional()
+});
+
+export const updateCategorySchema = Joi.object({
+  name: categoryNameField.optional(),
+  description: Joi.string().max(1000).allow(null, '').optional().messages({
+    'string.max': 'Mô tả danh mục không được vượt quá 1000 ký tự'
+  }),
+  sortOrder: Joi.number().integer().min(0).optional(),
+  isActive: Joi.boolean().optional()
+}).min(1).messages({
+  'object.min': 'Cần truyền ít nhất một trường để cập nhật'
+});
+
+export const reorderCategoriesSchema = Joi.object({
+  categoryIds: Joi.array().items(Joi.string().uuid()).min(1).unique().required().messages({
+    'array.min': 'Danh sách danh mục cần sắp xếp không được để trống',
+    'array.unique': 'Danh sách danh mục bị trùng lặp',
+    'any.required': 'categoryIds là trường bắt buộc'
+  })
+});
+
+export const queryCategoriesSchema = Joi.object({
+  includeHidden: Joi.boolean().default(false)
+});
+
+/**
  * Validation Middleware generator
  */
 export const validateBody = (schema) => (req, res, next) => {
@@ -174,6 +225,7 @@ export const validateQuery = (schema) => (req, res, next) => {
     const errorDetails = error.details.map(detail => detail.message);
     return sendError(res, 400, 'Bad Request', 'Tham số truy vấn không hợp lệ', errorDetails);
   }
-  req.query = value;
+  // Express 5: req.query là getter chỉ đọc -> ghi đè bằng defineProperty thay vì gán trực tiếp
+  Object.defineProperty(req, 'query', { value, writable: true, configurable: true, enumerable: true });
   next();
 };

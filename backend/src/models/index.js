@@ -3,6 +3,7 @@ import { sequelize } from '../config/database.js';
 import User from './User.js';
 import UserToken from './UserToken.js';
 import Course from './Course.js';
+import Category from './Category.js';
 import Chapter from './Chapter.js';
 import Lesson from './Lesson.js';
 import CourseMaterial from './CourseMaterial.js';
@@ -33,6 +34,10 @@ Course.belongsTo(User, { foreignKey: 'owner_id', as: 'owner' });
 
 User.hasMany(Course, { foreignKey: 'approved_by', as: 'approved_courses' });
 Course.belongsTo(User, { foreignKey: 'approved_by', as: 'approver' });
+
+// 2b. Categories & Courses (xóa danh mục bị chặn ở tầng service nếu còn khóa học)
+Category.hasMany(Course, { foreignKey: 'category_id', as: 'courses', onDelete: 'RESTRICT' });
+Course.belongsTo(Category, { foreignKey: 'category_id', as: 'category' });
 
 // 3. Courses, Chapters & Lessons
 Course.hasMany(Chapter, { foreignKey: 'course_id', onDelete: 'CASCADE' });
@@ -135,6 +140,7 @@ export {
   User,
   UserToken,
   Course,
+  Category,
   Chapter,
   Lesson,
   CourseMaterial,
@@ -157,6 +163,7 @@ export default {
   User,
   UserToken,
   Course,
+  Category,
   Chapter,
   Lesson,
   CourseMaterial,

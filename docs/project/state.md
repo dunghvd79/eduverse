@@ -21,7 +21,8 @@
      - Tích hợp trang **Admin Console Quản lý người dùng** (`/admin/users`): bảng dữ liệu phân trang, lọc theo 4 vai trò, lọc trạng thái hoạt động/đã khóa, tìm kiếm linh hoạt, tạo tài khoản sinh mật khẩu tạm, khóa/mở khóa tài khoản kèm lý do vi phạm, đặt lại mật khẩu khẩn cấp và xóa mềm.
    - **Rà soát & vá bảo mật Module Auth (05/10/2026):** sửa 7 lỗi, kiểm thử tích hợp 16/16 kịch bản đạt (xem mục 2 và mục 4).
    - **Gia cố Auth bổ sung (06–09/10/2026):** thêm rate limiter cho refresh/reset/change-password, kiểm tra `is_active` ở verify-otp/resend-otp/reset-password, refactor DRY validation & limiter; sửa lỗi xóa cookie làm đăng xuất nhiều tab và limiter đổi mật khẩu bị bỏ sót (kiểm thử 8/8 + hồi quy 16/16 đạt).
-   - **Sprint 3 (đang làm, chưa commit):** đã có `courseService.js` (9 hàm), `chapterService.js` (5 hàm), `courseValidation.js`, `utils/slugify.js`. Còn thiếu: `lessonService`, Lesson Progress, controllers + routes (chưa mount vào `app.js`), nối frontend.
+   - **Sprint 3 — Danh mục khóa học & Khóa chỉnh sửa (09/10/2026):** thêm module Categories (backend + trang quản lý + lọc Catalog), khóa sửa nội dung khi `pending`/`published`; sửa thêm lỗi trình soạn đề cương ghi đè mất nội dung bài, curriculum công khai lộ `videoUrl`, trang "Khóa học của tôi" hiển thị khóa của giảng viên khác. Test API 26/26 + hồi quy 25/25, 16/16, 8/8.
+   - **Sprint 3 — Backend hoàn thành, Frontend đã nối API (09/10/2026):** 21 endpoint Courses/Chapters/Lessons/Lesson Progress theo `api-courses.md` (`courseController.js`, `courseRoutes.js` mount tại `/api/v1`, `lessonService.js`, `optionalAuthenticateToken`). Frontend `services/courseService.js` + 7 trang (catalog, chi tiết khóa học, khóa học của giảng viên, curriculum builder, hàng đợi duyệt, chi tiết duyệt, trình học). Code do **tuanmanh205** viết (commit `57f4686` trên `feature-ngocson`, nằm nhầm trong thư mục con `eduverse-feature-dung/`), được ghép thủ công sang `feature-dung` kèm review và sửa lỗi. Kiểm thử E2E API 25/25 đạt.
 
 ## 2. Các Việc Đã Hoàn Thành ✅
 - [x] Toàn bộ Phase 0 (Use cases, ERD, Schema, Sequences, API Docs, Blueprint, Wireframes).
@@ -56,15 +57,25 @@
    - `verify-otp`/`resend-otp` trả 404 làm lộ email tồn tại; login lộ thời gian phản hồi khi email không tồn tại.
    - Regex mật khẩu từ chối các ký tự `~ ' " / \` và dấu cách.
    - Rate limiter đang lưu in-memory (chưa dùng Redis như tài liệu tech-stack).
-1. **Triển khai Sprint 3: Module Khóa học & Giáo trình (Courses, Chapters, Lessons - `api-courses.md`):**
-   - API Quản lý Danh mục khóa học (Categories) & Khóa học (CRUD Course, thumbnail, tìm kiếm/lọc, trạng thái `DRAFT`, `PENDING`, `PUBLISHED`).
-   - API Quản lý Chương học (Chapters) & Bài học (Lessons: Video URL, tài liệu đính kèm, lý thuyết).
-   - Quy trình Giảng viên gửi duyệt $\rightarrow$ Quản lý đào tạo phê duyệt/từ chối.
-   - Nối giao diện Soạn thảo đề cương (`/teacher/courses/:id/curriculum`), Duyệt khóa học (`/manager/approvals`), và Trình học tập (`/student/courses/:courseId/learn/:lessonId`).
+1. **Hoàn thiện Sprint 3: Module Khóa học & Giáo trình (`api-courses.md`):**
+   - [x] Backend 21 endpoint Courses/Chapters/Lessons/Lesson Progress + quy trình gửi duyệt → phê duyệt/từ chối.
+   - [x] Nối API cho 7 trang frontend.
+   - [ ] **Kiểm thử tay trên trình duyệt** 7 trang (chưa test UI, mới test API).
+   - [x] **Khóa chỉnh sửa** khi khóa học `pending`/`published` (đã chốt 09/10/2026): mọi thao tác sửa khóa/chương/bài trả `409`; chỉ sửa ở `draft`/`rejected`. Admin vẫn xóa được khóa để kiểm duyệt. Trình soạn đề cương chuyển sang chế độ chỉ đọc.
+   - [x] **Danh mục khóa học (Categories)** (đã chốt 09/10/2026): bảng `categories` (bảng thứ 19) + `courses.category_id`, 5 endpoint `/api/v1/categories`, trang `/manager/categories` nối API thật (thêm/sửa/ẩn-hiện/sắp xếp/xóa), lọc Catalog theo danh mục, giảng viên chọn danh mục khi tạo/sửa khóa. Migration `npm run db:migrate:categories` **đã chạy trên Neon dev**.
+   - [ ] Luồng "mở lại để chỉnh sửa" khóa đã `published` (phiên bản mới → duyệt lại) — chưa có, cần chốt nghiệp vụ.
+   - [ ] Trang **Chi tiết duyệt** (`/manager/approvals/:id/review`) mới chỉ hiện tiêu đề bài, Quản lý chưa xem được nội dung bài để duyệt.
+   - [ ] Trang chủ (`HomePage`) vẫn dùng danh mục & khóa học giả (mock) — chưa nối API.
+   - [ ] Tài liệu đính kèm bài học (`CourseMaterial`) — phụ thuộc module Uploads (S3).
 2. **Triển khai Sprint 4: Module Lớp học & Thành viên (Classes, Enrollments - `api-classes.md`).**
 3. **Triển khai Sprint 5: Module Trắc nghiệm & Đề thi (Quizzes, Gemini AI - `api-quizzes.md`).**
 
 ## 4. Ghi Chú Kỹ Thuật Quan Trọng
+- **Migration CSDL:** không chạy `sequelize.sync({ alter: true })` trên DB chung để thêm bảng/cột mới; viết script idempotent trong `backend/src/scripts/migrations/` (mẫu: `20261009-add-categories.js`) và thêm lệnh vào `package.json`. Mỗi thành viên cần chạy `npm run db:migrate:categories` nếu dùng DB riêng.
+- **Khóa chỉnh sửa khóa học:** dùng `assertCourseEditable(course)` (export từ `courseService.js`) cho mọi API thay đổi nội dung khóa/chương/bài mới thêm sau này.
+- **Đề cương công khai không chứa nội dung bài:** trình soạn đề cương phải tải nội dung qua `GET /lessons/:id` trước khi cho sửa, nếu không sẽ ghi đè mất `contentText`.
+- **Express 5 & `req.query`:** `req.query` là getter chỉ đọc, không được gán `req.query = ...` (gây lỗi 500). Dùng `Object.defineProperty` như `validateQuery` trong `courseValidation.js`.
+- **Quyền xem nội dung khóa học:** dùng `assertCourseVisible` (export từ `courseService.js`) cho mọi API đọc chương/bài. Nội dung đầy đủ bài học (`GET /lessons/:id`) chỉ cho chủ khóa, Quản lý, Admin, giảng viên dạy lớp của khóa, hoặc học viên đã ghi danh `active`.
 - **Biến môi trường:** mọi module cần `process.env` phải import `backend/src/config/env.js` (đã được import trong `server.js`, `config/database.js`, `utils/jwt.js`). Không dùng giá trị secret dự phòng.
 - **Route mới cần mở khi `must_change_password = true`:** thêm vào `MUST_CHANGE_PASSWORD_ALLOWLIST` trong `middlewares/authMiddleware.js`.
 - **Route guard frontend:** toàn bộ 4 portal đi qua `PortalLayout` (`components/portal/PortalUI.jsx`) — kiểm tra đăng nhập, role ↔ portal (`training_manager` → `/manager`), và bắt đổi mật khẩu tạm.
