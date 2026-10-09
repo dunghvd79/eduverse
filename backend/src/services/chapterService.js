@@ -6,10 +6,18 @@ const { sequelize, Course, Chapter, Lesson } = models;
 /**
  * 1. Lấy danh sách các chương của một khóa học
  */
-export const getChapters = async (courseId) => {
+export const getChapters = async (courseId, currentUser = null) => {
   const course = await Course.findByPk(courseId);
   if (!course) {
     throw new AppError('Không tìm thấy khóa học', 404, 'Not Found');
+  }
+
+  if (course.status !== 'published') {
+    const isOwner = currentUser && course.owner_id === currentUser.id;
+    const isStaff = currentUser && ['training_manager', 'admin'].includes(currentUser.role);
+    if (!isOwner && !isStaff) {
+      throw new AppError('Khóa học chưa được công khai', 403, 'Forbidden');
+    }
   }
 
   const chapters = await Chapter.findAll({
@@ -24,7 +32,12 @@ export const getChapters = async (courseId) => {
     title: ch.title,
     orderIndex: ch.order_index,
     totalLessons: ch.lessons ? ch.lessons.length : 0,
-    lessons: ch.lessons || [],
+    lessons: (ch.lessons || []).map((lesson) => ({
+      id: lesson.id,
+      title: lesson.title,
+      lessonType: lesson.lesson_type,
+      orderIndex: lesson.order_index
+    })),
     createdAt: ch.created_at,
     updatedAt: ch.updated_at
   }));
@@ -119,6 +132,9 @@ export const reorderChapters = async (courseId, chapterIds, currentUser) => {
   });
 
   const existingIds = new Set(existingChapters.map(c => c.id));
+  if (chapterIds.length !== existingChapters.length) {
+    throw new AppError('Danh sách sắp xếp phải bao gồm toàn bộ chương học', 400, 'Bad Request');
+  }
   for (const id of chapterIds) {
     if (!existingIds.has(id)) {
       throw new AppError(`Chương học ${id} không thuộc khóa học này`, 400, 'Bad Request');

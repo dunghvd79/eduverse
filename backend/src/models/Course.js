@@ -11,6 +11,10 @@ export const Course = sequelize.define('courses', {
     type: DataTypes.UUID,
     allowNull: false
   },
+  category_id: {
+    type: DataTypes.UUID,
+    allowNull: true
+  },
   title: {
     type: DataTypes.STRING(255),
     allowNull: false

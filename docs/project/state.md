@@ -1,6 +1,6 @@
 # 🧭 Trạng Thái Tiến Độ Dự Án (Project State)
 
-> **Cập nhật lần cuối:** 05/10/2026  
+> **Cập nhật lần cuối:** 09/10/2026  
 > **Người cập nhật:** dunghvd79, Hoàng Ngọc Sơn & AI Assistant  
 > **Giai đoạn hiện tại:** Phase 1 — Hoàn thành Sprint 2 + Đợt rà soát & vá bảo mật Module Auth; đang triển khai Sprint 3 (Courses/Chapters/Lessons)
 
@@ -12,7 +12,7 @@
 3. **Tiến độ Phase 1 (Backend & Database):**
    - Khởi tạo kiến trúc mã nguồn Backend Express.js chuẩn ES Modules (`backend/`).
    - Kết nối thành công tới **Cloud Database Neon.tech (hạ tầng AWS Singapore)** qua giao thức mã hóa SSL.
-   - Định nghĩa trọn bộ **18 Sequelize Models** với ràng buộc khóa ngoại, UUID v4, indexes và xóa mềm (Soft Delete).
+   - Định nghĩa trọn bộ **19 Sequelize Models** với ràng buộc khóa ngoại, UUID v4, indexes và xóa mềm (Soft Delete).
    - Chạy script đồng bộ và nạp dữ liệu mẫu (`migrateAndSeed.js`): Khởi tạo thành công toàn bộ 18 bảng, nạp 7 tài khoản người dùng 4 role (mật khẩu mặc định `EduVerse@2026`).
    - **Triển khai Hoàn Tất 100% Module Xác Thực (Authentication & Session - Sprint 2, Phần 1):** 10/10 endpoints theo chuẩn `docs/api/api-auth.md`, JWT kép, Rate limiter, kết nối trọn bộ 5/5 màn hình Auth.
    - **Triển khai Hoàn Tất 100% Module Quản Lý Người Dùng & Hồ Sơ Cá Nhân (Users & RBAC - Sprint 2, Phần 2):**
@@ -20,7 +20,7 @@
      - Tích hợp trang **Hồ sơ cá nhân đa vai trò** (`/student/profile`, `/teacher/profile`, `/manager/profile`, `/admin/profile`): xem/sửa họ tên, SĐT, bio, chọn nhanh preset avatar, đổi mật khẩu an toàn với tính năng thu hồi phiên thiết bị khác.
      - Tích hợp trang **Admin Console Quản lý người dùng** (`/admin/users`): bảng dữ liệu phân trang, lọc theo 4 vai trò, lọc trạng thái hoạt động/đã khóa, tìm kiếm linh hoạt, tạo tài khoản sinh mật khẩu tạm, khóa/mở khóa tài khoản kèm lý do vi phạm, đặt lại mật khẩu khẩn cấp và xóa mềm.
    - **Rà soát & vá bảo mật Module Auth (05/10/2026):** sửa 7 lỗi, kiểm thử tích hợp 16/16 kịch bản đạt (xem mục 2 và mục 4).
-   - **Sprint 3 (đang làm, chưa commit):** đã có `courseService.js` (9 hàm), `chapterService.js` (5 hàm), `courseValidation.js`, `utils/slugify.js`. Còn thiếu: `lessonService`, Lesson Progress, controllers + routes (chưa mount vào `app.js`), nối frontend.
+   - **Sprint 3:** đã bổ sung service/controller/routes cho Category, Course, Chapter, Lesson và Lesson Progress; mount API vào `app.js`; nối màn hình quản lý danh mục cùng các màn hình teacher/student/manager. Đã sửa luồng lấy giáo trình, phân quyền API đọc, kiểm tra enrollment cho tiến độ, và thao tác tạo/sửa bài học. Chưa xác nhận build/live API ở phiên hiện tại do sandbox Windows chặn chạy lệnh; backend vẫn cần `backend/.env` và DB để kiểm thử đầu-cuối.
 
 ## 2. Các Việc Đã Hoàn Thành ✅
 - [x] Toàn bộ Phase 0 (Use cases, ERD, Schema, Sequences, API Docs, Blueprint, Wireframes).
@@ -50,11 +50,11 @@
    - `verifyOtp` chưa kiểm tra `is_active`; `verify-otp`/`resend-otp` trả 404 làm lộ email tồn tại; login lộ thời gian phản hồi khi email không tồn tại.
    - Regex mật khẩu từ chối các ký tự `~ ' " / \` và dấu cách.
    - Rate limiter đang lưu in-memory (chưa dùng Redis như tài liệu tech-stack).
-1. **Triển khai Sprint 3: Module Khóa học & Giáo trình (Courses, Chapters, Lessons - `api-courses.md`):**
-   - API Quản lý Danh mục khóa học (Categories) & Khóa học (CRUD Course, thumbnail, tìm kiếm/lọc, trạng thái `DRAFT`, `PENDING`, `PUBLISHED`).
-   - API Quản lý Chương học (Chapters) & Bài học (Lessons: Video URL, tài liệu đính kèm, lý thuyết).
-   - Quy trình Giảng viên gửi duyệt $\rightarrow$ Quản lý đào tạo phê duyệt/từ chối.
-   - Nối giao diện Soạn thảo đề cương (`/teacher/courses/:id/curriculum`), Duyệt khóa học (`/manager/approvals`), và Trình học tập (`/student/courses/:courseId/learn/:lessonId`).
+1. **Hoàn tất kiểm thử Sprint 3: Module Khóa học & Giáo trình (Courses, Chapters, Lessons - `api-courses.md`):**
+   - Đã có API quản lý Course/Chapter/Lesson, trạng thái `draft`/`pending`/`published`/`rejected`, tìm kiếm/lọc và sắp xếp đề cương.
+   - Đã có luồng Giảng viên gửi duyệt $\rightarrow$ Quản lý đào tạo phê duyệt/từ chối, kèm ghi nhận tiến độ bài học theo lớp/enrollment.
+   - Đã nối các màn hình Soạn thảo đề cương (`/teacher/courses/:id/curriculum`), Duyệt khóa học (`/manager/approvals`) và Trình học tập (`/student/courses/:courseId/learn/:lessonId`).
+   - Đã bổ sung CRUD danh mục và liên kết `category_id` với Course. Đã nối lại API presigned PUT hiện có với API CRUD tài liệu bài học, xác minh object trên S3, presigned GET URL và giao diện quản lý/xem tài liệu. Xóa tài liệu cần quyền IAM `s3:DeleteObject`; còn cần chạy build, syntax/test backend và kiểm thử đầu-cuối với DB/S3 trước khi commit/push.
 2. **Triển khai Sprint 4: Module Lớp học & Thành viên (Classes, Enrollments - `api-classes.md`).**
 3. **Triển khai Sprint 5: Module Trắc nghiệm & Đề thi (Quizzes, Gemini AI - `api-quizzes.md`).**
 

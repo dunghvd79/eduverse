@@ -3,6 +3,7 @@ import { sequelize } from '../config/database.js';
 import User from './User.js';
 import UserToken from './UserToken.js';
 import Course from './Course.js';
+import CourseCategory from './CourseCategory.js';
 import Chapter from './Chapter.js';
 import Lesson from './Lesson.js';
 import CourseMaterial from './CourseMaterial.js';
@@ -33,6 +34,9 @@ Course.belongsTo(User, { foreignKey: 'owner_id', as: 'owner' });
 
 User.hasMany(Course, { foreignKey: 'approved_by', as: 'approved_courses' });
 Course.belongsTo(User, { foreignKey: 'approved_by', as: 'approver' });
+
+CourseCategory.hasMany(Course, { foreignKey: 'category_id', as: 'courses' });
+Course.belongsTo(CourseCategory, { foreignKey: 'category_id', as: 'category' });
 
 // 3. Courses, Chapters & Lessons
 Course.hasMany(Chapter, { foreignKey: 'course_id', onDelete: 'CASCADE' });
@@ -135,6 +139,7 @@ export {
   User,
   UserToken,
   Course,
+  CourseCategory,
   Chapter,
   Lesson,
   CourseMaterial,
@@ -157,6 +162,7 @@ export default {
   User,
   UserToken,
   Course,
+  CourseCategory,
   Chapter,
   Lesson,
   CourseMaterial,

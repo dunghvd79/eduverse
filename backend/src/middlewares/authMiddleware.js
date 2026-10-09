@@ -58,6 +58,13 @@ export const authenticateToken = async (req, res, next) => {
   }
 };
 
+export const optionalAuthenticateToken = (req, res, next) => {
+  if (!req.headers.authorization) {
+    return next();
+  }
+  return authenticateToken(req, res, next);
+};
+
 /**
  * Middleware: Role-based Authorization
  */
@@ -72,5 +79,6 @@ export const authorizeRoles = (...roles) => {
 
 export default {
   authenticateToken,
+  optionalAuthenticateToken,
   authorizeRoles
 };

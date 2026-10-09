@@ -17,6 +17,7 @@ export const createCourseSchema = Joi.object({
   thumbnailUrl: Joi.string().uri().max(500).allow(null, '').optional().messages({
     'string.uri': 'Đường dẫn ảnh đại diện (thumbnailUrl) phải là URL hợp lệ'
   }),
+  categoryId: Joi.string().uuid().allow(null).optional(),
   price: Joi.number().min(0).optional().default(0).messages({
     'number.min': 'Học phí phải lớn hơn hoặc bằng 0'
   })
@@ -36,6 +37,7 @@ export const updateCourseSchema = Joi.object({
   thumbnailUrl: Joi.string().uri().max(500).allow(null, '').optional().messages({
     'string.uri': 'Đường dẫn ảnh đại diện (thumbnailUrl) phải là URL hợp lệ'
   }),
+  categoryId: Joi.string().uuid().allow(null).optional(),
   price: Joi.number().min(0).optional().messages({
     'number.min': 'Học phí phải lớn hơn hoặc bằng 0'
   })
@@ -48,9 +50,25 @@ export const queryCoursesSchema = Joi.object({
   page: Joi.number().integer().min(1).default(1),
   limit: Joi.number().integer().min(1).max(100).default(10),
   search: Joi.string().allow('').optional(),
+  categoryId: Joi.string().uuid().optional(),
   status: Joi.string().valid('draft', 'pending', 'published', 'rejected').optional(),
   sortBy: Joi.string().valid('createdAt', 'created_at', 'title', 'price').default('createdAt'),
   sortOrder: Joi.string().valid('ASC', 'DESC', 'asc', 'desc').default('DESC')
+});
+
+export const courseCurriculumQuerySchema = Joi.object({
+  classId: Joi.string().uuid().optional()
+});
+
+export const categoryQuerySchema = Joi.object({
+  includeInactive: Joi.boolean().default(false)
+});
+
+export const saveCategorySchema = Joi.object({
+  name: Joi.string().min(2).max(100).trim().required(),
+  description: Joi.string().max(1000).allow(null, '').optional(),
+  sortOrder: Joi.number().integer().min(0).default(0),
+  isActive: Joi.boolean().default(true)
 });
 
 /**
@@ -94,7 +112,7 @@ export const updateChapterSchema = Joi.object({
  * 7. Reorder Chapters Schema
  */
 export const reorderChaptersSchema = Joi.object({
-  chapterIds: Joi.array().items(Joi.string().uuid()).min(1).required().messages({
+  chapterIds: Joi.array().items(Joi.string().uuid()).min(1).unique().required().messages({
     'array.min': 'Danh sách chương học cần sắp xếp không được để trống',
     'any.required': 'chapterIds là trường bắt buộc'
   })
@@ -140,7 +158,7 @@ export const updateLessonSchema = Joi.object({
  * 10. Reorder Lessons Schema
  */
 export const reorderLessonsSchema = Joi.object({
-  lessonIds: Joi.array().items(Joi.string().uuid()).min(1).required().messages({
+  lessonIds: Joi.array().items(Joi.string().uuid()).min(1).unique().required().messages({
     'array.min': 'Danh sách bài học cần sắp xếp không được để trống',
     'any.required': 'lessonIds là trường bắt buộc'
   })
@@ -174,6 +192,6 @@ export const validateQuery = (schema) => (req, res, next) => {
     const errorDetails = error.details.map(detail => detail.message);
     return sendError(res, 400, 'Bad Request', 'Tham số truy vấn không hợp lệ', errorDetails);
   }
-  req.query = value;
+    Object.defineProperty(req, 'query', { value, writable: true, configurable: true, enumerable: true });
   next();
 };

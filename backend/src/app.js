@@ -6,6 +6,12 @@ import cookieParser from 'cookie-parser';
 
 import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+import courseRoutes from './routes/courseRoutes.js';
+import categoryRoutes from './routes/categoryRoutes.js';
+import chapterRoutes from './routes/chapterRoutes.js';
+import lessonRoutes from './routes/lessonRoutes.js';
+import uploadRoutes from './routes/uploadRoutes.js';
+import courseMaterialRoutes from './routes/courseMaterialRoutes.js';
 import { errorHandler } from './middlewares/errorMiddleware.js';
 
 const app = express();
@@ -56,6 +62,12 @@ app.get('/api/v1/health', (req, res) => {
 // Mount Routes
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
+app.use('/api/v1/courses', courseRoutes);
+app.use('/api/v1/categories', categoryRoutes);
+app.use('/api/v1/uploads', uploadRoutes);
+app.use('/api/v1', courseMaterialRoutes);
+app.use('/api/v1', chapterRoutes);
+app.use('/api/v1', lessonRoutes);
 
 // Centralized Error Handler (Envelope Pattern)
 app.use(errorHandler);

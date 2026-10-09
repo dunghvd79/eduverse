@@ -11,7 +11,7 @@
 ### 1.1. Phân hệ Cấp phép Tải lên trực tiếp AWS S3 (Presigned Upload Service)
 | Method | Endpoint | Quyền hạn | Mô tả chức năng |
 |:---:|---|:---:|---|
-| `POST` | `/api/v1/uploads/presigned-url` | `[Authenticated]` | Sinh AWS S3 Presigned PUT URL có chữ ký tạm thời (TTL 15 phút) dựa trên mục đích (`purpose`: avatar, thumbnail, material, video) |
+| `POST` | `/api/v1/uploads/presign` | `[Authenticated]` | Sinh AWS S3 Presigned PUT URL có chữ ký tạm thời (TTL mặc định 5 phút) dựa trên mục đích upload |
 
 ### 1.2. Phân hệ Quản lý Tài liệu đính kèm Bài học (Lesson Materials Management)
 | Method | Endpoint | Quyền hạn | Mô tả chức năng |
@@ -50,7 +50,7 @@ Hệ thống phân định rõ ràng 4 mục đích sử dụng tệp với các
 
 ### 3.1. Sinh AWS S3 Presigned URL để tải file trực tiếp
 
-#### `POST /api/v1/uploads/presigned-url`
+#### `POST /api/v1/uploads/presign`
 * **Mô tả chức năng:** Client gửi yêu cầu cấp đường dẫn tải tệp lên AWS S3 kèm chữ ký xác thực tạm thời (**S3 Presigned PUT URL**, hạn dùng 15 phút). Trình duyệt Frontend sẽ tải dữ liệu nhị phân trực tiếp lên cloud mà không đi qua Express.js server, ngăn chặn hoàn toàn việc làm nghẽn CPU và băng thông máy chủ.
 * **Quyền hạn:** `[Authenticated]`
   * `avatar`: Mọi người dùng đã đăng nhập đều có thể xin URL upload avatar cho chính mình.
@@ -178,7 +178,6 @@ Hệ thống phân định rõ ràng 4 mục đích sử dụng tệp với các
   "title": "Slide Bài Giảng Chương 1 - Tổng quan Node.js & Express.js",
   "fileName": "Slide_Chuong_1_Tong_Quan_ExpressJS.pdf",
   "fileKey": "private/materials/c1/ls1/1727211000_Slide_Chuong_1.pdf",
-  "fileType": "pdf",
   "fileSize": 18450000
 }
 ```
@@ -186,8 +185,8 @@ Hệ thống phân định rõ ràng 4 mục đích sử dụng tệp với các
   * `title`: Bắt buộc, tên hiển thị của tài liệu, độ dài từ 3 đến 255 ký tự.
   * `fileName`: Bắt buộc, tên tệp gốc người dùng tải lên (dùng để đặt tên tệp khi học viên download về máy).
   * `fileKey`: Bắt buộc, chuỗi S3 Object Key bắt đầu bằng `private/materials/`.
-  * `fileType`: Bắt buộc, phần mở rộng tệp (`pdf`, `zip`, `docx`, `pptx`, `rar`).
-  * `fileSize`: Bắt buộc, số nguyên byte lớn hơn 0 và $\le 52428800$ (50MB).
+  * `fileSize`: Bắt buộc, số nguyên byte lớn hơn 0 và $\le 52428800$ (50MB); backend đối chiếu với kích thước object S3.
+  * `fileKey`: Key do API presign trả về; backend chỉ chấp nhận key trong namespace của người upload và xác minh metadata bằng `HeadObject`. Loại tệp được suy ra từ phần mở rộng, không nhận từ client.
 
 #### Response Thành Công (`201 Created`):
 ```json
@@ -302,11 +301,11 @@ Hệ thống phân định rõ ràng 4 mục đích sử dụng tệp với các
 ### 3.6. Sinh Presigned GET URL tải tài liệu bài học
 
 #### `GET /api/v1/lessons/:lessonId/materials/:materialId/download-url`
-* **Mô tả chức năng:** Học viên hoặc Giảng viên nhấn nút tải tài liệu học tập. Hệ thống kiểm tra quyền thành viên hợp lệ (học viên đã ghi danh vào lớp chứa bài học này), sau đó sinh một **S3 Presigned GET URL** (hạn dùng 30 phút) để người dùng tải file trực tiếp an toàn từ private bucket ([`UC-DOC-001`](../use-cases/actor-student.md#uc-doc-001)).
+* **Mô tả chức năng:** Học viên hoặc Giảng viên nhấn nút mở/tải tài liệu học tập. Hệ thống kiểm tra quyền thành viên hợp lệ (học viên đã ghi danh vào lớp chứa bài học này), sau đó sinh một **S3 Presigned GET URL** (hạn dùng 5 phút) để người dùng truy cập file trực tiếp an toàn từ private bucket ([`UC-DOC-001`](../use-cases/actor-student.md#uc-doc-001)).
 * **Kỹ thuật tải đúng tên tệp (ResponseContentDisposition):**
   * Khi backend gọi `@aws-sdk/s3-request-presigner`, hệ thống cấu hình tham số:
     ```javascript
-    ResponseContentDisposition: `attachment; filename="${encodeURIComponent(material.fileName)}"`
+    ResponseContentDisposition: `inline; filename*=UTF-8''${encodeURIComponent(material.fileName)}`
     ```
   * Điều này đảm bảo trình duyệt người dùng luôn tự động bật hộp thoại lưu tệp với đúng tên hiển thị sạch đẹp thay vì lưu theo chuỗi UUID/timestamp ngẫu nhiên của S3 Key.
 * **Quyền hạn:** `[Authenticated]` (Học viên thuộc lớp hoặc Giảng viên/Admin).
@@ -322,11 +321,8 @@ Hệ thống phân định rõ ràng 4 mục đích sử dụng tệp với các
   "statusCode": 200,
   "message": "Khởi tạo liên kết tải tài liệu thành công",
   "data": {
-    "downloadUrl": "https://eduverse-storage.s3.ap-southeast-1.amazonaws.com/private/materials/c1/ls1/1727211000_Slide_Chuong_1.pdf?response-content-disposition=attachment%3B%20filename%3D...&X-Amz-Signature=...",
-    "fileName": "Slide_Chuong_1_Tong_Quan_ExpressJS.pdf",
-    "fileType": "pdf",
-    "fileSize": 18450000,
-    "expiresInSeconds": 1800
+    "downloadUrl": "https://eduverse-storage.s3.ap-southeast-2.amazonaws.com/course-materials/u1/uuid-Slide_Chuong_1.pdf?response-content-disposition=inline%3B%20filename...",
+    "expiresInSeconds": 300
   },
   "timestamp": "2026-09-24T20:49:00.000Z"
 }
@@ -395,6 +391,12 @@ Hệ thống phân định rõ ràng 4 mục đích sử dụng tệp với các
 ---
 
 ## 4. Ghi Chú Kỹ Thuật & Vận Hành AWS S3
+
+> **Triển khai hiện tại trong mã nguồn:** API upload là `POST /api/v1/uploads/presign`, với purpose `course-material`; object key được trả về ở trường `key`. Sau khi PUT thành công, client gọi `POST /api/v1/lessons/:lessonId/materials` với `{ title, fileName, fileKey, fileSize }`. Backend xác minh object bằng `HeadObject`, lưu S3 key (không lưu URL công khai) vào `course_materials.file_url`, và chỉ cấp presigned GET URL 5 phút sau khi kiểm tra quyền. Xóa tài liệu sẽ xóa cả object lẫn bản ghi; IAM cần `s3:DeleteObject`.
+
+- Các object `course-materials/{userId}/...` là private; không dùng `fileUrl` công khai để xem hoặc tải.
+- Presigned URL GET hiện trả `{ downloadUrl, expiresInSeconds }`, dùng inline disposition để hỗ trợ xem PDF trong trình duyệt. Tệp có thể được tải xuống từ giao diện học viên.
+- Giá trị cấu hình bucket và region lấy từ `AWS_REGION` và `S3_BUCKET`; credentials được AWS SDK nạp theo credential provider chain.
 
 - **Phân tách Cấu trúc Thư mục trên S3 Bucket (Directory Layout):**
   ```text

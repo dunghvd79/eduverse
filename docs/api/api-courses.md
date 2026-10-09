@@ -1,14 +1,22 @@
 ﻿# 📚 Đặc Tả API: Module Khóa Học, Đề Cương & Tiến Độ Học Tập — api-courses.md
 
 > **Tài liệu tham chiếu:** [`api-conventions.md`](api-conventions.md), [`schema.md`](../database/schema.md), [`actor-teacher.md`](../use-cases/actor-teacher.md), [`actor-manager.md`](../use-cases/actor-manager.md), [`actor-student.md`](../use-cases/actor-student.md)  
-> **Base Path:** `/api/v1/courses`, `/api/v1/chapters`, `/api/v1/lessons`, `/api/v1/classes/:classId/lessons`  
+> **Base Path:** `/api/v1/categories`, `/api/v1/courses`, `/api/v1/chapters`, `/api/v1/lessons`, `/api/v1/classes/:classId/lessons`  
 > **Mục đích:** Đặc tả chi tiết toàn bộ các endpoint phục vụ quản lý Khóa học, quy trình Phê duyệt Khóa học (Giảng viên & Quản lý đào tạo), quản lý Chương học (Chapters), Bài học (Lessons), công cụ Kéo thả Sắp xếp lại đề cương (Batch Reorder), và cơ chế Ghi nhận Tiến độ học tập (`lesson_progress`).
 
 ---
 
 ## 1. Danh Sách Endpoint Tổng Quan
 
-### 1.1. Phân hệ Khóa học (Courses) & Quy trình Phê duyệt
+### 1.1. Phân hệ Danh mục (Categories)
+| Method | Endpoint | Quyền hạn | Mô tả chức năng |
+|:---:|---|:---:|---|
+| `GET` | `/api/v1/categories` | `[Public / Auth]` | Lấy danh mục đang hiển thị; quản lý có thể truyền `includeInactive=true` |
+| `POST` | `/api/v1/categories` | `[Roles: training_manager, admin]` | Tạo danh mục, slug được sinh tự động |
+| `PATCH` | `/api/v1/categories/:id` | `[Roles: training_manager, admin]` | Cập nhật tên, mô tả, thứ tự và trạng thái hiển thị |
+| `DELETE` | `/api/v1/categories/:id` | `[Roles: training_manager, admin]` | Xóa mềm danh mục nếu chưa được khóa học sử dụng |
+
+### 1.2. Phân hệ Khóa học (Courses) & Quy trình Phê duyệt
 | Method | Endpoint | Quyền hạn | Mô tả chức năng |
 |:---:|---|:---:|---|
 | `GET` | `/api/v1/courses` | `[Public / Auth]` | Lấy danh sách khóa học (phân trang, tìm kiếm, lọc theo trạng thái) |
@@ -21,7 +29,7 @@
 | `PATCH` | `/api/v1/courses/:id/approve` | `[Roles: training_manager, admin]` | Quản lý đào tạo phê duyệt khóa học (`pending` $\rightarrow$ `published`) |
 | `PATCH` | `/api/v1/courses/:id/reject` | `[Roles: training_manager, admin]` | Quản lý đào tạo từ chối duyệt kèm lý do lưu vào CSDL (`pending` $\rightarrow$ `rejected`) |
 
-### 1.2. Phân hệ Chương học (Chapters)
+### 1.3. Phân hệ Chương học (Chapters)
 | Method | Endpoint | Quyền hạn | Mô tả chức năng |
 |:---:|---|:---:|---|
 | `GET` | `/api/v1/courses/:courseId/chapters` | `[Public / Auth]` | Lấy danh sách các chương của khóa học |
@@ -30,7 +38,7 @@
 | `PATCH` | `/api/v1/courses/:courseId/chapters/reorder` | `[Roles: teacher, admin]` | Sắp xếp lại thứ tự các chương học hàng loạt (Batch Reorder kéo thả) |
 | `DELETE` | `/api/v1/chapters/:id` | `[Roles: teacher, admin]` | Xóa chương học (cascade xóa bài học bên trong) |
 
-### 1.3. Phân hệ Bài học (Lessons)
+### 1.4. Phân hệ Bài học (Lessons)
 | Method | Endpoint | Quyền hạn | Mô tả chức năng |
 |:---:|---|:---:|---|
 | `GET` | `/api/v1/chapters/:chapterId/lessons` | `[Public / Auth]` | Lấy danh sách bài học thuộc một chương |
@@ -40,7 +48,7 @@
 | `PATCH` | `/api/v1/chapters/:chapterId/lessons/reorder` | `[Roles: teacher, admin]` | Sắp xếp lại thứ tự bài học trong chương hàng loạt (Batch Reorder kéo thả) |
 | `DELETE` | `/api/v1/lessons/:id` | `[Roles: teacher, admin]` | Xóa bài học khỏi chương |
 
-### 1.4. Phân hệ Tiến độ Học tập (Lesson Progress)
+### 1.5. Phân hệ Tiến độ Học tập (Lesson Progress)
 | Method | Endpoint | Quyền hạn | Mô tả chức năng |
 |:---:|---|:---:|---|
 | `POST` | `/api/v1/classes/:classId/lessons/:lessonId/progress` | `[Roles: student]` | Học viên đánh dấu hoàn thành / hủy hoàn thành bài học lý thuyết/video |
@@ -63,6 +71,7 @@
   * `page` *(number, default: 1)*: Trang hiện tại (1-indexed).
   * `limit` *(number, default: 10, max: 100)*: Số lượng bản ghi trên một trang.
   * `search` *(string, optional)*: Từ khóa tìm kiếm theo tiêu đề khóa học (toán tử ILIKE).
+  * `categoryId` *(UUID, optional)*: Lọc theo danh mục.
   * `status` *(string, optional, enum: `draft`, `pending`, `published`, `rejected`)*: Lọc theo trạng thái.
   * `sortBy` *(string, default: "createdAt")*: Sắp xếp theo cột (`createdAt`, `title`, `price`).
   * `sortOrder` *(string, default: "DESC", enum: "ASC", "DESC")*: Thứ tự sắp xếp.
@@ -87,6 +96,9 @@
           "id": "u2b3c4d5-6e7f-8a9b-0c1d-2e3f4a5b6c7d",
           "fullName": "ThS. Hoàng Minh Đức"
         },
+        "totalChapters": 5,
+        "totalLessons": 24,
+        "firstLessonId": "l1a2b3c4-5d6e-7f8a-9b0c-1d2e3f4a5b6c",
         "createdAt": "2026-09-20T08:00:00.000Z"
       }
     ],
@@ -158,7 +170,7 @@
 * **Path Parameters:**
   * `id`: UUID của khóa học (hoặc `slug`).
 * **Query Parameters:**
-  * `classId` *(string UUID, optional)*: ID lớp học học viên đang tham gia để kiểm tra tiến độ tích xanh (Checkmark).
+  * `classId` *(string UUID, optional)*: ID lớp học học viên đang tham gia để kiểm tra tiến độ tích xanh (Checkmark). Khi truyền tham số này, request cần access token của học viên đã đăng ký lớp.
 
 #### Response Thành Công (`200 OK`):
 ```json
@@ -168,6 +180,7 @@
   "message": "Lấy cấu trúc đề cương khóa học thành công",
   "data": {
     "id": "c1f7a2d4-3a21-4f9e-8c3b-7f1a2b3c4d5e",
+    "courseId": "c1f7a2d4-3a21-4f9e-8c3b-7f1a2b3c4d5e",
     "title": "Lập trình Web với React & ExpressJS",
     "totalChapters": 2,
     "totalLessons": 4,
@@ -184,6 +197,7 @@
             "title": "Bài 1: Giới thiệu kiến trúc Single Page Application",
             "lessonType": "theory",
             "orderIndex": 1,
+            "contentText": "Nội dung bài học...",
             "isCompleted": true
           },
           {
@@ -191,6 +205,8 @@
             "title": "Bài 2: Thực hành Components & Props",
             "lessonType": "video",
             "orderIndex": 2,
+            "videoUrl": "https://example.com/lesson-video",
+            "contentText": "Nội dung bài học...",
             "isCompleted": true
           }
         ]
@@ -240,6 +256,7 @@
 | `title` | `string` | ✔️ | Tiêu đề khóa học (5 - 255 ký tự) |
 | `description` | `string` | ❌ | Mô tả chi tiết mục tiêu khóa học (tối đa 2000 ký tự) |
 | `thumbnailUrl` | `string` | ❌ | Đường dẫn ảnh đại diện khóa học trên S3 |
+| `categoryId` | `string` | ❌ | UUID danh mục; có thể bỏ trống |
 | `price` | `number` | ❌ | Học phí (số dương $\ge 0$, mặc định `0`) |
 
 ```json
@@ -857,4 +874,3 @@
 
 ### 3.4. Thứ tự Ưu tiên Route trong Express Router (Route Precedence)
 - Các route tĩnh và route hành động (`/curriculum`, `/publish-request`, `/approve`, `/reject`) bắt buộc phải được khai báo **TRƯỚC** các route có tham số động `router.get('/:id', ...)` trong Express CourseRouter để tránh bị bắt nhầm tham số URL (Route shadowing).
-

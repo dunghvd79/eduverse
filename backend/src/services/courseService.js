@@ -3,7 +3,7 @@ import models from '../models/index.js';
 import { AppError } from '../utils/AppError.js';
 import { generateUniqueSlug } from '../utils/slugify.js';
 
-const { Course, Chapter, Lesson, LessonProgress, User } = models;
+const { Course, CourseCategory, Chapter, Lesson, LessonProgress, ClassModel, Enrollment, User } = models;
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -14,9 +14,10 @@ export const getCourses = async (query = {}, currentUser = null) => {
   const page = parseInt(query.page, 10) || 1;
   const limit = parseInt(query.limit, 10) || 10;
   const offset = (page - 1) * limit;
-  const { search, status, sortBy = 'createdAt', sortOrder = 'DESC' } = query;
+  const { search, status, categoryId, sortBy = 'createdAt', sortOrder = 'DESC' } = query;
 
   const whereClause = {};
+  if (categoryId) whereClause.category_id = categoryId;
 
   // 1. Phân quyền xem theo trạng thái
   if (!currentUser || currentUser.role === 'student') {
@@ -69,9 +70,14 @@ export const getCourses = async (query = {}, currentUser = null) => {
         attributes: ['id', 'full_name', 'email', 'avatar_url']
       },
       {
+        model: CourseCategory,
+        as: 'category',
+        attributes: ['id', 'name', 'slug']
+      },
+      {
         model: Chapter,
-        attributes: ['id'],
-        include: [{ model: Lesson, attributes: ['id'] }]
+        attributes: ['id', 'order_index'],
+        include: [{ model: Lesson, attributes: ['id', 'order_index'] }]
       }
     ],
     order: [[orderColumn, orderDirection]],
@@ -85,7 +91,11 @@ export const getCourses = async (query = {}, currentUser = null) => {
   const items = rows.map(course => {
     const plain = course.toJSON();
     const chapters = plain.chapters || [];
-    const totalLessons = chapters.reduce((acc, ch) => acc + (ch.lessons ? ch.lessons.length : 0), 0);
+    const orderedChapters = [...chapters].sort((a, b) => a.order_index - b.order_index);
+    const lessons = orderedChapters.flatMap((chapter) =>
+      [...(chapter.lessons || [])].sort((a, b) => a.order_index - b.order_index)
+    );
+    const totalLessons = lessons.length;
 
     return {
       id: plain.id,
@@ -102,8 +112,14 @@ export const getCourses = async (query = {}, currentUser = null) => {
         email: plain.owner.email,
         avatarUrl: plain.owner.avatar_url
       } : null,
+      category: plain.category ? {
+        id: plain.category.id,
+        name: plain.category.name,
+        slug: plain.category.slug
+      } : null,
       totalChapters: chapters.length,
       totalLessons,
+      firstLessonId: lessons[0]?.id || null,
       createdAt: plain.created_at,
       updatedAt: plain.updated_at
     };
@@ -141,6 +157,11 @@ export const getCourseByIdOrSlug = async (idOrSlug, currentUser = null) => {
         model: User,
         as: 'approver',
         attributes: ['id', 'full_name', 'email']
+      },
+      {
+        model: CourseCategory,
+        as: 'category',
+        attributes: ['id', 'name', 'slug']
       },
       {
         model: Chapter,
@@ -187,6 +208,11 @@ export const getCourseByIdOrSlug = async (idOrSlug, currentUser = null) => {
       avatarUrl: plain.owner.avatar_url,
       bio: plain.owner.bio
     } : null,
+    category: plain.category ? {
+      id: plain.category.id,
+      name: plain.category.name,
+      slug: plain.category.slug
+    } : null,
     approver: plain.approver ? {
       id: plain.approver.id,
       fullName: plain.approver.full_name
@@ -215,7 +241,7 @@ export const getCourseCurriculum = async (courseId, { classId = null, currentUse
         include: [
           {
             model: Lesson,
-            attributes: ['id', 'chapter_id', 'title', 'lesson_type', 'order_index', 'video_url', 'created_at']
+            attributes: ['id', 'chapter_id', 'title', 'lesson_type', 'order_index', 'video_url', 'content_text', 'created_at']
           }
         ]
       }
@@ -244,7 +270,26 @@ export const getCourseCurriculum = async (courseId, { classId = null, currentUse
 
   // Map progress nếu có classId và studentId
   const progressMap = {};
-  if (classId && currentUser && currentUser.role === 'student') {
+  if (classId) {
+    if (!currentUser) {
+      throw new AppError('Vui lòng đăng nhập để xem tiến độ học tập', 401, 'Unauthorized');
+    }
+    if (currentUser.role !== 'student') {
+      throw new AppError('Chỉ học viên mới được xem tiến độ học tập', 403, 'Forbidden');
+    }
+
+    const classRecord = await ClassModel.findByPk(classId);
+    if (!classRecord || classRecord.course_id !== course.id) {
+      throw new AppError('Lớp học không thuộc khóa học này', 400, 'Bad Request');
+    }
+
+    const enrollment = await Enrollment.findOne({
+      where: { class_id: classId, student_id: currentUser.id, status: 'active' }
+    });
+    if (!enrollment) {
+      throw new AppError('Bạn chưa tham gia lớp học này', 403, 'Forbidden');
+    }
+
     const progressList = await LessonProgress.findAll({
       where: {
         class_id: classId,
@@ -267,16 +312,27 @@ export const getCourseCurriculum = async (courseId, { classId = null, currentUse
       lessonType: lesson.lesson_type,
       orderIndex: lesson.order_index,
       videoUrl: lesson.video_url,
+      contentText: lesson.content_text,
       isCompleted: classId ? !!progressMap[lesson.id] : undefined
     }))
   }));
+  const totalLessons = chapters.reduce((total, chapter) => total + chapter.lessons.length, 0);
+  const completedLessons = chapters.reduce(
+    (total, chapter) => total + chapter.lessons.filter((lesson) => lesson.isCompleted).length,
+    0
+  );
 
   return {
+    id: plain.id,
     courseId: plain.id,
     title: plain.title,
     slug: plain.slug,
     status: plain.status,
     rejectionReason: plain.rejection_reason,
+    totalChapters: chapters.length,
+    totalLessons,
+    completedLessons,
+    progressPercentage: totalLessons ? Number(((completedLessons / totalLessons) * 100).toFixed(1)) : 0,
     chapters
   };
 };
@@ -285,12 +341,19 @@ export const getCourseCurriculum = async (courseId, { classId = null, currentUse
  * 4. Tạo khóa học mới (Khởi tạo draft)
  */
 export const createCourse = async (data, ownerId) => {
-  const { title, description, thumbnailUrl, price = 0 } = data;
+  const { title, description, thumbnailUrl, categoryId, price = 0 } = data;
+  if (categoryId) {
+    const category = await CourseCategory.findByPk(categoryId);
+    if (!category || !category.is_active) {
+      throw new AppError('Danh mục khóa học không tồn tại hoặc đã bị ẩn', 400, 'Bad Request');
+    }
+  }
 
   const slug = await generateUniqueSlug(title, Course);
 
   const course = await Course.create({
     owner_id: ownerId,
+    category_id: categoryId || null,
     title: title.trim(),
     slug,
     description: description ? description.trim() : null,
@@ -305,6 +368,7 @@ export const createCourse = async (data, ownerId) => {
     slug: course.slug,
     description: course.description,
     thumbnailUrl: course.thumbnail_url,
+    categoryId: course.category_id,
     price: course.price,
     status: course.status,
     createdAt: course.created_at
@@ -336,6 +400,15 @@ export const updateCourse = async (courseId, data, currentUser) => {
   if (data.thumbnailUrl !== undefined) {
     course.thumbnail_url = data.thumbnailUrl || null;
   }
+  if (data.categoryId !== undefined) {
+    if (data.categoryId) {
+      const category = await CourseCategory.findByPk(data.categoryId);
+      if (!category || !category.is_active) {
+        throw new AppError('Danh mục khóa học không tồn tại hoặc đã bị ẩn', 400, 'Bad Request');
+      }
+    }
+    course.category_id = data.categoryId || null;
+  }
   if (data.price !== undefined) {
     course.price = Number(data.price) || 0.00;
   }
@@ -348,6 +421,7 @@ export const updateCourse = async (courseId, data, currentUser) => {
     slug: course.slug,
     description: course.description,
     thumbnailUrl: course.thumbnail_url,
+    categoryId: course.category_id,
     price: course.price,
     status: course.status,
     updatedAt: course.updated_at

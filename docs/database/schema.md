@@ -6,7 +6,7 @@
 
 ---
 
-## 1. Danh Mục Các Bảng Dữ Liệu (17 Bảng)
+## 1. Danh Mục Các Bảng Dữ Liệu (19 Bảng)
 
 1. [`users`](#1-bảng-users-người-dùng)
 2. [`user_tokens`](#2-bảng-user_tokens-mã-xác-thực--khôi-phục-mật-khẩu)
@@ -26,6 +26,7 @@
 16. [`class_assignments`](#16-bảng-class_assignments-hạn-nộp-bài-tập-theo-lớp)
 17. [`assignment_submissions`](#17-bảng-assignment_submissions-bài-làm-đã-nộp)
 18. [`lesson_progress`](#18-bảng-lesson_progress-tiến-độ-học-tập)
+19. [`course_categories`](#19-bảng-course_categories-danh-mục-khóa-học)
 
 ---
 
@@ -90,6 +91,7 @@ Khung nội dung đào tạo tổng thể do Giảng viên tạo và Quản lý 
 |---|---|:---:|---|---|
 | `id` | `uuid` | ❌ | `gen_random_uuid()` | Khóa chính (PK) |
 | `owner_id` | `uuid` | ❌ | | Khóa ngoại $\rightarrow$ `users(id)` (Chủ sở hữu khóa học) |
+| `category_id` | `uuid` | ✔️ | `NULL` | Khóa ngoại $\rightarrow$ `course_categories(id)` |
 | `title` | `varchar(255)` | ❌ | | Tên khóa học |
 | `slug` | `varchar(255)` | ❌ | | Đường dẫn thân thiện SEO (`UNIQUE`) |
 | `description` | `text` | ✔️ | `NULL` | Mô tả chi tiết nội dung khóa học |
@@ -107,9 +109,31 @@ Khung nội dung đào tạo tổng thể do Giảng viên tạo và Quản lý 
 - `uq_courses_slug_active` UNIQUE (`slug`) WHERE `deleted_at IS NULL` *(Partial Unique Index)*
 - `idx_courses_owner_id` ON `courses(owner_id)`
 - `idx_courses_status` ON `courses(status)`
+- `idx_courses_category_id` ON `courses(category_id)`
 
 
 ---
+
+### 19. Bảng `course_categories` (Danh mục khóa học)
+
+Phân loại khóa học, cho phép quản lý đào tạo sắp xếp và ẩn/hiện danh mục.
+
+| Tên Cột | Kiểu Dữ Liệu | Nullable | Mặc Định | Ràng Buộc / Mô Tả |
+|---|---|:---:|---|---|
+| `id` | `uuid` | ❌ | `gen_random_uuid()` | Khóa chính (PK) |
+| `name` | `varchar(100)` | ❌ | | Tên danh mục (`UNIQUE`) |
+| `slug` | `varchar(120)` | ❌ | | Slug danh mục (`UNIQUE`) |
+| `description` | `text` | ✔️ | `NULL` | Mô tả danh mục |
+| `sort_order` | `integer` | ❌ | `0` | Thứ tự hiển thị |
+| `is_active` | `boolean` | ❌ | `true` | Cho phép danh mục hiển thị |
+| `created_at` | `timestamptz` | ❌ | `now()` | Thời điểm tạo |
+| `updated_at` | `timestamptz` | ❌ | `now()` | Thời điểm cập nhật |
+| `deleted_at` | `timestamptz` | ✔️ | `NULL` | Xóa mềm |
+
+**Indexes & Constraints:**
+- `uq_course_categories_name_active` UNIQUE (`name`) WHERE `deleted_at IS NULL`
+- `uq_course_categories_slug_active` UNIQUE (`slug`) WHERE `deleted_at IS NULL`
+- `idx_course_categories_sort_order` ON `course_categories(sort_order, name)`
 
 ### 3. Bảng `chapters` (Chương học)
 
@@ -159,9 +183,9 @@ Tài liệu đính kèm (Slide bài giảng, source code mẫu, sách PDF).
 | `id` | `uuid` | ❌ | `gen_random_uuid()` | Khóa chính (PK) |
 | `lesson_id` | `uuid` | ❌ | | Khóa ngoại $\rightarrow$ `lessons(id)` (`ON DELETE CASCADE`) |
 | `title` | `varchar(255)` | ❌ | | Tên tài liệu |
-| `file_url` | `varchar(500)` | ❌ | | Đường dẫn / S3 Object Key của tệp trên AWS S3 |
+| `file_url` | `varchar(500)` | ❌ | | S3 Object Key private (không phải URL công khai); backend ký GET URL khi người dùng có quyền xem |
 | `file_name` | `varchar(255)` | ❌ | | Tên tệp gốc khi tải lên (dùng đặt tên khi download) |
-| `file_type` | `varchar(50)` | ❌ | | Định dạng file (`pdf`, `zip`, `docx`, `pptx`, `rar`) |
+| `file_type` | `varchar(50)` | ❌ | | Định dạng file (`pdf`, `doc`, `docx`, `ppt`, `pptx`, `zip`) |
 | `file_size` | `bigint` | ❌ | `0` | Kích thước file (bytes) |
 | `created_at` | `timestamptz` | ❌ | `now()` | Thời điểm tải lên |
 | `updated_at` | `timestamptz` | ❌ | `now()` | Thời điểm cập nhật cuối cùng |
@@ -403,4 +427,3 @@ Ghi nhận trạng thái hoàn thành bài học của học viên trong lớp �
 
 **Ràng buộc Unique:**
 - `uq_lesson_progress` UNIQUE (`class_id`, `student_id`, `lesson_id`)
-

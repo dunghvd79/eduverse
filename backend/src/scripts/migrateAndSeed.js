@@ -18,12 +18,12 @@ const {
 } = models;
 
 async function runMigrateAndSeed() {
-  console.log('🚀 Bắt đầu quá trình Đồng bộ 18 Bảng CSDL lên Neon.tech (AWS Singapore)...');
+  console.log('🚀 Bắt đầu quá trình Đồng bộ 19 Bảng CSDL lên Neon.tech (AWS Singapore)...');
 
   try {
     // 1. Sync models to database (Create/Alter tables)
     await sequelize.sync({ alter: true });
-    console.log('✅ Đã tạo thành công toàn bộ 18 bảng dữ liệu quan hệ trên Neon.tech!');
+    console.log('✅ Đã tạo thành công toàn bộ 19 bảng dữ liệu quan hệ trên Neon.tech!');
 
     // 2. Hash default password
     const salt = await bcrypt.genSalt(10);
