@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import * as userController from '../controllers/userController.js';
 import { authenticateToken, authorizeRoles } from '../middlewares/authMiddleware.js';
+import { changePasswordLimiter } from '../middlewares/rateLimiter.js';
 import {
   updateMeSchema,
   changeMyPasswordSchema,
@@ -19,7 +20,8 @@ router.get('/me', authenticateToken, userController.getMe);
 router.get('/me/profile', authenticateToken, userController.getMe); // Alias
 router.patch('/me', authenticateToken, validate(updateMeSchema), userController.updateMe);
 router.put('/me/profile', authenticateToken, validate(updateMeSchema), userController.updateMe); // Alias
-router.patch('/me/password', authenticateToken, validate(changeMyPasswordSchema), userController.changePassword);
+// Dùng chung limiter với PATCH /auth/change-password (đếm gộp theo user)
+router.patch('/me/password', authenticateToken, changePasswordLimiter, validate(changeMyPasswordSchema), userController.changePassword);
 
 // ==========================================
 // 2. ADMIN USER & RBAC MANAGEMENT (Chỉ role Admin)

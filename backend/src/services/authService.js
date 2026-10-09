@@ -240,6 +240,16 @@ export const login = async ({ email, password }) => {
 };
 
 /**
+ * Lỗi khi Refresh Token đã bị dùng. preserveCookie = true để controller KHÔNG xóa cookie:
+ * trình duyệt có thể vừa nhận cookie mới từ request song song thắng cuộc, xóa đi sẽ đăng xuất mọi tab.
+ */
+const alreadyRotatedError = () => {
+  const err = new AppError('Phiên làm việc đã hết hạn hoặc không hợp lệ', 401, 'Unauthorized');
+  err.preserveCookie = true;
+  return err;
+};
+
+/**
  * 5. Refresh Access Token & Token Rotation
  */
 export const refreshSession = async ({ incomingToken }) => {
@@ -259,13 +269,17 @@ export const refreshSession = async ({ incomingToken }) => {
     where: {
       user_id: decoded.sub,
       token_hash: tokenHash,
-      token_type: 'refresh_token',
-      is_used: false
+      token_type: 'refresh_token'
     }
   });
 
   if (!tokenRecord || new Date(tokenRecord.expires_at) < new Date()) {
     throw new AppError('Phiên làm việc đã hết hạn hoặc không hợp lệ', 401, 'Unauthorized');
+  }
+
+  // Token đã được xoay vòng (thường do tab khác vừa refresh trước) -> báo controller giữ nguyên cookie
+  if (tokenRecord.is_used) {
+    throw alreadyRotatedError();
   }
 
   const user = await User.findByPk(decoded.sub);
@@ -276,7 +290,7 @@ export const refreshSession = async ({ incomingToken }) => {
   // Token Rotation: consume current refresh token atomically, then issue new pair
   return sequelize.transaction(async (t) => {
     if (!(await consumeToken(tokenRecord.id, t))) {
-      throw new AppError('Phiên làm việc đã hết hạn hoặc không hợp lệ', 401, 'Unauthorized');
+      throw alreadyRotatedError();
     }
     return issueTokenPair(user, t);
   });
