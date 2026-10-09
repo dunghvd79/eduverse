@@ -16,6 +16,23 @@ const mapLesson = (lesson) => ({
   updatedAt: lesson.updated_at
 });
 
+// Bản rút gọn cho API danh sách công khai: KHÔNG có contentText/videoUrl
+// (nội dung đầy đủ chỉ trả qua GET /lessons/:id có kiểm tra ghi danh)
+const mapLessonSummary = (lesson) => ({
+  id: lesson.id,
+  chapterId: lesson.chapter_id,
+  title: lesson.title,
+  lessonType: lesson.lesson_type,
+  orderIndex: lesson.order_index
+});
+
+// Khóa học bị xóa mềm thì include Course trả về null -> coi như không tồn tại (404) thay vì lỗi 500
+const assertCourseExists = (course) => {
+  if (!course) {
+    throw new AppError('Không tìm thấy khóa học', 404, 'Not Found');
+  }
+};
+
 const getChapterWithCourse = async (chapterId) => {
   const chapter = await Chapter.findByPk(chapterId, {
     include: [{ model: Course, attributes: ['id', 'owner_id', 'status'] }]
@@ -24,6 +41,7 @@ const getChapterWithCourse = async (chapterId) => {
   if (!chapter) {
     throw new AppError('Không tìm thấy chương học', 404, 'Not Found');
   }
+  assertCourseExists(chapter.course);
 
   return chapter;
 };
@@ -52,8 +70,9 @@ const assertCanManageLesson = async (lessonId, currentUser) => {
   if (!lesson) {
     throw new AppError('Không tìm thấy bài học', 404, 'Not Found');
   }
+  assertCourseExists(lesson.chapter?.course);
 
-  const isOwner = lesson.chapter?.course?.owner_id === currentUser.id;
+  const isOwner = lesson.chapter.course.owner_id === currentUser.id;
   const isAdmin = currentUser.role === 'admin';
 
   if (!isOwner && !isAdmin) {
@@ -97,10 +116,11 @@ export const getLessons = async (chapterId, currentUser = null) => {
 
   const lessons = await Lesson.findAll({
     where: { chapter_id: chapterId },
+    attributes: ['id', 'chapter_id', 'title', 'lesson_type', 'order_index'],
     order: [['order_index', 'ASC']]
   });
 
-  return lessons.map(mapLesson);
+  return lessons.map(mapLessonSummary);
 };
 
 export const getLessonById = async (lessonId, currentUser) => {
@@ -114,6 +134,7 @@ export const getLessonById = async (lessonId, currentUser) => {
   if (!lesson) {
     throw new AppError('Không tìm thấy bài học', 404, 'Not Found');
   }
+  assertCourseExists(lesson.chapter?.course);
 
   await assertCanViewLessonContent(lesson.chapter.course, currentUser);
 

@@ -142,7 +142,7 @@ export const deleteCategory = async (categoryId) => {
   const usedBy = await Course.count({ where: { category_id: categoryId }, paranoid: false });
   if (usedBy > 0) {
     throw new AppError(
-      `Danh mục đang được ${usedBy} khóa học sử dụng. Hãy chuyển các khóa học sang danh mục khác hoặc ẩn danh mục thay vì xóa.`,
+      `Danh mục đang được ${usedBy} khóa học sử dụng (tính cả khóa học đã xóa). Hãy chuyển các khóa học sang danh mục khác hoặc ẩn danh mục thay vì xóa.`,
       409,
       'Conflict'
     );
