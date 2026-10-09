@@ -20,6 +20,11 @@ export const errorHandler = (err, req, res, next) => {
     return sendError(res, 400, 'Bad Request', 'Dữ liệu không đáp ứng ràng buộc của hệ thống', messages);
   }
 
+  // 3b. Tham số sai định dạng cho cột Postgres (VD: :id không phải UUID) -> 400 thay vì 500
+  if (err.name === 'SequelizeDatabaseError' && err.parent?.code === '22P02') {
+    return sendError(res, 400, 'Bad Request', 'Mã định danh (ID) không hợp lệ');
+  }
+
   // 4. JWT Errors
   if (err.name === 'JsonWebTokenError') {
     return sendError(res, 401, 'Unauthorized', 'Token xác thực không hợp lệ');

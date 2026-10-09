@@ -412,7 +412,7 @@ Hệ thống phân định rõ ràng 4 mục đích sử dụng tệp với các
 - **Ma trận Quy trình 3 bước cho Frontend (Post-Upload Workflow Mapping):**
   | `purpose` | Bước 1: Xin URL | Bước 2: Tải lên S3 | Bước 3: Gọi API Nghiệp vụ để Lưu CSDL |
   |---|---|---|---|
-  | `avatar` | `POST /uploads/presigned-url` | `PUT uploadUrl` | `PATCH /api/v1/users/me/profile` gửi `{ avatarUrl: publicUrl }` |
+  | `avatar` | `POST /uploads/presigned-url` | `PUT uploadUrl` | `PATCH /api/v1/users/me` gửi `{ avatarUrl: publicUrl }` |
   | `course_thumbnail` | `POST /uploads/presigned-url` | `PUT uploadUrl` | `PATCH /api/v1/courses/:id` gửi `{ thumbnailUrl: publicUrl }` |
   | `lesson_material` | `POST /uploads/presigned-url` | `PUT uploadUrl` | `POST /api/v1/lessons/:id/materials` gửi `{ title, fileName, fileKey, fileType, fileSize }` |
   | `lesson_video` | `POST /uploads/presigned-url` | `PUT uploadUrl` | `PATCH /api/v1/lessons/:id` gửi `{ videoUrl: fileKey }` |

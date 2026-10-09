@@ -487,7 +487,7 @@ Khi `POST /auth/refresh-token` thất bại, server chỉ gửi lệnh xóa cook
 Tài khoản do Admin tạo hoặc được Admin đặt lại mật khẩu có `must_change_password = true`. Khi cờ này bật, middleware `authenticateToken` từ chối mọi API với `403 Forbidden` và `errors: ["MUST_CHANGE_PASSWORD"]`, **trừ** các route sau:
 - `GET /api/v1/auth/me`
 - `PATCH /api/v1/auth/change-password`
-- `GET /api/v1/users/me`, `GET /api/v1/users/me/profile`
+- `GET /api/v1/users/me`
 - `PATCH /api/v1/users/me/password`
 
 Phía Frontend, `PortalLayout` tự chuyển người dùng sang trang `/{portal}/profile` cho tới khi đổi mật khẩu thành công.

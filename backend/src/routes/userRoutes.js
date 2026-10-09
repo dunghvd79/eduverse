@@ -17,9 +17,7 @@ const router = Router();
 // 1. PERSONAL PROFILE (Mọi role đã đăng nhập)
 // ==========================================
 router.get('/me', authenticateToken, userController.getMe);
-router.get('/me/profile', authenticateToken, userController.getMe); // Alias
 router.patch('/me', authenticateToken, validate(updateMeSchema), userController.updateMe);
-router.put('/me/profile', authenticateToken, validate(updateMeSchema), userController.updateMe); // Alias
 // Dùng chung limiter với PATCH /auth/change-password (đếm gộp theo user)
 router.patch('/me/password', authenticateToken, changePasswordLimiter, validate(changeMyPasswordSchema), userController.changePassword);
 
