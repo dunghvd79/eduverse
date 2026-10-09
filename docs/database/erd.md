@@ -14,6 +14,7 @@ erDiagram
     %% Users & Roles
     users ||--o{ user_tokens : "sở hữu mã xác thực"
     users ||--o{ courses : "soạn thảo (owner)"
+    categories |o--o{ courses : "phân loại"
     users ||--o{ classes : "phụ trách (giảng viên)"
     users ||--o{ enrollments : "tham gia (học viên)"
     users ||--o{ quiz_attempts : "thực hiện làm bài"
@@ -75,9 +76,21 @@ erDiagram
         timestamptz created_at "Thời gian tạo mã"
     }
 
+    categories {
+        uuid id PK "Khóa chính"
+        varchar name UK "Tên danh mục"
+        varchar slug UK "Đường dẫn lọc Catalog"
+        text description "Mô tả"
+        int sort_order "Thứ tự hiển thị"
+        boolean is_active "Ẩn/hiện danh mục"
+        timestamptz created_at "Thời gian tạo"
+        timestamptz updated_at "Thời gian sửa"
+    }
+
     courses {
         uuid id PK "Khóa chính"
         uuid owner_id FK "Giảng viên tạo khóa học (users.id)"
+        uuid category_id FK "Danh mục khóa học (categories.id, nullable)"
         varchar title "Tên khóa học"
         varchar slug UK "Đường dẫn thân thiện duy nhất"
         text description "Mô tả khóa học"
@@ -258,6 +271,7 @@ erDiagram
 | `users` | `uq_users_email_active` | `UNIQUE(email) WHERE deleted_at IS NULL` | Email duy nhất cho user đang hoạt động (không xung đột khi xóa mềm) |
 | `user_tokens` | `uq_user_tokens_hash` | `UNIQUE(token_hash)` | Mỗi token kích hoạt/reset mật khẩu là duy nhất |
 | `courses` | `uq_courses_slug_active` | `UNIQUE(slug) WHERE deleted_at IS NULL` | Đường dẫn URL duy nhất cho khóa học đang tồn tại |
+| `categories` | `categories_name_key`, `categories_slug_key` | `UNIQUE(name)`, `UNIQUE(slug)` | Tên và slug danh mục là duy nhất |
 | `quizzes` | `uq_quizzes_lesson` | `UNIQUE(lesson_id)` | Mỗi bài học dạng quiz chỉ chứa duy nhất 1 đề thi trắc nghiệm (1:1) |
 | `assignments` | `uq_assignments_lesson` | `UNIQUE(lesson_id)` | Mỗi bài học dạng assignment chỉ chứa duy nhất 1 bài tập (1:1) |
 | `classes` | `uq_classes_code_active` | `UNIQUE(class_code) WHERE deleted_at IS NULL` | Mã tham gia lớp học là duy nhất toàn hệ thống |

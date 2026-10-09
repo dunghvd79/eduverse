@@ -2,10 +2,40 @@ import { Op } from 'sequelize';
 import models from '../models/index.js';
 import { AppError } from '../utils/AppError.js';
 import { generateUniqueSlug } from '../utils/slugify.js';
+import { assertCategoryAssignable } from './categoryService.js';
 
-const { Course, Chapter, Lesson, LessonProgress, User } = models;
+const { Course, Category, Chapter, Lesson, LessonProgress, User, Quiz, Assignment } = models;
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+/**
+ * Khóa học chưa published chỉ chủ sở hữu, Quản lý đào tạo và Admin được xem
+ */
+export const assertCourseVisible = (course, currentUser) => {
+  if (course.status === 'published') return;
+  const isOwner = currentUser && course.owner_id === currentUser.id;
+  const isStaff = currentUser && (currentUser.role === 'training_manager' || currentUser.role === 'admin');
+  if (!isOwner && !isStaff) {
+    throw new AppError('Khóa học chưa được công khai', 403, 'Forbidden');
+  }
+};
+
+/**
+ * Khóa chỉnh sửa nội dung khi khóa học đang chờ duyệt hoặc đã công khai,
+ * để nội dung học viên nhìn thấy luôn là nội dung đã được Quản lý đào tạo phê duyệt.
+ * Chỉ chỉnh sửa được ở trạng thái draft hoặc rejected.
+ */
+export const assertCourseEditable = (course) => {
+  if (course.status === 'pending') {
+    throw new AppError('Khóa học đang chờ duyệt nên không thể chỉnh sửa. Vui lòng chờ Quản lý đào tạo phản hồi.', 409, 'Conflict');
+  }
+  if (course.status === 'published') {
+    throw new AppError('Khóa học đã được công khai nên không thể chỉnh sửa nội dung.', 409, 'Conflict');
+  }
+};
+
+const CATEGORY_ATTRIBUTES = ['id', 'name', 'slug'];
+const mapCategoryRef = (category) => (category ? { id: category.id, name: category.name, slug: category.slug } : null);
 
 /**
  * 1. Lấy danh sách khóa học (Phân trang, Tìm kiếm, Lọc trạng thái, Phân quyền)
@@ -14,7 +44,7 @@ export const getCourses = async (query = {}, currentUser = null) => {
   const page = parseInt(query.page, 10) || 1;
   const limit = parseInt(query.limit, 10) || 10;
   const offset = (page - 1) * limit;
-  const { search, status, sortBy = 'createdAt', sortOrder = 'DESC' } = query;
+  const { search, status, categoryId, category, mine, sortBy = 'createdAt', sortOrder = 'DESC' } = query;
 
   const whereClause = {};
 
@@ -56,8 +86,27 @@ export const getCourses = async (query = {}, currentUser = null) => {
     whereClause[Op.and] = whereClause[Op.and] ? [...whereClause[Op.and], searchCondition] : [searchCondition];
   }
 
-  // 3. Sắp xếp
-  const orderColumn = sortBy === 'createdAt' ? 'created_at' : (sortBy === 'price' ? 'price' : 'title');
+  // 2b. Chỉ lấy khóa học của chính mình (trang "Khóa học của tôi" của giảng viên)
+  if (mine && currentUser) {
+    delete whereClause[Op.or];
+    whereClause.owner_id = currentUser.id;
+    if (status) whereClause.status = status;
+    else delete whereClause.status;
+  }
+
+  // 3. Lọc theo danh mục (id hoặc slug)
+  if (categoryId) {
+    whereClause.category_id = categoryId;
+  }
+  const categoryInclude = {
+    model: Category,
+    as: 'category',
+    attributes: CATEGORY_ATTRIBUTES,
+    ...(category ? { where: { slug: category }, required: true } : {})
+  };
+
+  // 4. Sắp xếp
+  const orderColumn = ['createdAt', 'created_at'].includes(sortBy) ? 'created_at' : (sortBy === 'price' ? 'price' : 'title');
   const orderDirection = sortOrder.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
 
   const { count, rows } = await Course.findAndCountAll({
@@ -68,6 +117,7 @@ export const getCourses = async (query = {}, currentUser = null) => {
         as: 'owner',
         attributes: ['id', 'full_name', 'email', 'avatar_url']
       },
+      categoryInclude,
       {
         model: Chapter,
         attributes: ['id'],
@@ -96,6 +146,7 @@ export const getCourses = async (query = {}, currentUser = null) => {
       price: plain.price,
       status: plain.status,
       rejectionReason: plain.rejection_reason,
+      category: mapCategoryRef(plain.category),
       owner: plain.owner ? {
         id: plain.owner.id,
         fullName: plain.owner.full_name,
@@ -137,6 +188,7 @@ export const getCourseByIdOrSlug = async (idOrSlug, currentUser = null) => {
         as: 'owner',
         attributes: ['id', 'full_name', 'email', 'avatar_url', 'bio']
       },
+      { model: Category, as: 'category', attributes: CATEGORY_ATTRIBUTES },
       {
         model: User,
         as: 'approver',
@@ -180,6 +232,7 @@ export const getCourseByIdOrSlug = async (idOrSlug, currentUser = null) => {
     status: plain.status,
     rejectionReason: plain.rejection_reason,
     approvedAt: plain.approved_at,
+    category: mapCategoryRef(plain.category),
     owner: plain.owner ? {
       id: plain.owner.id,
       fullName: plain.owner.full_name,
@@ -215,7 +268,12 @@ export const getCourseCurriculum = async (courseId, { classId = null, currentUse
         include: [
           {
             model: Lesson,
-            attributes: ['id', 'chapter_id', 'title', 'lesson_type', 'order_index', 'video_url', 'created_at']
+            // Không lấy content_text/video_url: đề cương là API công khai, nội dung chỉ trả qua GET /lessons/:id (có kiểm tra ghi danh)
+            attributes: ['id', 'chapter_id', 'title', 'lesson_type', 'order_index', 'created_at'],
+            include: [
+              { model: Quiz, attributes: ['id'] },
+              { model: Assignment, attributes: ['id'] }
+            ]
           }
         ]
       }
@@ -266,7 +324,8 @@ export const getCourseCurriculum = async (courseId, { classId = null, currentUse
       title: lesson.title,
       lessonType: lesson.lesson_type,
       orderIndex: lesson.order_index,
-      videoUrl: lesson.video_url,
+      quizId: lesson.quiz?.id || null,
+      assignmentId: lesson.assignment?.id || null,
       isCompleted: classId ? !!progressMap[lesson.id] : undefined
     }))
   }));
@@ -285,8 +344,9 @@ export const getCourseCurriculum = async (courseId, { classId = null, currentUse
  * 4. Tạo khóa học mới (Khởi tạo draft)
  */
 export const createCourse = async (data, ownerId) => {
-  const { title, description, thumbnailUrl, price = 0 } = data;
+  const { title, description, thumbnailUrl, categoryId = null, price = 0 } = data;
 
+  await assertCategoryAssignable(categoryId);
   const slug = await generateUniqueSlug(title, Course);
 
   const course = await Course.create({
@@ -295,6 +355,7 @@ export const createCourse = async (data, ownerId) => {
     slug,
     description: description ? description.trim() : null,
     thumbnail_url: thumbnailUrl || null,
+    category_id: categoryId,
     price: Number(price) || 0.00,
     status: 'draft'
   });
@@ -305,6 +366,7 @@ export const createCourse = async (data, ownerId) => {
     slug: course.slug,
     description: course.description,
     thumbnailUrl: course.thumbnail_url,
+    categoryId: course.category_id,
     price: course.price,
     status: course.status,
     createdAt: course.created_at
@@ -325,7 +387,13 @@ export const updateCourse = async (courseId, data, currentUser) => {
   if (!isOwner && !isAdmin) {
     throw new AppError('Bạn không có quyền chỉnh sửa khóa học này', 403, 'Forbidden');
   }
+  assertCourseEditable(course);
 
+  // Chỉ kiểm tra khi đổi danh mục: giữ nguyên danh mục cũ (kể cả đã bị ẩn) vẫn hợp lệ
+  if (data.categoryId !== undefined && data.categoryId !== course.category_id) {
+    await assertCategoryAssignable(data.categoryId);
+    course.category_id = data.categoryId;
+  }
   if (data.title && data.title.trim() !== course.title) {
     course.title = data.title.trim();
     course.slug = await generateUniqueSlug(course.title, Course, course.id);
@@ -348,6 +416,7 @@ export const updateCourse = async (courseId, data, currentUser) => {
     slug: course.slug,
     description: course.description,
     thumbnailUrl: course.thumbnail_url,
+    categoryId: course.category_id,
     price: course.price,
     status: course.status,
     updatedAt: course.updated_at
@@ -368,6 +437,8 @@ export const deleteCourse = async (courseId, currentUser) => {
   if (!isOwner && !isAdmin) {
     throw new AppError('Bạn không có quyền xóa khóa học này', 403, 'Forbidden');
   }
+  // Giảng viên không được xóa khóa đang chờ duyệt/đã công khai; Admin vẫn xóa được để kiểm duyệt
+  if (!isAdmin) assertCourseEditable(course);
 
   await course.destroy();
   return true;
