@@ -1,5 +1,4 @@
 import Joi from 'joi';
-import { sendError } from '../utils/response.js';
 
 /**
  * 1. Create Course Schema
@@ -207,25 +206,10 @@ export const queryCategoriesSchema = Joi.object({
 });
 
 /**
- * Validation Middleware generator
+ * 13. Query schema cho GET /courses/:id/curriculum (classId để lấy tiến độ học)
  */
-export const validateBody = (schema) => (req, res, next) => {
-  const { error, value } = schema.validate(req.body, { abortEarly: false, stripUnknown: true });
-  if (error) {
-    const errorDetails = error.details.map(detail => detail.message);
-    return sendError(res, 400, 'Bad Request', 'Dữ liệu gửi lên không hợp lệ', errorDetails);
-  }
-  req.body = value;
-  next();
-};
-
-export const validateQuery = (schema) => (req, res, next) => {
-  const { error, value } = schema.validate(req.query, { abortEarly: false, stripUnknown: true });
-  if (error) {
-    const errorDetails = error.details.map(detail => detail.message);
-    return sendError(res, 400, 'Bad Request', 'Tham số truy vấn không hợp lệ', errorDetails);
-  }
-  // Express 5: req.query là getter chỉ đọc -> ghi đè bằng defineProperty thay vì gán trực tiếp
-  Object.defineProperty(req, 'query', { value, writable: true, configurable: true, enumerable: true });
-  next();
-};
+export const queryCurriculumSchema = Joi.object({
+  classId: Joi.string().uuid().optional().messages({
+    'string.guid': 'classId không hợp lệ (phải là UUID)'
+  })
+});

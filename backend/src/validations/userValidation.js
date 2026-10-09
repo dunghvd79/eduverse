@@ -1,5 +1,4 @@
 import Joi from 'joi';
-import { sendError } from '../utils/response.js';
 
 // Password policy regex: min 8, max 32, at least 1 uppercase, 1 lowercase, 1 number, 1 special character
 const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^()_+\-=\[\]{}|;:,.<>])[A-Za-z\d@$!%*?&#^()_+\-=\[\]{}|;:,.<>]{8,32}$/;
@@ -105,14 +104,32 @@ export const adminUpdateStatusSchema = Joi.object({
 });
 
 /**
- * Validation Middleware generator
+ * 6. Query schema cho GET /users (Admin: danh sách người dùng)
  */
-export const validate = (schema) => (req, res, next) => {
-  const { error, value } = schema.validate(req.body, { abortEarly: false, stripUnknown: true });
-  if (error) {
-    const errorDetails = error.details.map(detail => detail.message);
-    return sendError(res, 400, 'Bad Request', 'Dữ liệu gửi lên không hợp lệ', errorDetails);
-  }
-  req.body = value;
-  next();
-};
+export const queryUsersSchema = Joi.object({
+  page: Joi.number().integer().min(1).default(1).messages({
+    'number.base': 'page phải là số nguyên',
+    'number.min': 'page phải lớn hơn hoặc bằng 1'
+  }),
+  limit: Joi.number().integer().min(1).max(100).default(20).messages({
+    'number.base': 'limit phải là số nguyên',
+    'number.min': 'limit phải lớn hơn hoặc bằng 1',
+    'number.max': 'limit tối đa là 100'
+  }),
+  search: Joi.string().trim().max(255).allow('').optional().messages({
+    'string.base': 'search phải là một chuỗi (không được truyền lặp lại nhiều lần)',
+    'string.max': 'Từ khóa tìm kiếm không được vượt quá 255 ký tự'
+  }),
+  role: Joi.string().valid('student', 'teacher', 'training_manager', 'admin').optional().messages({
+    'any.only': 'role không hợp lệ (student, teacher, training_manager, admin)'
+  }),
+  status: Joi.string().valid('active', 'blocked', 'unverified').optional().messages({
+    'any.only': 'status không hợp lệ (active, blocked, unverified)'
+  }),
+  sortBy: Joi.string().valid('createdAt', 'fullName', 'email', 'role').default('createdAt').messages({
+    'any.only': 'sortBy không hợp lệ (createdAt, fullName, email, role)'
+  }),
+  sortOrder: Joi.string().uppercase().valid('ASC', 'DESC').default('DESC').messages({
+    'any.only': 'sortOrder chỉ nhận ASC hoặc DESC'
+  })
+});
