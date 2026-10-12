@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, PlayCircle, RotateCcw } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, ClipboardCheck, PlayCircle, RotateCcw } from 'lucide-react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Button, Badge, Card, Progress } from '../../components/portal/PortalUI';
 import courseService from '../../services/courseService';
@@ -47,6 +47,7 @@ export default function ClassroomPage() {
   const next = flatLessons[currentIndex + 1];
   // Trạng thái hoàn thành lấy từ đề cương theo lớp (GET /lessons/:id không trả tiến độ)
   const isCompleted = !!flatLessons[currentIndex]?.isCompleted;
+  const quizId = flatLessons[currentIndex]?.quizId;
   const lessonUrl = (id) => `/student/courses/${courseId}/learn/${id}${classId ? `?classId=${classId}` : ''}`;
 
   const setProgress = async (isCompleted) => {
@@ -152,6 +153,21 @@ export default function ClassroomPage() {
               <Badge>VIDEO BÀI GIẢNG</Badge>
               <h2>{lesson.title}</h2>
               <p>{lesson.contentText || 'Xem video để hoàn thành bài học.'}</p>
+            </Card>
+          )}
+
+          {lesson.lessonType === 'quiz' && (
+            <Card>
+              <div className="flex flex-wrap items-center gap-3">
+                <ClipboardCheck size={22} className="text-purple-600" />
+                <div className="flex-1 min-w-0">
+                  <b>Bài kiểm tra trắc nghiệm</b>
+                  <p className="text-sm text-slate-500">{quizId ? 'Đạt điểm yêu cầu, bài học được tính hoàn thành tự động.' : 'Giảng viên chưa soạn đề cho bài học này.'}</p>
+                </div>
+                {quizId && classId && (
+                  <Button onClick={() => navigate(`/student/quizzes/${quizId}/take?classId=${classId}`)}>Làm bài kiểm tra</Button>
+                )}
+              </div>
             </Card>
           )}
 

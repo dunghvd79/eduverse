@@ -24,6 +24,7 @@ import QuizTakePage from '../pages/student/QuizTakePage';
 import QuizResultPage from '../pages/student/QuizResultPage';
 import AssignmentDetailPage from '../pages/student/AssignmentDetailPage';
 import GradesPage from '../pages/student/GradesPage';
+import StudentQuizzesPage from '../pages/student/StudentQuizzesPage';
 import ProfilePage from '../pages/student/ProfilePage';
 
 import TeacherDashboardPage from '../pages/teacher/TeacherDashboardPage';
@@ -32,6 +33,8 @@ import CourseCurriculumBuilderPage from '../pages/teacher/CourseCurriculumBuilde
 import TeacherClassesPage from '../pages/teacher/TeacherClassesPage';
 import TeacherClassDetailPage from '../pages/teacher/TeacherClassDetailPage';
 import TeacherQuizzesPage from '../pages/teacher/TeacherQuizzesPage';
+import QuizEditorPage from '../pages/teacher/QuizEditorPage';
+import TeacherAttemptReviewPage from '../pages/teacher/TeacherAttemptReviewPage';
 import AIQuizGeneratorPage from '../pages/teacher/AIQuizGeneratorPage';
 import TeacherAssignmentsPage from '../pages/teacher/TeacherAssignmentsPage';
 import AssignmentGradingPage from '../pages/teacher/AssignmentGradingPage';
@@ -77,6 +80,7 @@ export default function AppRoutes() {
         <Route path="my-courses" element={<MyCoursesPage />} />
         <Route path="classes/:id" element={<StudentClassDetailPage />} />
         <Route path="courses/:courseId/learn/:lessonId" element={<ClassroomPage />} />
+        <Route path="quizzes" element={<StudentQuizzesPage />} />
         <Route path="quizzes/:id/take" element={<QuizTakePage />} />
         <Route path="quizzes/:id/result/:attemptId" element={<QuizResultPage />} />
         <Route path="assignments/:id" element={<AssignmentDetailPage />} />
@@ -93,6 +97,8 @@ export default function AppRoutes() {
         <Route path="classes/:id" element={<TeacherClassDetailPage />} />
         <Route path="quizzes" element={<TeacherQuizzesPage />} />
         <Route path="quizzes/ai-generator" element={<AIQuizGeneratorPage />} />
+        <Route path="quizzes/:id" element={<QuizEditorPage />} />
+        <Route path="quiz-attempts/:attemptId" element={<TeacherAttemptReviewPage />} />
         <Route path="assignments" element={<TeacherAssignmentsPage />} />
         <Route path="assignments/:id/grade" element={<AssignmentGradingPage />} />
         <Route path="classes/:id/gradebook" element={<GradebookPage />} />

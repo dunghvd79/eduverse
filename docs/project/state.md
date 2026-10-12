@@ -2,7 +2,7 @@
 
 > **Cập nhật lần cuối:** 12/10/2026  
 > **Người cập nhật:** dunghvd79, Hoàng Ngọc Sơn & AI Assistant  
-> **Giai đoạn hiện tại:** Phase 1 — Hoàn thành Sprint 4 (Lớp học & Ghi danh); Sprint 3 còn vài việc tồn đọng; chuẩn bị Sprint 5 (Quizzes/Assignments)
+> **Giai đoạn hiện tại:** Phase 1 — Sprint 5: xong module Bài kiểm tra (Quizzes + Gemini AI); tiếp theo là Bài tập (Assignments) + xuất bảng điểm
 
 ---
 
@@ -25,6 +25,7 @@
    - **Sprint 3 — Backend hoàn thành, Frontend đã nối API (09/10/2026):** 21 endpoint Courses/Chapters/Lessons/Lesson Progress theo `api-courses.md` (`courseController.js`, `courseRoutes.js` mount tại `/api/v1`, `lessonService.js`, `optionalAuthenticateToken`). Frontend `services/courseService.js` + 7 trang (catalog, chi tiết khóa học, khóa học của giảng viên, curriculum builder, hàng đợi duyệt, chi tiết duyệt, trình học). Code do **tuanmanh205** viết (commit `57f4686` trên `feature-ngocson`, nằm nhầm trong thư mục con `eduverse-feature-dung/`), được ghép thủ công sang `feature-dung` kèm review và sửa lỗi. Kiểm thử E2E API 25/25 đạt.
    - **Sprint 3 — Upload S3 & Tài liệu bài học (12/10/2026):** `POST /uploads/presigned-url` (avatar, course_thumbnail, lesson_material) + 5 endpoint `/lessons/:lessonId/materials` theo `api-uploads.md`; component `LessonMaterialsPanel` gắn vào trang Soạn đề cương (thêm/đổi tên/xóa) và trang Học (tải về). Ý tưởng & phần lõi S3 lấy từ commit `6b91ead` của **tuanmanh205** (nhánh `tuanmanh205-sprint3-course-api`), viết lại theo đúng spec và kiến trúc hiện tại. Test API 56/56 (S3 giả lập). **Chưa test với bucket AWS thật.**
    - **Sprint 4 — Lớp học & Ghi danh (12/10/2026):** 12/13 endpoint `api-classes.md` (`classService.js`, `classRoutes.js` mount tại `/api/v1/classes`); migration partial unique index cho `classes.class_code` và `enrollments(class_id, student_id)`. Frontend: trang lớp học dùng chung cho Giảng viên (`/teacher/classes`), Quản lý (`/manager/classes`), Admin (`/admin/classes`) — mở lớp, sửa/xóa, đổi mã, thêm/xóa học viên, báo cáo tiến độ; Học viên: `Khóa học của tôi` (nhập mã lớp, tiến độ), trang lớp (đề cương + bạn học), trình học ghi nhận tiến độ theo lớp. Test API 73/73 + E2E giao diện trên Edge 21/21 (desktop + mobile 390px).
+   - **Sprint 5 — Bài kiểm tra & Gemini AI (12/10/2026):** đủ 20/20 endpoint `api-quizzes.md` + 2 endpoint đề theo lớp (`GET/PUT /classes/:id/quizzes`). Backend: `quizService.js` (đề, câu hỏi), `quizAttemptService.js` (làm bài, tính giờ server, chấm điểm, xem lại, lịch theo lớp), `aiService.js` (Gemini REST + responseSchema). Migration `npm run db:migrate:quizzes` (đã chạy trên Neon dev). Frontend: GV — danh sách đề, trang soạn đề (câu hỏi + kết quả), sinh câu hỏi AI, xem bài làm, tab Bài kiểm tra trong lớp (đặt lịch mở/đóng), tạo đề từ trang Soạn đề cương; HV — trang Bài kiểm tra, làm bài có đồng hồ + lưu tạm localStorage + tự nộp khi hết giờ, trang kết quả. Test API 92/92 (Gemini giả lập) + E2E Edge 22/22. Đã test Gemini thật.
 
 ## 2. Các Việc Đã Hoàn Thành ✅
 - [x] Toàn bộ Phase 0 (Use cases, ERD, Schema, Sequences, API Docs, Blueprint, Wireframes).
@@ -78,7 +79,13 @@
    - [ ] `GET /classes/:id/grades/export-excel` — làm cùng Sprint 5 khi có điểm Quiz/Assignment.
    - [ ] Dashboard Học viên/Giảng viên vẫn dùng số liệu giả; menu Giảng viên còn link demo `Đề cương` (`/teacher/courses/1/curriculum`) và `Sổ điểm` (`/teacher/classes/1/gradebook`).
    - [ ] Quản lý chọn giảng viên khi mở lớp chỉ từ danh sách chủ các khóa đã published (API `/users` chỉ dành cho Admin).
-3. **Triển khai Sprint 5: Module Trắc nghiệm & Đề thi (Quizzes, Gemini AI - `api-quizzes.md`).**
+3. **Sprint 5: Bài kiểm tra** — ✅ xong (12/10/2026). Còn lại:
+   - [x] Đã test Gemini thật (12/10/2026): sinh đúng 3 loại câu hỏi, đề tiếng Anh B1 ra dạng điền chỗ trống bằng tiếng Anh. **Key nằm trong `backend/.env` từng máy — mỗi thành viên tự tạo key ở aistudio.google.com/apikey, không commit, không dán vào nhóm chat.**
+   - **Tình trạng AI (tạm dừng 12/10/2026, quay lại sau):** key Free level (gói Google AI Pro không áp dụng cho API — Paid tier phải bật "Configure billing" trên project Cloud). `.env` máy dunghvd79 đặt `GEMINI_MODEL=gemini-3.8-flash` (~12-25s/lần, hay bị `503 high demand`). Đã có: tự thử lại 2 lần + chuyển model dự phòng `GEMINI_FALLBACK_MODEL` (mặc định `gemini-flash-lite-latest`, ~2-3s). Tài liệu mẫu để demo: đoạn "Tiếng Anh cơ bản bậc B1" (≥100 từ).
+   - [ ] (Khi quay lại) Cân nhắc: đổi model chính sang Flash-Lite cho nhanh/ổn định, hoặc bật Paid tier + Budget alert trước buổi bảo vệ; tùy chọn cho giảng viên chọn model trên giao diện (danh sách duyệt sẵn).
+   - [ ] Lượt làm bỏ dở quá giờ hiện được chốt khi có người mở lại dữ liệu; chưa có Cron/BullMQ chốt chủ động.
+   - [ ] AGENTS.md / tài liệu tech-stack còn ghi `gemini-1.5-flash` (đã ngừng) — code dùng `GEMINI_MODEL`, mặc định `gemini-flash-latest`.
+4. **Sprint 5 (tiếp): Bài tập (`api-assignments.md`, 18 endpoint) + `GET /classes/:id/grades/export-excel`.**
 
 ## 4. Ghi Chú Kỹ Thuật Quan Trọng
 - **Migration CSDL:** không chạy `sequelize.sync({ alter: true })` trên DB chung để thêm bảng/cột mới; viết script idempotent trong `backend/src/scripts/migrations/` (mẫu: `20261009-add-categories.js`) và thêm lệnh vào `package.json`. Mỗi thành viên cần chạy `npm run db:migrate:categories` nếu dùng DB riêng.
@@ -90,6 +97,9 @@
 - **Validation Middleware dùng chung (`middlewares/validateMiddleware.js`):** mọi route phải validate đủ 3 nguồn đầu vào — `validateBody(schema)` cho `req.body`, `validateQuery(schema)` cho `req.query`, `validateIdParam(...names)` cho `:id`/`:courseId`… (UUID) hoặc `validateIdOrSlugParam()` cho route nhận cả slug. Thứ tự: xác thực → phân quyền → params → query/body → controller. Các file `validations/*.js` chỉ chứa Joi schema, không chứa middleware. Express 5: `req.query` là getter chỉ đọc nên `validateQuery` ghi đè bằng `Object.defineProperty`.
 - **Quyền xem nội dung khóa học:** dùng `assertCourseVisible` (export từ `courseService.js`) cho mọi API đọc chương/bài. Nội dung đầy đủ bài học (`GET /lessons/:id`) chỉ cho chủ khóa, Quản lý, Admin, giảng viên dạy lớp của khóa, hoặc học viên đã ghi danh `active`.
 - **Lớp học:** quyền theo lớp kiểm tra trong `classService.js` (`canManageClass` = GV phụ trách/Quản lý/Admin; thêm-xóa học viên & đổi mã chỉ GV phụ trách/Admin). Mã lớp chỉ trả cho người quản lý lớp. Học viên bị xóa khỏi lớp = `status: dropped` + xóa mềm, ghi danh lại được nhờ partial unique index — mỗi máy dùng DB riêng cần chạy `npm run db:migrate:classes`.
+- **Bài kiểm tra:** đề thi là nội dung khóa học → mọi API sửa đề/câu hỏi phải qua `assertCanEditQuiz` (chủ khóa/Admin + `assertCourseEditable`). Không trả `isCorrect`/`explanation` cho học viên khi đang làm bài (`mapQuestion(q, { withAnswers: false })`). Thời gian làm bài tính trên server (`deadlineOf` + ân hạn 30s). Lượt làm thuộc `class_quizzes`, tự tạo khi học viên bắt đầu lần đầu. Mỗi máy dùng DB riêng cần chạy `npm run db:migrate:quizzes`.
+- **Frontend gọi POST không body:** gửi `{}` chứ không gửi `null` — `express.json()` strict từ chối `null` (nay trả `400`).
+- **Component `Button` (PortalUI):** không truyền `className` vì nó ghi đè class `ui-btn`; bọc bằng `div` nếu cần căn lề.
 - **Tailwind:** dự án tự định nghĩa `screens` chỉ có `md`/`lg`/`xl` — **không có `sm:`**, viết `sm:` sẽ không có tác dụng.
 - **AWS S3 (`config/s3.js`):** cấu hình tùy chọn — thiếu `AWS_REGION`/`S3_BUCKET` thì server vẫn chạy, API upload trả `503`. Xem `backend/.env.example`. Quyền sửa/xem tài liệu dùng lại `assertCanManageLesson` / `assertCanViewLessonContent` (export từ `lessonService.js`). Frontend upload qua `services/uploadService.js` (MIME chuẩn theo đuôi tệp, PUT bằng `fetch` không kèm Authorization).
 - **Biến môi trường:** mọi module cần `process.env` phải import `backend/src/config/env.js` (đã được import trong `server.js`, `config/database.js`, `utils/jwt.js`). Không dùng giá trị secret dự phòng.

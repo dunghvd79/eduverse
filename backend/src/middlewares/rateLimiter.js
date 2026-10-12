@@ -100,3 +100,11 @@ export const changePasswordLimiter = createLimiter({
   keyGenerator: userKeyGenerator('change-pwd'),
   message: 'Bạn đã thử đổi mật khẩu quá nhiều lần. Vui lòng thử lại sau 15 phút.'
 });
+
+// 9. AI sinh câu hỏi (Gemini): Max 10 requests per 1 minute per user - bảo vệ quota API key
+export const aiLimiter = createLimiter({
+  windowMs: 60 * 1000,
+  max: 10,
+  keyGenerator: userKeyGenerator('ai'),
+  message: 'Vượt quá giới hạn gọi AI (tối đa 10 lần/phút). Vui lòng thử lại sau ít phút.'
+});

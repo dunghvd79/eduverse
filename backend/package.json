@@ -9,7 +9,8 @@
     "start": "node src/server.js",
     "db:test": "node src/config/database.js",
     "db:migrate:categories": "node src/scripts/migrations/20261009-add-categories.js",
-    "db:migrate:classes": "node src/scripts/migrations/20261012-classes-partial-unique.js"
+    "db:migrate:classes": "node src/scripts/migrations/20261012-classes-partial-unique.js",
+    "db:migrate:quizzes": "node src/scripts/migrations/20261012-quiz-attempts.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1149.0",

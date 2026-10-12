@@ -18,7 +18,7 @@ const isClassTeacher = (cls, user) => user.role === 'teacher' && cls.teacher_id 
 /**
  * Giảng viên phụ trách, Quản lý đào tạo, Admin: sửa/xóa lớp, xem tiến độ, xem mã lớp
  */
-const canManageClass = (cls, user) => isStaff(user) || isClassTeacher(cls, user);
+export const canManageClass = (cls, user) => isStaff(user) || isClassTeacher(cls, user);
 
 /**
  * Giảng viên phụ trách hoặc Admin: đổi mã lớp, thêm/xóa học viên (api-classes.md)
@@ -29,7 +29,7 @@ const assertTeacherOrAdmin = (cls, user, message) => {
   }
 };
 
-const isActiveMember = async (classId, studentId) =>
+export const isActiveMember = async (classId, studentId) =>
   (await Enrollment.count({ where: { class_id: classId, student_id: studentId, status: 'active' } })) > 0;
 
 // ==========================================
