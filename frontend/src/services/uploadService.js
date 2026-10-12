@@ -12,11 +12,34 @@ const MIME_BY_EXTENSION = {
   docx: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
   pptx: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
   zip: 'application/zip',
-  rar: 'application/vnd.rar'
+  rar: 'application/vnd.rar',
+  doc: 'application/msword',
+  xls: 'application/vnd.ms-excel',
+  xlsx: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+  ppt: 'application/vnd.ms-powerpoint',
+  txt: 'text/plain',
+  csv: 'text/csv',
+  '7z': 'application/x-7z-compressed'
 };
 
 export const getFileExtension = (fileName = '') =>
   fileName.includes('.') ? fileName.split('.').pop().toLowerCase() : '';
+
+/**
+ * MIME gửi lên khi xin URL và khi PUT (phải trùng nhau). Đuôi lạ -> application/octet-stream (backend chấp nhận)
+ */
+export const contentTypeOf = (file) => MIME_BY_EXTENSION[getFileExtension(file.name)] || 'application/octet-stream';
+
+/**
+ * PUT tệp thẳng lên S3 theo presigned URL.
+ * Gọi fetch trực tiếp, KHÔNG qua axios `api` để không gửi kèm Authorization header lên S3.
+ */
+export const putToS3 = async (uploadUrl, file, contentType) => {
+  const response = await fetch(uploadUrl, { method: 'PUT', headers: { 'Content-Type': contentType }, body: file });
+  if (!response.ok) {
+    throw new Error(`Tải tệp lên máy chủ lưu trữ thất bại (HTTP ${response.status}).`);
+  }
+};
 
 export const uploadService = {
   /**
@@ -34,15 +57,7 @@ export const uploadService = {
     });
     const { uploadUrl, fileKey, publicUrl, isPublic } = presign.data;
 
-    // Gọi fetch trực tiếp, KHÔNG qua axios `api` để không gửi kèm Authorization header lên S3
-    const s3Response = await fetch(uploadUrl, {
-      method: 'PUT',
-      headers: { 'Content-Type': contentType },
-      body: file
-    });
-    if (!s3Response.ok) {
-      throw new Error(`Tải tệp lên máy chủ lưu trữ thất bại (HTTP ${s3Response.status}).`);
-    }
+    await putToS3(uploadUrl, file, contentType);
 
     return { fileKey, publicUrl, isPublic };
   }

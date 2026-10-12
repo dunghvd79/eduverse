@@ -7,6 +7,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { PortalHeader, Button, Card, Table, Badge, StatCard, Progress } from '../portal/PortalUI';
 import ClassFormModal from './ClassFormModal';
 import ClassQuizzesTab from './ClassQuizzesTab';
+import ClassAssignmentsTab from './ClassAssignmentsTab';
 import classService, { CLASS_STATUS, PROGRESS_STATUS, formatDate } from '../../services/classService';
 import { useAuthStore } from '../../stores/useAuthStore';
 import { toast } from '../common/Toast';
@@ -343,11 +344,13 @@ export default function ClassManagePage({ basePath }) {
         <button className={`tab ${tab === 'members' ? 'active' : ''}`} onClick={() => setTab('members')}>Học viên</button>
         <button className={`tab ${tab === 'progress' ? 'active' : ''}`} onClick={() => setTab('progress')}>Tiến độ học tập</button>
         <button className={`tab ${tab === 'quizzes' ? 'active' : ''}`} onClick={() => setTab('quizzes')}>Bài kiểm tra</button>
+        <button className={`tab ${tab === 'assignments' ? 'active' : ''}`} onClick={() => setTab('assignments')}>Bài tập</button>
       </div>
 
       {tab === 'members' && <MembersTab cls={cls} canManageMembers={canManageMembers} onChanged={load} />}
       {tab === 'progress' && <ProgressTab cls={cls} />}
       {tab === 'quizzes' && <ClassQuizzesTab cls={cls} role={role} />}
+      {tab === 'assignments' && <ClassAssignmentsTab cls={cls} role={role} />}
 
       {showEdit && (
         <ClassFormModal

@@ -345,7 +345,7 @@ Khung bài tập lớn/bài tập về nhà yêu cầu nộp file đính kèm (Q
 | `deleted_at` | `timestamptz` | ✔️ | `NULL` | Hỗ trợ xóa mềm (Soft Delete) |
 
 **Ràng buộc Unique:**
-- `uq_assignments_lesson` UNIQUE (`lesson_id`) *(Mỗi bài học chỉ có tối đa 1 bài tập nộp file)*
+- `uq_assignments_lesson` UNIQUE (`lesson_id`) WHERE `deleted_at IS NULL` *(Mỗi bài học tối đa 1 bài tập chưa xóa — migration `db:migrate:assignments`)*
 
 ---
 
@@ -387,6 +387,8 @@ Lưu file bài làm học viên upload lên AWS S3 và điểm chấm kèm nhậ
 | `feedback` | `text` | ✔️ | `NULL` | Lời phê, góp ý chi tiết của Giảng viên |
 | `graded_by` | `uuid` | ✔️ | `NULL` | Khóa ngoại $\rightarrow$ `users(id)` (Giảng viên chấm) |
 | `graded_at` | `timestamptz` | ✔️ | `NULL` | Thời điểm chấm bài |
+| `resubmission_reason` | `text` | ✔️ | `NULL` | Lý do GV yêu cầu nộp lại (tách khỏi `feedback`, giữ điểm cũ) — *bổ sung 13/10/2026* |
+| `resubmission_requested_at` | `timestamptz` | ✔️ | `NULL` | Thời điểm GV yêu cầu nộp lại — *bổ sung 13/10/2026* |
 
 **Ràng buộc Unique:**
 - `uq_assignment_submissions` UNIQUE (`class_assignment_id`, `student_id`) *(Mỗi học viên có 1 bản nộp chính thức)*

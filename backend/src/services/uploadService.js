@@ -24,7 +24,15 @@ export const MIME_BY_EXTENSION = {
   docx: ['application/vnd.openxmlformats-officedocument.wordprocessingml.document'],
   pptx: ['application/vnd.openxmlformats-officedocument.presentationml.presentation'],
   zip: ['application/zip', 'application/x-zip-compressed'],
-  rar: ['application/vnd.rar', 'application/x-rar-compressed']
+  rar: ['application/vnd.rar', 'application/x-rar-compressed'],
+  // Thêm cho bài nộp (assignments.allowed_file_types do GV tự cấu hình)
+  doc: ['application/msword'],
+  xls: ['application/vnd.ms-excel'],
+  xlsx: ['application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'],
+  ppt: ['application/vnd.ms-powerpoint'],
+  txt: ['text/plain'],
+  csv: ['text/csv'],
+  '7z': ['application/x-7z-compressed']
 };
 
 const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp'];
@@ -100,6 +108,21 @@ const resolveObjectKey = async (purpose, { contextId, fileName }, currentUser) =
 };
 
 /**
+ * Ký Presigned PUT URL. Content-Type và Content-Length được ký cùng URL nên client không đổi được loại/kích thước tệp.
+ */
+export const createSignedPutUrl = async ({ key, contentType, fileSize }) => {
+  const { bucket } = getS3Config();
+  const command = new PutObjectCommand({ Bucket: bucket, Key: key, ContentType: contentType, ContentLength: fileSize });
+  return getSignedUrl(getS3Client(), command, { expiresIn: UPLOAD_URL_EXPIRES_IN });
+};
+
+/**
+ * MIME hợp lệ cho đuôi tệp: đuôi có trong bảng phải khớp; đuôi lạ (GV tự cho phép) chỉ nhận application/octet-stream
+ */
+export const isMimeAllowed = (ext, contentType) =>
+  (MIME_BY_EXTENSION[ext] ? MIME_BY_EXTENSION[ext].includes(contentType) : contentType === 'application/octet-stream');
+
+/**
  * POST /uploads/presigned-url
  * Content-Type và Content-Length được ký cùng URL nên client không đổi được loại/kích thước tệp khi PUT.
  */
@@ -119,16 +142,10 @@ export const createPresignedUrl = async (data, currentUser) => {
   }
 
   // Kiểm tra cấu hình S3 trước khi truy vấn CSDL
-  const { bucket, publicBaseUrl } = getS3Config();
+  const { publicBaseUrl } = getS3Config();
   const fileKey = await resolveObjectKey(purpose, data, currentUser);
 
-  const command = new PutObjectCommand({
-    Bucket: bucket,
-    Key: fileKey,
-    ContentType: contentType,
-    ContentLength: fileSize
-  });
-  const uploadUrl = await getSignedUrl(getS3Client(), command, { expiresIn: UPLOAD_URL_EXPIRES_IN });
+  const uploadUrl = await createSignedPutUrl({ key: fileKey, contentType, fileSize });
 
   return {
     uploadUrl,

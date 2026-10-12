@@ -33,7 +33,7 @@ const findMaterialOfLesson = async (lessonId, materialId) => {
  * Lấy metadata tệp trên S3. Tệp không tồn tại -> null.
  * S3 trả 403 (thay vì 404) khi IAM thiếu s3:ListBucket hoặc credentials sai -> báo lỗi cấu hình, không coi là "chưa upload".
  */
-const headObject = async (bucket, key) => {
+export const headObject = async (bucket, key) => {
   try {
     return await getS3Client().send(new HeadObjectCommand({ Bucket: bucket, Key: key }));
   } catch (error) {

@@ -1061,3 +1061,26 @@
   - Với tệp nén lớn (> 50MB), tác vụ được tách khỏi luồng HTTP chính, đưa vào Queue `zip-submissions-queue` do Redis quản lý. 
   - Worker tiến hành stream từng file từ S3 qua thư viện `archiver`, nén trực tiếp lên S3 multipart upload. Sau khi nén xong, hệ thống gửi thông báo WebSocket/Email thông báo file ZIP đã sẵn sàng cho Giảng viên tải về.
 
+
+---
+
+## 4. Trạng Thái Triển Khai (cập nhật 13/10/2026)
+
+Đã triển khai **đủ 18/18 endpoint** ở mục 1.
+
+### 4.1. Khác biệt / bổ sung so với đặc tả
+- **Bài tập là nội dung khóa học**: tạo/sửa/xóa khung bài tập chỉ khi khóa học `draft`/`rejected` (`409` khi `pending`/`published`), chỉ chủ khóa hoặc Admin; bài học phải có `lessonType = 'assignment'` (`400`), mỗi bài học 1 bài tập (`409`). **Giao bài & lịch nộp theo lớp** vẫn chỉnh được sau khi khóa công khai.
+- `allowedFileTypes` được chuẩn hóa (`" PDF, zip ,.docx"` → `"pdf,zip,docx"`), tối đa 15 loại. Đuôi có trong bảng MIME chuẩn phải gửi đúng MIME; đuôi khác chỉ nhận `application/octet-stream`.
+- **Bài tập "được giao" = có bản ghi `class_assignments`** (GV gọi `PUT .../schedule`). Học viên chỉ thấy bài đã giao; người quản lý lớp thấy mọi bài của khóa kèm `isScheduled`.
+- `GET /classes/:classId/assignments`: Quản lý đào tạo được xem (chỉ đọc). Học viên nhận thêm `canSubmit`; người quản lý nhận `stats { totalEnrolled, submittedCount, lateCount, gradedCount, needsGradingCount, resubmissionRequestedCount, missingCount }` (chỉ tính học viên đang học).
+- `PUT .../schedule`: không có `openTime` → giữ giá trị cũ hoặc `now()`; `cutoffTime` để trống khi cho nộp muộn = **không giới hạn** hạn chót. Chưa có thông báo (notification/email) vì chưa có module thông báo.
+- **Quyền**: giao bài, xem/chấm bài nộp, tải ZIP chỉ **GV phụ trách lớp hoặc Admin** (chủ khóa không dạy lớp đó thì không chấm được).
+- **Key S3 bài nộp**: `private/assignments/{classId}/{assignmentId}/{studentId}/{uuid}_{tenFile}`; xác nhận nộp kiểm tra key đúng thư mục của chính học viên, đuôi tệp, kích thước thật (`HeadObject`).
+- Lớp không `active` → không nộp được (trừ khi GV yêu cầu nộp lại). Bài chưa tới `openTime` → `403` "chưa mở nhận bài".
+- **⚠️ Yêu cầu nộp lại GIỮ điểm cũ** (khác mục 2.15 "xóa điểm cũ"), theo quyết định [`grading-policy.md`](../requirements/grading-policy.md) E3: lý do lưu ở cột mới `resubmission_reason` (không ghi đè `feedback`). Học viên nộp lại → `status` về `submitted`/`late_submitted`, điểm cũ vẫn hiển thị kèm cờ `needsGrading = true` cho tới khi GV chấm lại.
+- `GET /my-submission` trả thêm `canSubmit`, `submitBlockedReason`, lịch nộp; `submission` có `needsGrading`, `resubmissionReason`. `downloadUrl` = `null` nếu server chưa cấu hình S3 (thay vì báo lỗi).
+- `GET .../submissions`: `status` lọc thêm `needs_grading` (chưa chấm hoặc nộp lại sau lần chấm gần nhất); mỗi dòng có `needsGrading`, `lateDurationMinutes`; `summary` có thêm `needsGradingCount`.
+- `GET /assignment-submissions/:id` trả thêm `assignment`, `class`, `deadline`, `resubmissionReason`.
+- Chấm điểm (đơn lẻ & hàng loạt) → bài học được tính hoàn thành; nộp bài cũng tính hoàn thành (đúng đặc tả).
+- **Tải ZIP cả lớp**: chưa có Redis/BullMQ nên xử lý ngay trong tiến trình server — tổng ≤ 50MB nén xong trả link (`200`), lớn hơn chạy nền trả `202` + `jobId`; trạng thái job lưu trong bộ nhớ (mất khi khởi động lại server → gọi lại `download-all`). ZIP được stream S3 → `archiver` → S3 multipart (`@aws-sdk/lib-storage`), lưu ở `private/exports/...`. Tên file trong ZIP: `[HoTen]_[phần trước @ của email]_[TenFileGoc]` (hệ thống chưa có MSSV).
+- **CSDL**: migration `npm run db:migrate:assignments` — partial unique `uq_assignments_lesson` (xóa mềm xong tạo lại được) + cột `assignment_submissions.resubmission_reason`, `resubmission_requested_at`.

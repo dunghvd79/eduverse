@@ -5,6 +5,8 @@ import { PortalHeader, Button, Card, Badge, Field } from '../../components/porta
 import courseService from '../../services/courseService';
 import LessonMaterialsPanel from '../../components/course/LessonMaterialsPanel';
 import QuizFormModal from '../../components/quiz/QuizFormModal';
+import AssignmentFormModal from '../../components/assignment/AssignmentFormModal';
+import assignmentService from '../../services/assignmentService';
 import { toast } from '../../components/common/Toast';
 
 const TYPE_LABEL = {
@@ -45,6 +47,7 @@ export default function CourseCurriculumBuilderPage() {
   const [lessonForm, setLessonForm] = useState(EMPTY_LESSON);
   const [lessonLoading, setLessonLoading] = useState(false);
   const [creatingQuiz, setCreatingQuiz] = useState(false);
+  const [assignmentModal, setAssignmentModal] = useState(null); // null | 'create' | assignment
 
   // Khóa đang chờ duyệt / đã công khai: backend chặn mọi thao tác sửa (409) -> giao diện chỉ đọc
   const isLocked = course?.status === 'pending' || course?.status === 'published';
@@ -432,6 +435,28 @@ export default function CourseCurriculumBuilderPage() {
                 </div>
               )}
 
+              {selectedLesson.lessonType === 'assignment' && (
+                <div className="pt-4 border-t border-slate-200 flex flex-wrap items-center gap-3">
+                  <FileQuestion size={18} className="text-primary" />
+                  <div className="flex-1 min-w-0">
+                    <b>Bài tập nộp file</b>
+                    <p className="text-sm text-slate-500">
+                      {selectedLesson.assignmentId ? 'Bài học đã có đề bài tập. Giao bài & đặt hạn nộp trong trang Lớp học.' : isLocked ? 'Bài học chưa có đề bài tập.' : 'Bài học loại Bài tập cần đề bài để học viên nộp file.'}
+                    </p>
+                  </div>
+                  {selectedLesson.assignmentId ? (
+                    !isLocked && (
+                      <Button variant="secondary" onClick={async () => {
+                        try { setAssignmentModal(await assignmentService.get(selectedLesson.assignmentId)); }
+                        catch (error) { toast.error(error?.message || 'Không thể tải bài tập.'); }
+                      }}>Sửa đề bài tập</Button>
+                    )
+                  ) : !isLocked && (
+                    <Button onClick={() => setAssignmentModal('create')}><Plus size={15} /> Tạo đề bài tập</Button>
+                  )}
+                </div>
+              )}
+
               <div className="pt-4 border-t border-slate-200">
                 <LessonMaterialsPanel lessonId={selectedLesson.id} editable={!isLocked} />
               </div>
@@ -446,6 +471,22 @@ export default function CourseCurriculumBuilderPage() {
           )}
         </Card>
       </div>
+
+      {assignmentModal && selectedLesson && (
+        <AssignmentFormModal
+          assignment={assignmentModal === 'create' ? null : assignmentModal}
+          lesson={assignmentModal === 'create' ? { id: selectedLesson.id, title: selectedLesson.title } : null}
+          onClose={() => setAssignmentModal(null)}
+          onSaved={(saved) => {
+            setAssignmentModal(null);
+            // Cập nhật assignmentId trong cây đề cương để nút chuyển sang "Sửa đề bài tập"
+            setChapters(prev => prev.map(chapter => ({
+              ...chapter,
+              lessons: (chapter.lessons || []).map(l => (l.id === saved.lessonId ? { ...l, assignmentId: saved.id } : l))
+            })));
+          }}
+        />
+      )}
 
       {creatingQuiz && selectedLesson && (
         <QuizFormModal

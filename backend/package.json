@@ -10,11 +10,14 @@
     "db:test": "node src/config/database.js",
     "db:migrate:categories": "node src/scripts/migrations/20261009-add-categories.js",
     "db:migrate:classes": "node src/scripts/migrations/20261012-classes-partial-unique.js",
-    "db:migrate:quizzes": "node src/scripts/migrations/20261012-quiz-attempts.js"
+    "db:migrate:quizzes": "node src/scripts/migrations/20261012-quiz-attempts.js",
+    "db:migrate:assignments": "node src/scripts/migrations/20261013-assignments.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1149.0",
+    "@aws-sdk/lib-storage": "^3.1149.0",
     "@aws-sdk/s3-request-presigner": "^3.1149.0",
+    "archiver": "^7.0.1",
     "bcryptjs": "^3.0.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.6",

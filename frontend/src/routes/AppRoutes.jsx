@@ -25,6 +25,7 @@ import QuizResultPage from '../pages/student/QuizResultPage';
 import AssignmentDetailPage from '../pages/student/AssignmentDetailPage';
 import GradesPage from '../pages/student/GradesPage';
 import StudentQuizzesPage from '../pages/student/StudentQuizzesPage';
+import StudentAssignmentsPage from '../pages/student/StudentAssignmentsPage';
 import ProfilePage from '../pages/student/ProfilePage';
 
 import TeacherDashboardPage from '../pages/teacher/TeacherDashboardPage';
@@ -83,7 +84,8 @@ export default function AppRoutes() {
         <Route path="quizzes" element={<StudentQuizzesPage />} />
         <Route path="quizzes/:id/take" element={<QuizTakePage />} />
         <Route path="quizzes/:id/result/:attemptId" element={<QuizResultPage />} />
-        <Route path="assignments/:id" element={<AssignmentDetailPage />} />
+        <Route path="assignments" element={<StudentAssignmentsPage />} />
+        <Route path="classes/:classId/assignments/:assignmentId" element={<AssignmentDetailPage />} />
         <Route path="grades" element={<GradesPage />} />
         <Route path="profile" element={<ProfilePage />} />
       </Route>
@@ -100,7 +102,7 @@ export default function AppRoutes() {
         <Route path="quizzes/:id" element={<QuizEditorPage />} />
         <Route path="quiz-attempts/:attemptId" element={<TeacherAttemptReviewPage />} />
         <Route path="assignments" element={<TeacherAssignmentsPage />} />
-        <Route path="assignments/:id/grade" element={<AssignmentGradingPage />} />
+        <Route path="classes/:classId/assignments/:assignmentId/grade" element={<AssignmentGradingPage />} />
         <Route path="classes/:id/gradebook" element={<GradebookPage />} />
         <Route path="profile" element={<ProfilePage />} />
       </Route>
@@ -123,6 +125,7 @@ export default function AppRoutes() {
         <Route path="users" element={<UserManagementPage />} />
         <Route path="classes" element={<ClassListPage basePath="/admin/classes" />} />
         <Route path="classes/:id" element={<ClassManagePage basePath="/admin/classes" />} />
+        <Route path="classes/:classId/assignments/:assignmentId/grade" element={<AssignmentGradingPage />} />
         <Route path="audit-logs" element={<AuditLogsPage />} />
         <Route path="settings" element={<PlatformSettingsPage />} />
         <Route path="profile" element={<ProfilePage />} />
