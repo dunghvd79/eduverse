@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, ClipboardCheck, PlayCircle, RotateCcw } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, ClipboardCheck, FileUp, PlayCircle, RotateCcw } from 'lucide-react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Button, Badge, Card, Progress } from '../../components/portal/PortalUI';
 import courseService from '../../services/courseService';
@@ -48,6 +48,7 @@ export default function ClassroomPage() {
   // Trạng thái hoàn thành lấy từ đề cương theo lớp (GET /lessons/:id không trả tiến độ)
   const isCompleted = !!flatLessons[currentIndex]?.isCompleted;
   const quizId = flatLessons[currentIndex]?.quizId;
+  const assignmentId = flatLessons[currentIndex]?.assignmentId;
   const lessonUrl = (id) => `/student/courses/${courseId}/learn/${id}${classId ? `?classId=${classId}` : ''}`;
 
   const setProgress = async (isCompleted) => {
@@ -166,6 +167,21 @@ export default function ClassroomPage() {
                 </div>
                 {quizId && classId && (
                   <Button onClick={() => navigate(`/student/quizzes/${quizId}/take?classId=${classId}`)}>Làm bài kiểm tra</Button>
+                )}
+              </div>
+            </Card>
+          )}
+
+          {lesson.lessonType === 'assignment' && (
+            <Card>
+              <div className="flex flex-wrap items-center gap-3">
+                <FileUp size={22} className="text-primary" />
+                <div className="flex-1 min-w-0">
+                  <b>Bài tập nộp file</b>
+                  <p className="text-sm text-slate-500">{assignmentId ? 'Nộp bài xong, bài học được tính hoàn thành tự động.' : 'Giảng viên chưa soạn đề cho bài học này.'}</p>
+                </div>
+                {assignmentId && classId && (
+                  <Button onClick={() => navigate(`/student/classes/${classId}/assignments/${assignmentId}`)}>Xem đề & nộp bài</Button>
                 )}
               </div>
             </Card>

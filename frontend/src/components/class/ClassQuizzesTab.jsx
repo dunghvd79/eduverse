@@ -4,14 +4,8 @@ import { useNavigate } from 'react-router-dom';
 import { Button, Card, Table, Badge, Field } from '../portal/PortalUI';
 import quizService, { formatDateTime, formatScore } from '../../services/quizService';
 import { toast } from '../common/Toast';
+import { fromLocalInput, toLocalInput } from '../../utils/datetime';
 
-// <input type="datetime-local"> dùng giờ địa phương, không có múi giờ
-const toLocalInput = (value) => {
-  if (!value) return '';
-  const date = new Date(value);
-  return new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-};
-const fromLocalInput = (value) => (value ? new Date(value).toISOString() : null);
 
 function ScheduleModal({ cls, quiz, onClose, onSaved }) {
   const [form, setForm] = useState({ openTime: toLocalInput(quiz.openTime), closeTime: toLocalInput(quiz.closeTime), isActive: quiz.isActive });

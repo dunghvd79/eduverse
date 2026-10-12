@@ -110,6 +110,7 @@ npm install                      # nếu package.json thay đổi
 npm run db:migrate:categories    # các migration hiện có — chỉ cần nếu dùng DB riêng
 npm run db:migrate:classes
 npm run db:migrate:quizzes
+npm run db:migrate:assignments
 ```
 (trong `frontend/`: `npm install` nếu `package.json` thay đổi)
 

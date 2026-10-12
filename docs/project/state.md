@@ -1,8 +1,8 @@
 # 🧭 Trạng Thái Tiến Độ Dự Án (Project State)
 
-> **Cập nhật lần cuối:** 12/10/2026  
+> **Cập nhật lần cuối:** 13/10/2026  
 > **Người cập nhật:** dunghvd79, Hoàng Ngọc Sơn & AI Assistant  
-> **Giai đoạn hiện tại:** Phase 1 — Sprint 5: xong module Bài kiểm tra (Quizzes + Gemini AI); tiếp theo là Bài tập (Assignments) + xuất bảng điểm
+> **Giai đoạn hiện tại:** Phase 1 — Sprint 5: xong Bài kiểm tra (Quizzes + Gemini AI) và Bài tập (Assignments); còn lại xuất bảng điểm Excel + Sổ điểm / Điểm số
 
 ---
 
@@ -85,7 +85,10 @@
    - [ ] (Khi quay lại) Cân nhắc: đổi model chính sang Flash-Lite cho nhanh/ổn định, hoặc bật Paid tier + Budget alert trước buổi bảo vệ; tùy chọn cho giảng viên chọn model trên giao diện (danh sách duyệt sẵn).
    - [ ] Lượt làm bỏ dở quá giờ hiện được chốt khi có người mở lại dữ liệu; chưa có Cron/BullMQ chốt chủ động.
    - [x] AGENTS.md, tech-stack, seq-ai-001, actor-admin đã cập nhật: model cấu hình qua `GEMINI_MODEL` (12/10/2026).
-4. **Sprint 5 (tiếp): Bài tập (`api-assignments.md`, 18 endpoint) + `GET /classes/:id/grades/export-excel`.**
+4. **Sprint 5: Bài tập** — ✅ xong (13/10/2026): đủ 18/18 endpoint `api-assignments.md`. Backend `assignmentService.js` (khung bài tập, giao bài theo lớp, nộp/nộp lại qua S3, chấm đơn lẻ/hàng loạt, yêu cầu nộp lại giữ điểm cũ theo E3), `assignmentZipService.js` (ZIP cả lớp, ≤50MB trả ngay, lớn hơn chạy nền). Migration `npm run db:migrate:assignments` (đã chạy trên Neon dev). Frontend: GV — trang Bài tập, tạo/sửa đề từ Soạn đề cương, tab Bài tập trong lớp (giao bài, lịch nộp, thống kê), trang Chấm bài (lọc, chấm nhanh trên bảng, modal chấm/yêu cầu nộp lại, tải ZIP); HV — trang Bài tập, trang nộp bài (đề, đếm ngược, nộp/nộp lại, điểm & nhận xét), tab Bài tập trong lớp, thẻ bài tập trong trình học. Test API 68/68 + E2E Edge 24/24 (S3 giả lập, nộp file thật qua trình duyệt). **Chưa test với bucket S3 thật.**
+   - [ ] Thông báo (in-app/email) khi giao bài, chấm điểm, yêu cầu nộp lại — chưa có module thông báo.
+   - [ ] Job nén ZIP lưu trong bộ nhớ (chưa có Redis/BullMQ).
+5. **Sprint 5 (còn lại): `GET /classes/:id/grades/export-excel` + trang Sổ điểm (GV) + trang Điểm số (HV)** theo `grading-policy.md`. Menu GV còn link demo `Sổ điểm` (`/teacher/classes/1/gradebook`).
    - ✅ **Công thức điểm tổng kết đã chốt (12/10/2026):** Quiz 40% · Bài tập 50% · Tiến độ 10%; Quiz lấy điểm cao nhất; chưa làm/chưa nộp = 0; Giỏi ≥ 8 · Khá ≥ 6.5 · Trung bình ≥ 5 · Chưa đạt < 5. Chi tiết: `docs/requirements/grading-policy.md` (BR-034 → BR-037). Trường hợp đặc biệt cũng đã chốt: lớp không có Quiz/Bài tập → chia lại tỷ trọng; bài đã nộp chưa chấm → tạm 0 + ghi "Chưa chấm"; nộp lại → điểm lần chấm gần nhất (BR-038, BR-039).
 
 ## 4. Ghi Chú Kỹ Thuật Quan Trọng
@@ -99,6 +102,8 @@
 - **Quyền xem nội dung khóa học:** dùng `assertCourseVisible` (export từ `courseService.js`) cho mọi API đọc chương/bài. Nội dung đầy đủ bài học (`GET /lessons/:id`) chỉ cho chủ khóa, Quản lý, Admin, giảng viên dạy lớp của khóa, hoặc học viên đã ghi danh `active`.
 - **Lớp học:** quyền theo lớp kiểm tra trong `classService.js` (`canManageClass` = GV phụ trách/Quản lý/Admin; thêm-xóa học viên & đổi mã chỉ GV phụ trách/Admin). Mã lớp chỉ trả cho người quản lý lớp. Học viên bị xóa khỏi lớp = `status: dropped` + xóa mềm, ghi danh lại được nhờ partial unique index — mỗi máy dùng DB riêng cần chạy `npm run db:migrate:classes`.
 - **Bài kiểm tra:** đề thi là nội dung khóa học → mọi API sửa đề/câu hỏi phải qua `assertCanEditQuiz` (chủ khóa/Admin + `assertCourseEditable`). Không trả `isCorrect`/`explanation` cho học viên khi đang làm bài (`mapQuestion(q, { withAnswers: false })`). Thời gian làm bài tính trên server (`deadlineOf` + ân hạn 30s). Lượt làm thuộc `class_quizzes`, tự tạo khi học viên bắt đầu lần đầu. Mỗi máy dùng DB riêng cần chạy `npm run db:migrate:quizzes`.
+- **Bài tập:** giao bài = tạo `class_assignments` qua `PUT .../schedule`; chấm/giao bài chỉ GV phụ trách lớp hoặc Admin (`assertClassGrader`). Yêu cầu nộp lại **giữ điểm cũ** (cột `resubmission_reason`), bài cần chấm xác định bằng `needsGrading` (chưa có điểm hoặc nộp sau lần chấm gần nhất). Mỗi máy dùng DB riêng cần chạy `npm run db:migrate:assignments`.
+- **Upload S3 dùng chung:** backend `uploadService.createSignedPutUrl` / `isMimeAllowed`, frontend `uploadService.putToS3` / `contentTypeOf`.
 - **Frontend gọi POST không body:** gửi `{}` chứ không gửi `null` — `express.json()` strict từ chối `null` (nay trả `400`).
 - **Component `Button` (PortalUI):** không truyền `className` vì nó ghi đè class `ui-btn`; bọc bằng `div` nếu cần căn lề.
 - **Tailwind:** dự án tự định nghĩa `screens` chỉ có `md`/`lg`/`xl` — **không có `sm:`**, viết `sm:` sẽ không có tác dụng.

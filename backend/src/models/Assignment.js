@@ -9,8 +9,7 @@ export const Assignment = sequelize.define('assignments', {
   },
   lesson_id: {
     type: DataTypes.UUID,
-    allowNull: false,
-    unique: true
+    allowNull: false
   },
   title: {
     type: DataTypes.STRING(255),
@@ -35,7 +34,11 @@ export const Assignment = sequelize.define('assignments', {
   paranoid: true,
   createdAt: 'created_at',
   updatedAt: 'updated_at',
-  deletedAt: 'deleted_at'
+  deletedAt: 'deleted_at',
+  indexes: [
+    // Mỗi bài học tối đa 1 bài tập chưa xóa (migration 20261013-assignments)
+    { name: 'uq_assignments_lesson', unique: true, fields: ['lesson_id'], where: { deleted_at: null } }
+  ]
 });
 
 export default Assignment;
