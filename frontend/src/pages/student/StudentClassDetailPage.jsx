@@ -4,6 +4,8 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { PortalHeader, Button, Progress, Card, SectionTitle, Badge } from '../../components/portal/PortalUI';
 import classService, { CLASS_STATUS, formatDate } from '../../services/classService';
 import courseService from '../../services/courseService';
+import quizService from '../../services/quizService';
+import { StudentQuizTable } from './StudentQuizzesPage';
 import { toast } from '../../components/common/Toast';
 
 const TYPE_ICON = { theory: FileText, video: Video, quiz: ClipboardCheck, assignment: FileQuestion };
@@ -15,6 +17,7 @@ export default function StudentClassDetailPage() {
   const [cls, setCls] = useState(null);
   const [outline, setOutline] = useState(null);
   const [members, setMembers] = useState(null);
+  const [quizzes, setQuizzes] = useState([]);
   const [tab, setTab] = useState('lessons');
   const [loading, setLoading] = useState(true);
 
@@ -28,13 +31,15 @@ export default function StudentClassDetailPage() {
         setCls(detail);
         if (!detail.permissions?.isMember) return;
 
-        const [curriculum, memberList] = await Promise.all([
+        const [curriculum, memberList, quizList] = await Promise.all([
           courseService.curriculum(detail.course.id, detail.id),
-          classService.members(detail.id, { limit: 100 })
+          classService.members(detail.id, { limit: 100 }),
+          quizService.classQuizzes(detail.id).catch(() => [])
         ]);
         if (!cancelled) {
           setOutline(curriculum);
           setMembers(memberList);
+          setQuizzes(quizList);
         }
       } catch (error) {
         if (!cancelled) toast.error(error?.message || 'Không thể tải lớp học.');
@@ -116,10 +121,12 @@ export default function StudentClassDetailPage() {
 
       <div className="tabs-card">
         <button className={`tab ${tab === 'lessons' ? 'active' : ''}`} onClick={() => setTab('lessons')}>Bài học</button>
+        <button className={`tab ${tab === 'quizzes' ? 'active' : ''}`} onClick={() => setTab('quizzes')}>Bài kiểm tra ({quizzes.length})</button>
         <button className={`tab ${tab === 'members' ? 'active' : ''}`} onClick={() => setTab('members')}>Bạn học ({members?.meta?.totalItems ?? 0})</button>
       </div>
 
-      {tab === 'lessons' ? (
+      {tab === 'quizzes' && <Card><StudentQuizTable classId={cls.id} quizzes={quizzes} /></Card>}
+      {tab === 'lessons' && (
         <Card>
           {(outline?.chapters || []).length === 0 && <p className="text-sm text-slate-500">Khóa học chưa có nội dung.</p>}
           {(outline?.chapters || []).map((chapter, chapterIndex) => (
@@ -147,7 +154,8 @@ export default function StudentClassDetailPage() {
             </div>
           ))}
         </Card>
-      ) : (
+      )}
+      {tab === 'members' && (
         <Card>
           {members?.items?.length ? (
             <div className="member-grid">

@@ -1147,3 +1147,38 @@
   - Trong quá trình làm bài kéo dài, giao diện Frontend (React) tự động đồng bộ trạng thái các câu đã tick vào `LocalStorage`. Khi có sự cố refresh trình duyệt, học viên có thể tải lại trang làm bài mà không mất tiến trình. Toàn bộ mảng câu trả lời `answers` chỉ được gửi lên Server khi bấm Nộp bài.
 - **Hiệu năng Chấm điểm & Caching (Redis):**
   - Bộ đáp án chuẩn của đề thi (`answerKeys`) nên được lưu cache trong **Redis** trong thời gian diễn ra bài thi để tránh việc truy vấn nhiều lần vào PostgreSQL khi hàng trăm học viên cùng nộp bài một lúc.
+
+---
+
+## 4. Trạng Thái Triển Khai (cập nhật 12/10/2026)
+
+Đã triển khai **đủ 20/20 endpoint** ở mục 1 (kể cả 2 alias `/quizzes/attempts/:attemptId[/submit]`), cộng thêm 2 endpoint quản lý đề theo lớp ở mục 4.1.
+
+### 4.1. Endpoint bổ sung: Đề thi theo lớp (bảng `class_quizzes`)
+Đặc tả gốc không có API cho bảng `class_quizzes` nên bổ sung:
+
+| Method | Endpoint | Quyền hạn | Mô tả |
+|:---:|---|:---:|---|
+| `GET` | `/api/v1/classes/:id/quizzes` | Thành viên lớp, GV phụ trách, Quản lý, Admin | Học viên: các đề đã công khai của khóa + `userAttemptsCount`, `remainingAttempts`, `bestScore`, `passed`, `inProgressAttemptId`, `isAvailable`, `unavailableReason`. Người quản lý lớp: mọi đề + lịch mở + `stats { totalAttempts, studentsAttempted, passedStudents, averageBestScore }` |
+| `PUT` | `/api/v1/classes/:id/quizzes/:quizId` | GV phụ trách, Quản lý, Admin | Body `{ openTime?, closeTime?, isActive? }` (ISO 8601, `null` = không giới hạn). `closeTime` phải sau `openTime` |
+
+- Lớp **chưa có** bản ghi `class_quizzes` = đề mở tự do (không giới hạn giờ). Bản ghi được tạo tự động khi học viên bắt đầu làm bài lần đầu hoặc khi GV đặt lịch.
+- Đề không làm được khi: lớp không `active`, `isActive = false`, chưa tới `openTime`, đã qua `closeTime`.
+
+### 4.2. Khác biệt / bổ sung so với đặc tả
+- **Đề thi là nội dung khóa học**: tạo/sửa/xóa đề và câu hỏi chỉ khi khóa học `draft`/`rejected` (`409` khi `pending`/`published`), chỉ chủ khóa hoặc Admin. Lịch mở đề theo lớp (4.1) vẫn chỉnh được sau khi khóa công khai.
+- `POST /quizzes`: bài học phải có `lessonType = 'quiz'` (`400`), mỗi bài học 1 đề (`409`). Nhận thêm `isPublished` (mặc định `false`). Không công khai được đề chưa có câu hỏi (`400`).
+- **Ràng buộc lựa chọn**: `single_choice` / `true_false` có **đúng 1** đáp án đúng; `true_false` có đúng 2 lựa chọn.
+- `PATCH /questions/:id` nhận thêm `questionType`.
+- **Số trả về dạng number** (`passScore: 5`, `score: 9.5`, `points: 1`) thay vì chuỗi `"6.0"`.
+- `GET /quizzes`: học viên chỉ thấy đề đã công khai thuộc khóa học `published` **mà mình đang học**; giảng viên thấy đề của khóa mình sở hữu hoặc có lớp mình dạy.
+- `GET /quizzes/:id` (`?classId=` nếu học nhiều lớp cùng khóa): người dạy nhận thêm `canEdit`; học viên nhận thêm `classId`, `className`, `openTime`, `closeTime`, `bestScore`, `passed`, `inProgressAttemptId`, `unavailableReason`. Đề chưa công khai trả `404` cho học viên.
+- `POST /quizzes/:id/attempts`: nếu đang có lượt làm dở còn hạn thì trả lại lượt đó (`200`, `resumed: true`) thay vì tạo lượt mới. Response có thêm `attemptNumber`, `deadline`, `serverTime` (frontend bù lệch đồng hồ), `resumed`. Học viên học nhiều lớp cùng khóa mà không gửi `classId` → `400`.
+- **Hết giờ**: nộp quá `deadline + 30s` → lượt bị chốt `timed_out`, 0 điểm, trả `400`. Lượt bỏ dở quá giờ (tắt máy) được chốt tự động khi học viên/GV mở lại dữ liệu (chưa dùng Cron/BullMQ). Lượt `timed_out` vẫn tính vào `maxAttempts`.
+- `submit`: câu trả lời phải thuộc đề, lựa chọn phải thuộc câu; câu một đáp án chỉ chọn 1 (`400`). Response thêm `quizId`, `classId`, `attemptNumber`, `status`. **Đạt đề → bài học quiz được tính hoàn thành** trong tiến độ lớp (`lesson_progress`).
+- `GET /quiz-attempts/:attemptId`: mỗi câu trả thêm `choices` (để hiển thị) và `points`; tổng quan có `correctCount`, `totalQuestions`, `showAnswers`, `className`, `student` (với người dạy). Khi học viên xem đề ẩn đáp án: ẩn cả `isCorrect` từng câu, `correctChoiceIds`, `explanation`. Bài chưa nộp → `400`. Người xem được: học viên chủ bài, Admin, Quản lý, chủ khóa, GV phụ trách lớp.
+- `GET /quizzes/:id/attempts`: nhận thêm `classId`; GV phụ trách lớp (không phải chủ khóa) chỉ thấy lớp mình dạy. Response có thêm `summary { totalAttempts, studentsAttempted, averageBestScore, passedStudents }` và `class` của từng lượt.
+- `my-attempts`: `status` nhận thêm `timed_out`.
+- **Gemini AI**: cấu hình `GEMINI_API_KEY` (thiếu → `503`), `GEMINI_MODEL` (mặc định alias `gemini-flash-latest` — luôn trỏ bản Flash mới nhất, vì Google ngừng cấp model cũ như `gemini-2.5-flash` cho tài khoản mới). Lỗi 500/503 (quá tải) được tự thử lại 2 lần (sau 1s, 3s); vẫn lỗi (hoặc model bị ngừng - 404) thì chuyển sang model dự phòng `GEMINI_FALLBACK_MODEL` (mặc định `gemini-flash-lite-latest`, để rỗng = tắt). Response có thêm `model` = model thực tế đã sinh câu hỏi. Prompt: câu hỏi tiếng Việt, riêng tài liệu dạy ngoại ngữ thì câu hỏi/lựa chọn bằng ngoại ngữ đó (dạng điền chỗ trống), giải thích luôn bằng tiếng Việt; không viết "theo tài liệu" (học viên không xem tài liệu khi thi); ưu tiên câu vận dụng. Giới hạn **10 lần/phút/người** (`429`). Văn bản 300–30.000 ký tự và ≥ 100 từ. Câu AI sinh sai luật (thiếu đáp án đúng, sai số lựa chọn) bị loại; response có thêm `requested` để biết số câu yêu cầu.
+- **CSDL**: migration `npm run db:migrate:quizzes` thêm cột `quiz_attempt_answers.selected_option_ids` (lưu nhiều lựa chọn) và đổi `uq_quizzes_lesson` thành partial unique (`deleted_at IS NULL`) để xóa đề xong tạo lại được.
+- **Toàn hệ thống**: body JSON sai cú pháp (VD gửi `null`) nay trả `400` thay vì `500`.

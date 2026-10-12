@@ -4,6 +4,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { PortalHeader, Button, Card, Badge, Field } from '../../components/portal/PortalUI';
 import courseService from '../../services/courseService';
 import LessonMaterialsPanel from '../../components/course/LessonMaterialsPanel';
+import QuizFormModal from '../../components/quiz/QuizFormModal';
 import { toast } from '../../components/common/Toast';
 
 const TYPE_LABEL = {
@@ -43,6 +44,7 @@ export default function CourseCurriculumBuilderPage() {
   const [lessonChapterId, setLessonChapterId] = useState(null);
   const [lessonForm, setLessonForm] = useState(EMPTY_LESSON);
   const [lessonLoading, setLessonLoading] = useState(false);
+  const [creatingQuiz, setCreatingQuiz] = useState(false);
 
   // Khóa đang chờ duyệt / đã công khai: backend chặn mọi thao tác sửa (409) -> giao diện chỉ đọc
   const isLocked = course?.status === 'pending' || course?.status === 'published';
@@ -269,8 +271,8 @@ export default function CourseCurriculumBuilderPage() {
                       }}
                     >
                       <span>{lessonIndex + 1}</span>
-                      <Icon size={14} />
-                      <span className="truncate">{lesson.title}</span>
+                      <span className="flex-1 min-w-0 truncate text-left">{lesson.title}</span>
+                      <Icon size={14} className="flex-none" />
                     </button>
                   );
                 })}
@@ -411,6 +413,25 @@ export default function CourseCurriculumBuilderPage() {
                 </div>
               )}
 
+              {selectedLesson.lessonType === 'quiz' && (
+                <div className="pt-4 border-t border-slate-200 flex flex-wrap items-center gap-3">
+                  <ClipboardCheck size={18} className="text-purple-600" />
+                  <div className="flex-1 min-w-0">
+                    <b>Bài kiểm tra trắc nghiệm</b>
+                    <p className="text-sm text-slate-500">
+                      {selectedLesson.quizId ? 'Bài học đã có đề thi.' : isLocked ? 'Bài học chưa có đề thi.' : 'Bài học loại Quiz cần một đề thi để học viên làm bài.'}
+                    </p>
+                  </div>
+                  {selectedLesson.quizId ? (
+                    <Button variant="secondary" onClick={() => navigate(`/teacher/quizzes/${selectedLesson.quizId}`)}>
+                      {isLocked ? 'Xem đề thi' : 'Soạn đề thi'}
+                    </Button>
+                  ) : !isLocked && (
+                    <Button onClick={() => setCreatingQuiz(true)}><Plus size={15} /> Tạo đề thi</Button>
+                  )}
+                </div>
+              )}
+
               <div className="pt-4 border-t border-slate-200">
                 <LessonMaterialsPanel lessonId={selectedLesson.id} editable={!isLocked} />
               </div>
@@ -425,6 +446,14 @@ export default function CourseCurriculumBuilderPage() {
           )}
         </Card>
       </div>
+
+      {creatingQuiz && selectedLesson && (
+        <QuizFormModal
+          lesson={{ id: selectedLesson.id, title: selectedLesson.title }}
+          onClose={() => setCreatingQuiz(false)}
+          onSaved={(quiz) => { setCreatingQuiz(false); navigate(`/teacher/quizzes/${quiz.id}`); }}
+        />
+      )}
     </>
   );
 }

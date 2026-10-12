@@ -238,7 +238,7 @@ Khung bài kiểm tra trắc nghiệm gắn với một bài học trong khóa h
 | `deleted_at` | `timestamptz` | ✔️ | `NULL` | Hỗ trợ xóa mềm (Soft Delete) |
 
 **Ràng buộc Unique:**
-- `uq_quizzes_lesson` UNIQUE (`lesson_id`) *(Mỗi bài học chỉ có tối đa 1 bài kiểm tra)*
+- `uq_quizzes_lesson` UNIQUE (`lesson_id`) WHERE `deleted_at IS NULL` *(Mỗi bài học tối đa 1 bài kiểm tra chưa xóa; xóa mềm xong tạo lại được — migration `db:migrate:quizzes`)*
 
 ---
 
@@ -319,7 +319,8 @@ Lưu câu trả lời cụ thể của học viên cho từng câu hỏi trong m
 | `id` | `uuid` | ❌ | `gen_random_uuid()` | Khóa chính (PK) |
 | `attempt_id` | `uuid` | ❌ | | Khóa ngoại $\rightarrow$ `quiz_attempts(id)` (`ON DELETE CASCADE`) |
 | `question_id` | `uuid` | ❌ | | Khóa ngoại $\rightarrow$ `questions(id)` |
-| `selected_option_id`| `uuid` | ✔️ | `NULL` | Khóa ngoại $\rightarrow$ `question_options(id)` |
+| `selected_option_id`| `uuid` | ✔️ | `NULL` | Khóa ngoại $\rightarrow$ `question_options(id)` — lựa chọn đầu tiên (giữ để tương thích) |
+| `selected_option_ids`| `uuid[]` | ❌ | `'{}'` | Tất cả lựa chọn học viên đã tick (câu `multiple_choice` có nhiều) — *bổ sung 12/10/2026* |
 | `is_correct` | `boolean` | ❌ | `false` | Hệ thống tự đối chiếu và ghi nhận |
 
 **Ràng buộc Unique:**

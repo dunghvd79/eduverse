@@ -10,6 +10,7 @@ import courseRoutes from './routes/courseRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
 import classRoutes from './routes/classRoutes.js';
+import quizRoutes from './routes/quizRoutes.js';
 import { errorHandler } from './middlewares/errorMiddleware.js';
 import { sendError } from './utils/response.js';
 import { AppError } from './utils/AppError.js';
@@ -67,6 +68,7 @@ app.use('/api/v1/categories', categoryRoutes);
 app.use('/api/v1/classes', classRoutes);
 app.use('/api/v1', courseRoutes);
 app.use('/api/v1', uploadRoutes);
+app.use('/api/v1', quizRoutes);
 
 // 404 cho route không tồn tại (trả JSON theo Envelope Pattern thay vì trang HTML mặc định của Express)
 app.use((req, res) => {

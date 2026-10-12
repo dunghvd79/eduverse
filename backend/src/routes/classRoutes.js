@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import * as controller from '../controllers/classController.js';
+import * as quizController from '../controllers/quizController.js';
 import { authenticateToken, authorizeRoles } from '../middlewares/authMiddleware.js';
 import { validateBody, validateQuery, validateIdParam } from '../middlewares/validateMiddleware.js';
 import {
@@ -12,6 +13,7 @@ import {
   addMemberSchema,
   queryProgressSchema
 } from '../validations/classValidation.js';
+import { updateClassQuizSchema } from '../validations/quizValidation.js';
 
 const router = Router();
 
@@ -58,5 +60,13 @@ router.delete('/:id/members/:studentId', ...teacherOrAdmin, validateIdParam('id'
 // ==========================================
 // Báo cáo tiến độ học tập cả lớp | Role: GV phụ trách, training_manager, admin
 router.get('/:id/progress', ...classStaff, validateIdParam(), validateQuery(queryProgressSchema), controller.getProgress);
+
+// ==========================================
+// 4. BÀI KIỂM TRA CỦA LỚP (bổ sung - xem api-quizzes.md mục 4)
+// ==========================================
+// Đề thi của khóa học trong lớp: học viên thấy đề công khai + lượt làm của mình; người quản lý lớp thấy lịch & thống kê | Role: thành viên lớp, GV phụ trách, manager, admin
+router.get('/:id/quizzes', authenticateToken, validateIdParam(), quizController.getClassQuizzes);
+// Đặt lịch mở/đóng, bật/tắt đề cho lớp | Role: GV phụ trách, training_manager, admin
+router.put('/:id/quizzes/:quizId', ...classStaff, validateIdParam('id', 'quizId'), validateBody(updateClassQuizSchema), quizController.updateClassQuiz);
 
 export default router;
