@@ -6,7 +6,7 @@
 
 ---
 
-## 1. Danh Mục Các Bảng Dữ Liệu (17 Bảng)
+## 1. Danh Mục Các Bảng Dữ Liệu (19 Bảng)
 
 1. [`users`](#1-bảng-users-người-dùng)
 2. [`user_tokens`](#2-bảng-user_tokens-mã-xác-thực--khôi-phục-mật-khẩu)
@@ -26,6 +26,7 @@
 16. [`class_assignments`](#16-bảng-class_assignments-hạn-nộp-bài-tập-theo-lớp)
 17. [`assignment_submissions`](#17-bảng-assignment_submissions-bài-làm-đã-nộp)
 18. [`lesson_progress`](#18-bảng-lesson_progress-tiến-độ-học-tập)
+19. [`categories`](#18b-bảng-categories-danh-mục-khóa-học--bổ-sung-09102026) *(bổ sung 09/10/2026)*
 
 ---
 
@@ -90,6 +91,7 @@ Khung nội dung đào tạo tổng thể do Giảng viên tạo và Quản lý 
 |---|---|:---:|---|---|
 | `id` | `uuid` | ❌ | `gen_random_uuid()` | Khóa chính (PK) |
 | `owner_id` | `uuid` | ❌ | | Khóa ngoại $\rightarrow$ `users(id)` (Chủ sở hữu khóa học) |
+| `category_id` | `uuid` | ✔️ | `NULL` | Khóa ngoại $\rightarrow$ `categories(id)` `ON DELETE RESTRICT` (Danh mục khóa học, bổ sung 09/10/2026) |
 | `title` | `varchar(255)` | ❌ | | Tên khóa học |
 | `slug` | `varchar(255)` | ❌ | | Đường dẫn thân thiện SEO (`UNIQUE`) |
 | `description` | `text` | ✔️ | `NULL` | Mô tả chi tiết nội dung khóa học |
@@ -107,6 +109,8 @@ Khung nội dung đào tạo tổng thể do Giảng viên tạo và Quản lý 
 - `uq_courses_slug_active` UNIQUE (`slug`) WHERE `deleted_at IS NULL` *(Partial Unique Index)*
 - `idx_courses_owner_id` ON `courses(owner_id)`
 - `idx_courses_status` ON `courses(status)`
+- `courses_category_id` ON `courses(category_id)`
+- **Khóa chỉnh sửa:** khi `status` là `pending` hoặc `published`, mọi thao tác sửa khóa học/chương/bài đều bị từ chối (`409`). Chỉ sửa được ở `draft` hoặc `rejected`.
 
 
 ---
@@ -234,7 +238,7 @@ Khung bài kiểm tra trắc nghiệm gắn với một bài học trong khóa h
 | `deleted_at` | `timestamptz` | ✔️ | `NULL` | Hỗ trợ xóa mềm (Soft Delete) |
 
 **Ràng buộc Unique:**
-- `uq_quizzes_lesson` UNIQUE (`lesson_id`) *(Mỗi bài học chỉ có tối đa 1 bài kiểm tra)*
+- `uq_quizzes_lesson` UNIQUE (`lesson_id`) WHERE `deleted_at IS NULL` *(Mỗi bài học tối đa 1 bài kiểm tra chưa xóa; xóa mềm xong tạo lại được — migration `db:migrate:quizzes`)*
 
 ---
 
@@ -315,7 +319,8 @@ Lưu câu trả lời cụ thể của học viên cho từng câu hỏi trong m
 | `id` | `uuid` | ❌ | `gen_random_uuid()` | Khóa chính (PK) |
 | `attempt_id` | `uuid` | ❌ | | Khóa ngoại $\rightarrow$ `quiz_attempts(id)` (`ON DELETE CASCADE`) |
 | `question_id` | `uuid` | ❌ | | Khóa ngoại $\rightarrow$ `questions(id)` |
-| `selected_option_id`| `uuid` | ✔️ | `NULL` | Khóa ngoại $\rightarrow$ `question_options(id)` |
+| `selected_option_id`| `uuid` | ✔️ | `NULL` | Khóa ngoại $\rightarrow$ `question_options(id)` — lựa chọn đầu tiên (giữ để tương thích) |
+| `selected_option_ids`| `uuid[]` | ❌ | `'{}'` | Tất cả lựa chọn học viên đã tick (câu `multiple_choice` có nhiều) — *bổ sung 12/10/2026* |
 | `is_correct` | `boolean` | ❌ | `false` | Hệ thống tự đối chiếu và ghi nhận |
 
 **Ràng buộc Unique:**
@@ -340,7 +345,7 @@ Khung bài tập lớn/bài tập về nhà yêu cầu nộp file đính kèm (Q
 | `deleted_at` | `timestamptz` | ✔️ | `NULL` | Hỗ trợ xóa mềm (Soft Delete) |
 
 **Ràng buộc Unique:**
-- `uq_assignments_lesson` UNIQUE (`lesson_id`) *(Mỗi bài học chỉ có tối đa 1 bài tập nộp file)*
+- `uq_assignments_lesson` UNIQUE (`lesson_id`) WHERE `deleted_at IS NULL` *(Mỗi bài học tối đa 1 bài tập chưa xóa — migration `db:migrate:assignments`)*
 
 ---
 
@@ -382,9 +387,35 @@ Lưu file bài làm học viên upload lên AWS S3 và điểm chấm kèm nhậ
 | `feedback` | `text` | ✔️ | `NULL` | Lời phê, góp ý chi tiết của Giảng viên |
 | `graded_by` | `uuid` | ✔️ | `NULL` | Khóa ngoại $\rightarrow$ `users(id)` (Giảng viên chấm) |
 | `graded_at` | `timestamptz` | ✔️ | `NULL` | Thời điểm chấm bài |
+| `resubmission_reason` | `text` | ✔️ | `NULL` | Lý do GV yêu cầu nộp lại (tách khỏi `feedback`, giữ điểm cũ) — *bổ sung 13/10/2026* |
+| `resubmission_requested_at` | `timestamptz` | ✔️ | `NULL` | Thời điểm GV yêu cầu nộp lại — *bổ sung 13/10/2026* |
 
 **Ràng buộc Unique:**
 - `uq_assignment_submissions` UNIQUE (`class_assignment_id`, `student_id`) *(Mỗi học viên có 1 bản nộp chính thức)*
+
+---
+
+### 18b. Bảng `categories` (Danh mục khóa học) — *bổ sung 09/10/2026*
+
+Danh mục phẳng (không phân cấp) dùng để phân loại khóa học trên trang Catalog. Do Quản lý đào tạo / Admin quản lý tại `/manager/categories`.
+
+| Tên Cột | Kiểu Dữ Liệu | Nullable | Mặc Định | Ràng Buộc / Mô Tả |
+|---|---|:---:|---|---|
+| `id` | `uuid` | ❌ | `gen_random_uuid()` | Khóa chính (PK) |
+| `name` | `varchar(100)` | ❌ | | Tên danh mục (`UNIQUE`, kiểm tra trùng không phân biệt hoa thường ở tầng service) |
+| `slug` | `varchar(120)` | ❌ | | Đường dẫn thân thiện, tự sinh từ `name` (`UNIQUE`) — dùng cho bộ lọc `?category=<slug>` |
+| `description` | `text` | ✔️ | `NULL` | Mô tả ngắn |
+| `sort_order` | `integer` | ❌ | `0` | Thứ tự hiển thị (tăng dần) |
+| `is_active` | `boolean` | ❌ | `true` | `false` = ẩn khỏi Catalog và không cho gán vào khóa học mới |
+| `created_at` | `timestamptz` | ❌ | `now()` | Thời điểm tạo |
+| `updated_at` | `timestamptz` | ❌ | `now()` | Thời điểm sửa |
+
+**Indexes & Constraints:**
+- `categories_name_key` UNIQUE (`name`), `categories_slug_key` UNIQUE (`slug`)
+- `categories_sort_order` ON `categories(sort_order)`
+- Không xóa mềm. Không cho xóa khi còn khóa học tham chiếu (kể cả khóa đã xóa mềm) → trả `409`, khuyến nghị **ẩn** danh mục thay vì xóa.
+
+**Migration:** `backend/src/scripts/migrations/20261009-add-categories.js` (`npm run db:migrate:categories`, idempotent) — tạo bảng, thêm cột `courses.category_id`, nạp 5 danh mục mặc định.
 
 ---
 

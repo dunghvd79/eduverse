@@ -1,21 +1,42 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { findCourse } from '../../data/mockCourses';
+import { ChevronDown, ChevronUp, LockKeyhole } from 'lucide-react';
+import courseService from '../../services/courseService';
 import { toast } from '../../components/common/Toast';
-
-const curriculum = [
-  { t: 'Chương 1: Giới thiệu & lộ trình', l: ['Tổng quan khóa học', 'Cách học hiệu quả', 'Kiểm tra đầu vào'] },
-  { t: 'Chương 2: Kiến thức nền tảng', l: ['Bài 1: Khái niệm cốt lõi', 'Bài 2: Ví dụ minh hoạ', 'Bài 3: Bài tập vận dụng'] },
-  { t: 'Chương 3: Luyện đề & tổng ôn', l: ['Đề thi thử số 1', 'Đề thi thử số 2', 'Tổng kết & chiến thuật'] },
-];
 
 export default function CourseDetailPage() {
   const { id } = useParams();
   const nav = useNavigate();
+  const [course, setCourse] = useState(null);
+  const [curriculum, setCurriculum] = useState(null);
   const [open, setOpen] = useState(0);
-  const c = findCourse(id);
+  const [loading, setLoading] = useState(true);
 
-  if (!c) {
+  useEffect(() => {
+    let cancelled = false;
+
+    Promise.all([
+      courseService.get(id),
+      courseService.curriculum(id)
+    ]).then(([detail, outline]) => {
+      if (!cancelled) {
+        setCourse(detail);
+        setCurriculum(outline);
+      }
+    }).catch(error => {
+      if (!cancelled) toast.error(error?.message || 'Không thể tải khóa học.');
+    }).finally(() => {
+      if (!cancelled) setLoading(false);
+    });
+
+    return () => { cancelled = true; };
+  }, [id]);
+
+  if (loading) {
+    return <div className="py-24 text-center text-slate-500">Đang tải khóa học...</div>;
+  }
+
+  if (!course) {
     return (
       <div className="py-24 text-center space-y-3">
         <p className="text-slate-600">Không tìm thấy khóa học.</p>
@@ -23,36 +44,79 @@ export default function CourseDetailPage() {
       </div>
     );
   }
-  const enroll = () => { toast.info('Vui lòng đăng nhập để đăng ký học'); nav('/auth/login'); };
+
+  const enroll = () => {
+    toast.info('Chức năng ghi danh lớp sẽ được kết nối ở phần Classes/Enrollments.');
+    nav('/auth/login');
+  };
 
   return (
     <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-10 grid gap-8 lg:grid-cols-[1fr_360px]">
       <div className="space-y-8">
         <div className="space-y-3">
           <Link to="/courses" className="text-body-md text-primary hover:underline">← Tất cả khóa học</Link>
-          <h1 className="text-display text-slate-900">{c.title}</h1>
-          <p className="text-slate-600">Giảng viên: <b>{c.instructor}</b> · ⭐ {c.rating} ({c.reviewCount} đánh giá) · {c.lessonCount}</p>
+          {course.category && (
+            <Link
+              to={`/courses?category=${course.category.slug}`}
+              className="ml-3 inline-block rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold text-primary hover:bg-primary/20"
+            >
+              {course.category.name}
+            </Link>
+          )}
+          <h1 className="text-display text-slate-900">{course.title}</h1>
+          <p className="text-slate-600">
+            Giảng viên: <b>{course.owner?.fullName || 'Đội ngũ EduVerse'}</b>
+            {' · '}{course.totalChapters || 0} chương · {course.totalLessons || 0} bài học
+          </p>
         </div>
-        <img src={c.thumbnail} alt={c.title} className="w-full aspect-video object-cover rounded-2xl border border-slate-200" />
+
+        {course.thumbnailUrl ? (
+          <img src={course.thumbnailUrl} alt={course.title} className="w-full aspect-video object-cover rounded-2xl border border-slate-200" />
+        ) : (
+          <div className="w-full aspect-video rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400">
+            EduVerse Course
+          </div>
+        )}
+
         <section className="space-y-3">
           <h2 className="text-headline-md text-slate-900">Nội dung khóa học</h2>
-          {curriculum.map((ch, i) => (
-            <div key={ch.t} className="border border-slate-200 rounded-xl bg-white overflow-hidden">
-              <button onClick={() => setOpen(open === i ? -1 : i)} className="w-full flex justify-between items-center px-4 py-3 text-left font-semibold">
-                {ch.t}<span>{open === i ? '−' : '+'}</span>
+          {(curriculum?.chapters || []).map((chapter, i) => (
+            <div key={chapter.id} className="border border-slate-200 rounded-xl bg-white overflow-hidden">
+              <button
+                onClick={() => setOpen(open === i ? -1 : i)}
+                className="w-full flex justify-between items-center px-4 py-3 text-left font-semibold"
+              >
+                <span>{i + 1}. {chapter.title}</span>
+                {open === i ? <ChevronUp size={18}/> : <ChevronDown size={18}/>}
               </button>
-              {open === i && <ul className="px-4 pb-3 space-y-1.5 text-body-md text-slate-600">{ch.l.map((x) => <li key={x}>▶ {x}</li>)}</ul>}
+              {open === i && (
+                <ul className="px-4 pb-4 space-y-2 text-body-md text-slate-600">
+                  {(chapter.lessons || []).map(lesson => (
+                    <li key={lesson.id} className="flex items-center gap-2">
+                      <span className="text-primary">•</span>
+                      <span>{lesson.title}</span>
+                      <span className="ml-auto text-xs text-slate-400">{lesson.lessonType}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </div>
           ))}
         </section>
       </div>
+
       <aside className="lg:sticky lg:top-24 h-fit bg-white border border-slate-200 rounded-2xl shadow-popover p-6 space-y-4">
-        <div className="flex items-baseline gap-2">
-          <span className="text-3xl font-extrabold text-primary">{c.price}</span>
-          {c.originalPrice && <span className="line-through text-slate-400">{c.originalPrice}</span>}
+        <div className="text-3xl font-extrabold text-primary">
+          {Number(course.price) === 0 ? 'Miễn phí' : `${Number(course.price).toLocaleString('vi-VN')}đ`}
         </div>
-        <button onClick={enroll} className="w-full h-11 rounded-lg bg-primary hover:bg-primary-hover text-white font-semibold">Đăng ký học ngay</button>
-        <ul className="text-body-md text-slate-600 space-y-1.5"><li>✓ {c.lessonCount}</li><li>✓ Học mọi lúc, mọi nơi</li><li>✓ Chấm điểm &amp; giải thích tức thì</li></ul>
+        <button onClick={enroll} className="w-full h-11 rounded-lg bg-primary hover:bg-primary-hover text-white font-semibold">
+          Đăng ký học ngay
+        </button>
+        <ul className="text-body-md text-slate-600 space-y-2">
+          <li>✓ {course.totalLessons || 0} bài học</li>
+          <li>✓ Học mọi lúc, mọi nơi</li>
+          <li><LockKeyhole size={15} className="inline mr-1"/> Nội dung dành cho học viên đã ghi danh</li>
+        </ul>
       </aside>
     </div>
   );

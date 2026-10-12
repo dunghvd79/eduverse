@@ -1,10 +1,12 @@
 import bcrypt from 'bcryptjs';
 import models from '../models/index.js';
+import { DEFAULT_CATEGORIES, SAMPLE_COURSE_CATEGORY_SLUG } from './data/defaultCategories.js';
 
 const {
   sequelize,
   User,
   Course,
+  Category,
   Chapter,
   Lesson,
   ClassModel,
@@ -18,12 +20,12 @@ const {
 } = models;
 
 async function runMigrateAndSeed() {
-  console.log('🚀 Bắt đầu quá trình Đồng bộ 18 Bảng CSDL lên Neon.tech (AWS Singapore)...');
+  console.log('🚀 Bắt đầu quá trình Đồng bộ 19 Bảng CSDL lên Neon.tech (AWS Singapore)...');
 
   try {
     // 1. Sync models to database (Create/Alter tables)
     await sequelize.sync({ alter: true });
-    console.log('✅ Đã tạo thành công toàn bộ 18 bảng dữ liệu quan hệ trên Neon.tech!');
+    console.log('✅ Đã tạo thành công toàn bộ 19 bảng dữ liệu quan hệ trên Neon.tech!');
 
     // 2. Hash default password
     const salt = await bcrypt.genSalt(10);
@@ -100,7 +102,14 @@ async function runMigrateAndSeed() {
     }
     console.log(`✅ Đã nạp ${Object.keys(usersMap).length} tài khoản người dùng mặc định!`);
 
-    // 4. Seed Course
+    // 4. Seed Categories
+    console.log('🌱 Đang nạp Danh mục khóa học mặc định...');
+    for (const data of DEFAULT_CATEGORIES) {
+      await Category.findOrCreate({ where: { slug: data.slug }, defaults: data });
+    }
+    const sampleCategory = await Category.findOne({ where: { slug: SAMPLE_COURSE_CATEGORY_SLUG } });
+
+    // 4b. Seed Course
     console.log('🌱 Đang nạp Khóa học mẫu...');
     const teacherAn = usersMap['teacher.an@eduverse.com'];
     const manager = usersMap['manager@eduverse.com'];
@@ -109,6 +118,7 @@ async function runMigrateAndSeed() {
       where: { slug: 'lap-trinh-web-nodejs-express-react' },
       defaults: {
         owner_id: teacherAn.id,
+        category_id: sampleCategory.id,
         title: 'Lập trình Ứng dụng Web Hiện đại với Node.js, Express và React',
         slug: 'lap-trinh-web-nodejs-express-react',
         description: 'Khóa học toàn diện trang bị kỹ năng xây dựng hệ thống web chuẩn doanh nghiệp từ Backend Express.js (Node.js ES Modules, Sequelize ORM, PostgreSQL) đến Frontend React (Vite, Tailwind CSS, TanStack Query).',

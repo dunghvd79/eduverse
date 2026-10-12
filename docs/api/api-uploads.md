@@ -412,7 +412,7 @@ Hệ thống phân định rõ ràng 4 mục đích sử dụng tệp với các
 - **Ma trận Quy trình 3 bước cho Frontend (Post-Upload Workflow Mapping):**
   | `purpose` | Bước 1: Xin URL | Bước 2: Tải lên S3 | Bước 3: Gọi API Nghiệp vụ để Lưu CSDL |
   |---|---|---|---|
-  | `avatar` | `POST /uploads/presigned-url` | `PUT uploadUrl` | `PATCH /api/v1/users/me/profile` gửi `{ avatarUrl: publicUrl }` |
+  | `avatar` | `POST /uploads/presigned-url` | `PUT uploadUrl` | `PATCH /api/v1/users/me` gửi `{ avatarUrl: publicUrl }` |
   | `course_thumbnail` | `POST /uploads/presigned-url` | `PUT uploadUrl` | `PATCH /api/v1/courses/:id` gửi `{ thumbnailUrl: publicUrl }` |
   | `lesson_material` | `POST /uploads/presigned-url` | `PUT uploadUrl` | `POST /api/v1/lessons/:id/materials` gửi `{ title, fileName, fileKey, fileType, fileSize }` |
   | `lesson_video` | `POST /uploads/presigned-url` | `PUT uploadUrl` | `PATCH /api/v1/lessons/:id` gửi `{ videoUrl: fileKey }` |
@@ -426,3 +426,24 @@ Hệ thống phân định rõ ràng 4 mục đích sử dụng tệp với các
   - Khi một tài liệu bị xóa (`DELETE /materials/:id`) hoặc một bài học bị xóa, toàn bộ file vật lý gắn liền trên S3 sẽ được xóa vĩnh viễn.
 - **Chính sách S3 Lifecycle Rules (Dọn dẹp file mồ côi):**
   - Cấu hình AWS S3 Lifecycle Rule tự động xóa các file trong thư mục tạm sau **7 ngày** nếu client xin Presigned URL nhưng không bao giờ gọi API xác nhận tạo bản ghi trong Database.
+
+---
+
+## 5. Trạng Thái Triển Khai (cập nhật 12/10/2026)
+
+| Endpoint | Trạng thái | Ghi chú |
+|---|:---:|---|
+| `POST /uploads/presigned-url` | ✅ | Mở `avatar`, `course_thumbnail`, `lesson_material`. `lesson_video` trả `400` cho tới khi có `video-stream-url`. |
+| `GET/POST/PATCH/DELETE /lessons/:lessonId/materials[...]` | ✅ | Đủ 4 endpoint quản lý tài liệu. |
+| `GET /lessons/:lessonId/materials/:materialId/download-url` | ✅ | |
+| `GET /lessons/:lessonId/video-stream-url` | ⏳ | Chưa triển khai. |
+
+**Khác biệt / bổ sung so với đặc tả ở trên:**
+- **S3 key giữ nguyên đuôi tệp gốc** (VD: `public/avatars/{userId}_{timestamp}.png`), backend không chuyển đổi ảnh sang `.webp`. Tên tệp tài liệu được làm sạch (bỏ dấu, chỉ giữ `a-z0-9_-`) trước khi ghép vào key.
+- **Khóa chỉnh sửa:** xin URL cho `course_thumbnail`/`lesson_material` và thêm/đổi tên/xóa tài liệu đều trả `409 Conflict` khi khóa học đang `pending` hoặc `published` (cùng quy tắc với chương/bài học).
+- **Quyền xem tài liệu** (danh sách + download-url) giống quyền xem nội dung bài học `GET /lessons/:id`: chủ khóa, Quản lý đào tạo, Admin, giảng viên dạy lớp của khóa, học viên đã ghi danh `active`.
+- **Xác nhận tài liệu (`POST /materials`)** kiểm tra thêm: `fileKey` phải nằm đúng thư mục `private/materials/{courseId}/{lessonId}/` của bài học; `fileType` khớp đuôi `fileName`; `fileSize` khớp kích thước thật trên S3 (`HeadObject`); một `fileKey` chỉ được gắn một lần (`409`).
+- **Xóa tài liệu:** xóa bản ghi trước, sau đó xóa tệp S3; nếu xóa S3 lỗi thì chỉ ghi log (tệp mồ côi được Lifecycle Rule dọn).
+- **Lỗi bổ sung:** `503 Service Unavailable` khi server chưa cấu hình `AWS_REGION`/`S3_BUCKET`; `502 Bad Gateway` khi S3 từ chối truy cập (credentials sai hoặc IAM thiếu quyền).
+- **Chưa làm:** dọn tệp S3 khi xóa bài học/chương (bản ghi `course_materials` bị xóa theo CASCADE nhưng tệp còn lại), dọn avatar/thumbnail cũ.
+- **Frontend** phải gửi `contentType` theo bảng MIME chuẩn theo đuôi tệp (`services/uploadService.js`), không dùng `file.type` của trình duyệt.

@@ -6,7 +6,15 @@ import cookieParser from 'cookie-parser';
 
 import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
+import courseRoutes from './routes/courseRoutes.js';
+import categoryRoutes from './routes/categoryRoutes.js';
+import uploadRoutes from './routes/uploadRoutes.js';
+import classRoutes from './routes/classRoutes.js';
+import quizRoutes from './routes/quizRoutes.js';
+import assignmentRoutes from './routes/assignmentRoutes.js';
 import { errorHandler } from './middlewares/errorMiddleware.js';
+import { sendError } from './utils/response.js';
+import { AppError } from './utils/AppError.js';
 
 const app = express();
 
@@ -25,12 +33,15 @@ app.use(cors({
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      callback(new Error('CORS policy: Origin not allowed'));
+      // AppError -> errorMiddleware trả 403 thay vì 500
+      callback(new AppError('CORS policy: Origin không được phép truy cập API', 403, 'Forbidden'));
     }
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization']
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  // Frontend đọc tên file khi tải bảng điểm Excel/CSV
+  exposedHeaders: ['Content-Disposition']
 }));
 
 // Request loggers & parsers
@@ -56,6 +67,17 @@ app.get('/api/v1/health', (req, res) => {
 // Mount Routes
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
+app.use('/api/v1/categories', categoryRoutes);
+app.use('/api/v1/classes', classRoutes);
+app.use('/api/v1', courseRoutes);
+app.use('/api/v1', uploadRoutes);
+app.use('/api/v1', quizRoutes);
+app.use('/api/v1', assignmentRoutes);
+
+// 404 cho route không tồn tại (trả JSON theo Envelope Pattern thay vì trang HTML mặc định của Express)
+app.use((req, res) => {
+  sendError(res, 404, 'Not Found', `Không tìm thấy API ${req.method} ${req.originalUrl}`);
+});
 
 // Centralized Error Handler (Envelope Pattern)
 app.use(errorHandler);

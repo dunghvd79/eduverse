@@ -24,6 +24,8 @@ import QuizTakePage from '../pages/student/QuizTakePage';
 import QuizResultPage from '../pages/student/QuizResultPage';
 import AssignmentDetailPage from '../pages/student/AssignmentDetailPage';
 import GradesPage from '../pages/student/GradesPage';
+import StudentQuizzesPage from '../pages/student/StudentQuizzesPage';
+import StudentAssignmentsPage from '../pages/student/StudentAssignmentsPage';
 import ProfilePage from '../pages/student/ProfilePage';
 
 import TeacherDashboardPage from '../pages/teacher/TeacherDashboardPage';
@@ -32,6 +34,8 @@ import CourseCurriculumBuilderPage from '../pages/teacher/CourseCurriculumBuilde
 import TeacherClassesPage from '../pages/teacher/TeacherClassesPage';
 import TeacherClassDetailPage from '../pages/teacher/TeacherClassDetailPage';
 import TeacherQuizzesPage from '../pages/teacher/TeacherQuizzesPage';
+import QuizEditorPage from '../pages/teacher/QuizEditorPage';
+import TeacherAttemptReviewPage from '../pages/teacher/TeacherAttemptReviewPage';
 import AIQuizGeneratorPage from '../pages/teacher/AIQuizGeneratorPage';
 import TeacherAssignmentsPage from '../pages/teacher/TeacherAssignmentsPage';
 import AssignmentGradingPage from '../pages/teacher/AssignmentGradingPage';
@@ -47,6 +51,10 @@ import AdminDashboardPage from '../pages/admin/AdminDashboardPage';
 import UserManagementPage from '../pages/admin/UserManagementPage';
 import AuditLogsPage from '../pages/admin/AuditLogsPage';
 import PlatformSettingsPage from '../pages/admin/PlatformSettingsPage';
+
+// Quản lý lớp học dùng chung cho Quản lý đào tạo & Admin (Giảng viên dùng qua TeacherClasses*Page)
+import ClassListPage from '../components/class/ClassListPage';
+import ClassManagePage from '../components/class/ClassManagePage';
 
 export default function AppRoutes() {
   return (
@@ -73,9 +81,11 @@ export default function AppRoutes() {
         <Route path="my-courses" element={<MyCoursesPage />} />
         <Route path="classes/:id" element={<StudentClassDetailPage />} />
         <Route path="courses/:courseId/learn/:lessonId" element={<ClassroomPage />} />
+        <Route path="quizzes" element={<StudentQuizzesPage />} />
         <Route path="quizzes/:id/take" element={<QuizTakePage />} />
         <Route path="quizzes/:id/result/:attemptId" element={<QuizResultPage />} />
-        <Route path="assignments/:id" element={<AssignmentDetailPage />} />
+        <Route path="assignments" element={<StudentAssignmentsPage />} />
+        <Route path="classes/:classId/assignments/:assignmentId" element={<AssignmentDetailPage />} />
         <Route path="grades" element={<GradesPage />} />
         <Route path="profile" element={<ProfilePage />} />
       </Route>
@@ -89,8 +99,10 @@ export default function AppRoutes() {
         <Route path="classes/:id" element={<TeacherClassDetailPage />} />
         <Route path="quizzes" element={<TeacherQuizzesPage />} />
         <Route path="quizzes/ai-generator" element={<AIQuizGeneratorPage />} />
+        <Route path="quizzes/:id" element={<QuizEditorPage />} />
+        <Route path="quiz-attempts/:attemptId" element={<TeacherAttemptReviewPage />} />
         <Route path="assignments" element={<TeacherAssignmentsPage />} />
-        <Route path="assignments/:id/grade" element={<AssignmentGradingPage />} />
+        <Route path="classes/:classId/assignments/:assignmentId/grade" element={<AssignmentGradingPage />} />
         <Route path="classes/:id/gradebook" element={<GradebookPage />} />
         <Route path="profile" element={<ProfilePage />} />
       </Route>
@@ -101,6 +113,8 @@ export default function AppRoutes() {
         <Route path="approvals" element={<CourseApprovalQueuePage />} />
         <Route path="approvals/:id/review" element={<CourseReviewDetailPage />} />
         <Route path="categories" element={<CategoryManagementPage />} />
+        <Route path="classes" element={<ClassListPage basePath="/manager/classes" />} />
+        <Route path="classes/:id" element={<ClassManagePage basePath="/manager/classes" />} />
         <Route path="reports" element={<ManagerReportsPage />} />
         <Route path="profile" element={<ProfilePage />} />
       </Route>
@@ -109,6 +123,9 @@ export default function AppRoutes() {
       <Route path="/admin" element={<AdminLayout />}>
         <Route path="dashboard" element={<AdminDashboardPage />} />
         <Route path="users" element={<UserManagementPage />} />
+        <Route path="classes" element={<ClassListPage basePath="/admin/classes" />} />
+        <Route path="classes/:id" element={<ClassManagePage basePath="/admin/classes" />} />
+        <Route path="classes/:classId/assignments/:assignmentId/grade" element={<AssignmentGradingPage />} />
         <Route path="audit-logs" element={<AuditLogsPage />} />
         <Route path="settings" element={<PlatformSettingsPage />} />
         <Route path="profile" element={<ProfilePage />} />
