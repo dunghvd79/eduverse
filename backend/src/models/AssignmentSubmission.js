@@ -56,6 +56,15 @@ export const AssignmentSubmission = sequelize.define('assignment_submissions', {
   graded_at: {
     type: DataTypes.DATE,
     allowNull: true
+  },
+  // Lý do GV yêu cầu nộp lại (tách khỏi feedback để giữ nhận xét & điểm cũ) - migration 20261013-assignments
+  resubmission_reason: {
+    type: DataTypes.TEXT,
+    allowNull: true
+  },
+  resubmission_requested_at: {
+    type: DataTypes.DATE,
+    allowNull: true
   }
 }, {
   timestamps: false,

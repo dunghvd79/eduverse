@@ -80,11 +80,11 @@ export const getPublicProfile = async (targetUserId) => {
   let stats = null;
   if (user.role === 'teacher') {
     const publishedCoursesCount = await Course.count({
-      where: { owner_id: user.id, status: 'PUBLISHED' }
+      where: { owner_id: user.id, status: 'published' }
     }).catch(() => 0);
 
     const activeClassesCount = await ClassModel.count({
-      where: { teacher_id: user.id, status: 'OPEN' }
+      where: { teacher_id: user.id, status: 'active' }
     }).catch(() => 0);
 
     stats = {

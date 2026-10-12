@@ -12,7 +12,7 @@
 2. [`docs/architecture/tech-stack.md`](architecture/tech-stack.md) — Tech stack & lý do lựa chọn
 3. [`docs/requirements/business-rules.md`](requirements/business-rules.md) — Quy tắc nghiệp vụ phải tuân theo
 4. [`docs/project/project-plan.md`](project/project-plan.md) — Tiến độ & phân công hiện tại
-5. [`docs/project/git-workflow.md`](project/git-workflow.md) — Quy ước Git _(sẽ bổ sung)_
+5. [`docs/project/git-workflow.md`](project/git-workflow.md) — Quy trình Git (nhánh, commit, Pull Request, migration)
 6. [`docs/project/coding-conventions.md`](project/coding-conventions.md) — Quy ước code _(sẽ bổ sung)_
 
 ### 2. Clone & Setup

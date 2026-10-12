@@ -185,7 +185,7 @@ flowchart LR
 ### 🔹 UC-ADMIN-007: Cấu hình tham số hệ thống (System Settings)
 - **Kịch bản:** Admin vào trang cấu hình $\rightarrow$ Thiết lập các biến môi trường và chính sách vận hành của nền tảng EduVerse gồm:
   - Cấu hình SMTP Email (Host, Port, User, Password).
-  - Cấu hình AI Service (Google Gemini API Key, Model name: `gemini-1.5-flash`).
+  - Cấu hình AI Service (Google Gemini API Key, Model name — hiện cấu hình qua `GEMINI_MODEL` trong `.env`, mặc định `gemini-flash-latest`).
   - Giới hạn dung lượng tải lên file bài tập (Mặc định 50MB).
   - Cấu hình thời gian hết hạn của Access Token (15 phút) và Refresh Token (7 ngày).
   $\rightarrow$ Nhấn **"Lưu cấu hình"** $\rightarrow$ Hệ thống xác thực và cập nhật ngay vào bảng cấu hình hệ thống mà không cần khởi động lại server.

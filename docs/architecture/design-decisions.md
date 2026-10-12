@@ -356,6 +356,8 @@ Giảng viên cần tính năng hỗ trợ sinh đề thi trắc nghiệm tự �
 
 Chọn **Google Gemini API (`gemini-1.5-flash`)** qua thư viện `@google/generative-ai`.
 
+> **Cập nhật 12/10/2026:** dòng `gemini-1.5` / `gemini-2.5-flash` đã ngừng cấp cho tài khoản mới. Code gọi trực tiếp REST API `generateContent` (không cần thư viện), tên model đọc từ `GEMINI_MODEL` (mặc định alias `gemini-flash-latest`), tự thử lại khi Gemini quá tải (`503`) và chuyển sang model dự phòng `GEMINI_FALLBACK_MODEL`. Kết quả AI được kiểm tra lại ở backend bằng chính luật validate câu hỏi (thay cho `zod`). Xem `api-quizzes.md` mục 4.2.
+
 ### Chi tiết triển khai
 
 - Sử dụng cơ chế Structured Outputs (`responseSchema` của Gemini) để ép model trả về dữ liệu chuẩn JSON theo cấu trúc câu hỏi, options, và đáp án.

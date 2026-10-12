@@ -8,6 +8,11 @@ export const errorHandler = (err, req, res, next) => {
     return sendError(res, err.statusCode, err.error, err.message, err.errors);
   }
 
+  // 1b. Body JSON sai cú pháp (express.json strict chỉ nhận object/array) -> 400 thay vì 500
+  if (err.type === 'entity.parse.failed') {
+    return sendError(res, 400, 'Bad Request', 'Dữ liệu JSON gửi lên không hợp lệ');
+  }
+
   // 2. Sequelize Unique Constraint Error (e.g., duplicate email)
   if (err.name === 'SequelizeUniqueConstraintError') {
     const messages = err.errors ? err.errors.map(e => e.message) : ['Bản ghi đã tồn tại trong hệ thống'];
@@ -18,6 +23,11 @@ export const errorHandler = (err, req, res, next) => {
   if (err.name === 'SequelizeValidationError') {
     const messages = err.errors ? err.errors.map(e => e.message) : ['Dữ liệu không hợp lệ'];
     return sendError(res, 400, 'Bad Request', 'Dữ liệu không đáp ứng ràng buộc của hệ thống', messages);
+  }
+
+  // 3b. Tham số sai định dạng cho cột Postgres (VD: :id không phải UUID) -> 400 thay vì 500
+  if (err.name === 'SequelizeDatabaseError' && err.parent?.code === '22P02') {
+    return sendError(res, 400, 'Bad Request', 'Mã định danh (ID) không hợp lệ');
   }
 
   // 4. JWT Errors

@@ -637,8 +637,9 @@
   7. **Cụm cột Điểm Assignments:** Điểm từng bài tập lớn/bài tập về nhà đã được giảng viên chấm.
   8. `Điểm TB Quizzes`: Trung bình cộng điểm bài kiểm tra trắc nghiệm.
   9. `Điểm TB Assignments`: Trung bình cộng điểm bài tập tự luận.
-  10. `Điểm Tổng kết (GPA - Thang 10)`: Điểm trung bình gia quyền (hoặc theo công thức cấu hình).
-  11. `Xếp loại`: Giỏi / Khá / Trung bình / Chưa đạt.
+  10. `Điểm Tổng kết (GPA - Thang 10)`: = 0.4 × Điểm TB Quizzes + 0.5 × Điểm TB Assignments + 0.1 × (Tiến độ % / 10) — xem [`grading-policy.md`](../requirements/grading-policy.md).
+  11. `Xếp loại`: Giỏi (≥ 8) / Khá (≥ 6.5) / Trung bình (≥ 5) / Chưa đạt (< 5).
+* **Quy tắc tính điểm (đã chốt 12/10/2026):** mỗi Quiz lấy điểm cao nhất; Quiz chưa làm / bài tập chưa nộp tính 0 điểm. Chi tiết và các trường hợp đặc biệt: [`grading-policy.md`](../requirements/grading-policy.md).
 
 #### Các lỗi thường gặp:
 | HTTP Code | Error | Message | Nguyên nhân |
@@ -660,3 +661,30 @@
 - **Bảo mật Quyền xem Thành viên:**
   - Danh sách học viên (`GET /members`) chỉ cho phép thành viên thuộc lớp đó hoặc giảng viên đứng lớp xem, tránh tình trạng người ngoài lớp dò quét danh sách sinh viên.
 
+
+---
+
+## 4. Trạng Thái Triển Khai (cập nhật 12/10/2026)
+
+| Endpoint | Trạng thái | Ghi chú |
+|---|:---:|---|
+| 7 endpoint quản lý lớp (`GET/POST/PATCH/DELETE /classes`, `my-classes`, `:id`, `regenerate-code`) | ✅ | |
+| `POST /classes/enroll`, 3 endpoint `/classes/:id/members` | ✅ | |
+| `GET /classes/:id/progress` | ✅ | |
+| `GET /classes/:id/grades/export-excel` | ✅ | Xong 13/10/2026 — `?format=xlsx` (mặc định) hoặc `csv`, công thức theo [`grading-policy.md`](../requirements/grading-policy.md) |
+| `GET /classes/:id/gradebook` *(bổ sung)* | ✅ | Bảng điểm JSON cho trang Sổ điểm — GV phụ trách, Quản lý, Admin |
+| `GET /classes/:id/my-grades` *(bổ sung)* | ✅ | Điểm của chính học viên trong lớp (`me`, cùng cấu trúc 1 dòng của bảng điểm) |
+
+**Khác biệt / bổ sung so với đặc tả ở trên:**
+- **Mã lớp (`classCode`) chỉ trả cho người quản lý lớp đó** (GV phụ trách, Quản lý đào tạo, Admin); người khác nhận `null`. Lý do: `GET /classes` mở cho mọi tài khoản, nếu trả mã thì ai cũng tự ghi danh được vào mọi lớp.
+- **Giảng viên mở lớp cho bất kỳ khóa học `published` nào** và luôn tự phụ trách (bỏ qua `teacherId`). Quản lý/Admin không truyền `teacherId` thì mặc định là **chủ khóa học**; `teacherId` phải là tài khoản `teacher` đang hoạt động (`400` nếu không).
+- `classCode` / `customCode` / mã khi ghi danh **không phân biệt hoa thường** (tự chuyển chữ hoa). Mã tự sinh dùng bảng chữ không có `I, O, 0, 1` để tránh nhầm khi đọc.
+- `PATCH /classes/:id` nhận thêm `startDate`. `endDate >= startDate` được kiểm tra trên giá trị sau khi gộp với dữ liệu hiện có.
+- `GET /classes/my-classes`: học viên nhận thêm `progress { totalLessons, completedLessons, progressPercentage }`; giảng viên nhận thêm `totalStudents`; Quản lý/Admin nhận mảng rỗng (dùng `GET /classes`).
+- `GET /classes/:id` trả thêm `permissions { canManage, canManageMembers, isMember }` và `progress` (nếu người xem là học viên trong lớp) để frontend hiển thị đúng nút thao tác.
+- `GET /classes/:id/members`: học viên trong lớp chỉ thấy bạn học `active` và **không thấy email**; chỉ GV phụ trách/Quản lý/Admin lọc được `status=dropped`.
+- `POST /classes/:id/members`: chỉ thêm được tài khoản `student` đang hoạt động (`400` nếu là role khác hoặc bị khóa); lớp `closed` không thêm được học viên (`400`).
+- `GET /classes/:id/progress`: `meta` phân trang nằm **trong** `data` (thống nhất với các API danh sách khác), không nằm cạnh `data` như ví dụ ở mục 2.12.
+- `GET /courses/:id/curriculum?classId=` (api-courses.md) trả thêm `totalLessons`, `completedLessons`, `progressPercentage` cho trình học.
+- **Xuất bảng điểm:** file `.xlsx` có 2 sheet ("Bảng điểm" + "Quy tắc tính điểm"), dòng tiêu đề ghi công thức với tỷ trọng thực tế, thêm cột **Ghi chú** ("Chưa chấm: ..."). Cột "Mã học viên" là UUID tài khoản (hệ thống chưa có MSSV). File `.csv` có BOM UTF-8 để Excel mở đúng tiếng Việt. Tên file `Bang_Diem_Lop_<MaLop>_<YYYYMMDD>`. Header `Content-Disposition` được expose qua CORS.
+- **CSDL:** partial unique index `uq_classes_code_active` và `uq_enrollments_active` được tạo bằng migration `npm run db:migrate:classes` (thay các UNIQUE toàn bảng do `sync({ alter: true })` tạo trùng lặp trước đây).

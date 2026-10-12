@@ -73,7 +73,7 @@ flowchart LR
 | --------------| -----------------------------| -------------------------------| --------------------------------------------------------------------------------| ------------------------------------------|
 | File Storage | **AWS S3**                  | SDK v3 (`@aws-sdk/client-s3`) | Phổ biến nhất trong doanh nghiệp, scalable, SDK tốt, an toàn với Presigned URL | GCS, Local disk (phình container), MinIO |
 | Email        | **Nodemailer + Gmail SMTP** | Nodemailer 6                  | Miễn phí, dễ cài đặt, 500 email/ngày đủ cho đồ án                              | SendGrid, Mailtrap                       |
-| AI           | **Google Gemini API**       | gemini-1.5-flash              | Free tier rộng rãi (15 req/phút, 1M token/ngày), tiếng Việt tốt                | OpenAI, Ollama                           |
+| AI           | **Google Gemini API**       | `GEMINI_MODEL` (mặc định `gemini-flash-latest`) | Có free tier, tiếng Việt tốt. *12/10/2026: `gemini-1.5-flash` và `gemini-2.5-flash` đã ngừng cấp cho tài khoản mới → tên model đọc từ `.env`* | OpenAI, Ollama                           |
 
 ### DevOps & Deployment
 

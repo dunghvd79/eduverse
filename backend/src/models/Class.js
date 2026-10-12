@@ -21,8 +21,7 @@ export const ClassModel = sequelize.define('classes', {
   },
   class_code: {
     type: DataTypes.STRING(20),
-    allowNull: false,
-    unique: true
+    allowNull: false
   },
   start_date: {
     type: DataTypes.DATEONLY,
@@ -45,7 +44,9 @@ export const ClassModel = sequelize.define('classes', {
   deletedAt: 'deleted_at',
   indexes: [
     { fields: ['teacher_id'] },
-    { fields: ['course_id'] }
+    { fields: ['course_id'] },
+    // Mã lớp chỉ duy nhất trong các lớp chưa xóa mềm (migration 20261012-classes-partial-unique)
+    { name: 'uq_classes_code_active', unique: true, fields: ['class_code'], where: { deleted_at: null } }
   ]
 });
 
