@@ -33,7 +33,8 @@ export const Enrollment = sequelize.define('enrollments', {
   deletedAt: 'deleted_at',
   indexes: [
     { fields: ['student_id'] },
-    { unique: true, fields: ['class_id', 'student_id'] }
+    // Cho phép ghi danh lại sau khi bị xóa khỏi lớp (migration 20261012-classes-partial-unique)
+    { name: 'uq_enrollments_active', unique: true, fields: ['class_id', 'student_id'], where: { deleted_at: null } }
   ]
 });
 

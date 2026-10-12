@@ -330,7 +330,7 @@ export const getCourseCurriculum = async (courseId, { classId = null, currentUse
     }))
   }));
 
-  return {
+  const result = {
     courseId: plain.id,
     title: plain.title,
     slug: plain.slug,
@@ -338,6 +338,18 @@ export const getCourseCurriculum = async (courseId, { classId = null, currentUse
     rejectionReason: plain.rejection_reason,
     chapters
   };
+
+  // Tổng hợp tiến độ cho trình học (ClassroomPage) khi học viên xem theo lớp
+  if (classId) {
+    const allLessons = chapters.flatMap(chapter => chapter.lessons);
+    result.totalLessons = allLessons.length;
+    result.completedLessons = allLessons.filter(lesson => lesson.isCompleted).length;
+    result.progressPercentage = result.totalLessons > 0
+      ? Math.round((result.completedLessons / result.totalLessons) * 1000) / 10
+      : 0;
+  }
+
+  return result;
 };
 
 /**

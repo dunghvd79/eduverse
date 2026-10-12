@@ -2,7 +2,7 @@
 
 > **Cập nhật lần cuối:** 12/10/2026  
 > **Người cập nhật:** dunghvd79, Hoàng Ngọc Sơn & AI Assistant  
-> **Giai đoạn hiện tại:** Phase 1 — Hoàn thành Sprint 2 + Đợt rà soát & vá bảo mật Module Auth; đang triển khai Sprint 3 (Courses/Chapters/Lessons)
+> **Giai đoạn hiện tại:** Phase 1 — Hoàn thành Sprint 4 (Lớp học & Ghi danh); Sprint 3 còn vài việc tồn đọng; chuẩn bị Sprint 5 (Quizzes/Assignments)
 
 ---
 
@@ -24,6 +24,7 @@
    - **Sprint 3 — Danh mục khóa học & Khóa chỉnh sửa (09/10/2026):** thêm module Categories (backend + trang quản lý + lọc Catalog), khóa sửa nội dung khi `pending`/`published`; sửa thêm lỗi trình soạn đề cương ghi đè mất nội dung bài, curriculum công khai lộ `videoUrl`, trang "Khóa học của tôi" hiển thị khóa của giảng viên khác. Test API 26/26 + hồi quy 25/25, 16/16, 8/8.
    - **Sprint 3 — Backend hoàn thành, Frontend đã nối API (09/10/2026):** 21 endpoint Courses/Chapters/Lessons/Lesson Progress theo `api-courses.md` (`courseController.js`, `courseRoutes.js` mount tại `/api/v1`, `lessonService.js`, `optionalAuthenticateToken`). Frontend `services/courseService.js` + 7 trang (catalog, chi tiết khóa học, khóa học của giảng viên, curriculum builder, hàng đợi duyệt, chi tiết duyệt, trình học). Code do **tuanmanh205** viết (commit `57f4686` trên `feature-ngocson`, nằm nhầm trong thư mục con `eduverse-feature-dung/`), được ghép thủ công sang `feature-dung` kèm review và sửa lỗi. Kiểm thử E2E API 25/25 đạt.
    - **Sprint 3 — Upload S3 & Tài liệu bài học (12/10/2026):** `POST /uploads/presigned-url` (avatar, course_thumbnail, lesson_material) + 5 endpoint `/lessons/:lessonId/materials` theo `api-uploads.md`; component `LessonMaterialsPanel` gắn vào trang Soạn đề cương (thêm/đổi tên/xóa) và trang Học (tải về). Ý tưởng & phần lõi S3 lấy từ commit `6b91ead` của **tuanmanh205** (nhánh `tuanmanh205-sprint3-course-api`), viết lại theo đúng spec và kiến trúc hiện tại. Test API 56/56 (S3 giả lập). **Chưa test với bucket AWS thật.**
+   - **Sprint 4 — Lớp học & Ghi danh (12/10/2026):** 12/13 endpoint `api-classes.md` (`classService.js`, `classRoutes.js` mount tại `/api/v1/classes`); migration partial unique index cho `classes.class_code` và `enrollments(class_id, student_id)`. Frontend: trang lớp học dùng chung cho Giảng viên (`/teacher/classes`), Quản lý (`/manager/classes`), Admin (`/admin/classes`) — mở lớp, sửa/xóa, đổi mã, thêm/xóa học viên, báo cáo tiến độ; Học viên: `Khóa học của tôi` (nhập mã lớp, tiến độ), trang lớp (đề cương + bạn học), trình học ghi nhận tiến độ theo lớp. Test API 73/73 + E2E giao diện trên Edge 21/21 (desktop + mobile 390px).
 
 ## 2. Các Việc Đã Hoàn Thành ✅
 - [x] Toàn bộ Phase 0 (Use cases, ERD, Schema, Sequences, API Docs, Blueprint, Wireframes).
@@ -73,7 +74,10 @@
    - [ ] `GET /lessons/:lessonId/video-stream-url` + mở purpose `lesson_video` (cần cho phép `videoUrl` nhận S3 key).
    - [ ] Nối upload avatar (trang Hồ sơ) và ảnh bìa khóa học vào presigned-url (backend đã sẵn sàng).
    - [ ] Dọn tệp S3 khi xóa bài học/chương, dọn avatar/thumbnail cũ.
-2. **Triển khai Sprint 4: Module Lớp học & Thành viên (Classes, Enrollments - `api-classes.md`).**
+2. **Sprint 4: Lớp học & Thành viên** — ✅ xong (12/10/2026). Còn lại:
+   - [ ] `GET /classes/:id/grades/export-excel` — làm cùng Sprint 5 khi có điểm Quiz/Assignment.
+   - [ ] Dashboard Học viên/Giảng viên vẫn dùng số liệu giả; menu Giảng viên còn link demo `Đề cương` (`/teacher/courses/1/curriculum`) và `Sổ điểm` (`/teacher/classes/1/gradebook`).
+   - [ ] Quản lý chọn giảng viên khi mở lớp chỉ từ danh sách chủ các khóa đã published (API `/users` chỉ dành cho Admin).
 3. **Triển khai Sprint 5: Module Trắc nghiệm & Đề thi (Quizzes, Gemini AI - `api-quizzes.md`).**
 
 ## 4. Ghi Chú Kỹ Thuật Quan Trọng
@@ -85,6 +89,8 @@
 - **Rà soát backend (09/10/2026) — đã sửa 7 mục:** API danh sách bài công khai lộ `contentText`/`videoUrl`; chương/bài thuộc khóa đã xóa mềm gây `500` (nay `404`); thống kê hồ sơ giảng viên luôn bằng 0 (so sánh status viết hoa); sắp xếp chấp nhận ID trùng; thông báo xóa danh mục chưa rõ; CORS bị chặn trả `500` (nay `403`); Admin được gửi duyệt khóa học. Test 19/19 + hồi quy 108/108.
 - **Validation Middleware dùng chung (`middlewares/validateMiddleware.js`):** mọi route phải validate đủ 3 nguồn đầu vào — `validateBody(schema)` cho `req.body`, `validateQuery(schema)` cho `req.query`, `validateIdParam(...names)` cho `:id`/`:courseId`… (UUID) hoặc `validateIdOrSlugParam()` cho route nhận cả slug. Thứ tự: xác thực → phân quyền → params → query/body → controller. Các file `validations/*.js` chỉ chứa Joi schema, không chứa middleware. Express 5: `req.query` là getter chỉ đọc nên `validateQuery` ghi đè bằng `Object.defineProperty`.
 - **Quyền xem nội dung khóa học:** dùng `assertCourseVisible` (export từ `courseService.js`) cho mọi API đọc chương/bài. Nội dung đầy đủ bài học (`GET /lessons/:id`) chỉ cho chủ khóa, Quản lý, Admin, giảng viên dạy lớp của khóa, hoặc học viên đã ghi danh `active`.
+- **Lớp học:** quyền theo lớp kiểm tra trong `classService.js` (`canManageClass` = GV phụ trách/Quản lý/Admin; thêm-xóa học viên & đổi mã chỉ GV phụ trách/Admin). Mã lớp chỉ trả cho người quản lý lớp. Học viên bị xóa khỏi lớp = `status: dropped` + xóa mềm, ghi danh lại được nhờ partial unique index — mỗi máy dùng DB riêng cần chạy `npm run db:migrate:classes`.
+- **Tailwind:** dự án tự định nghĩa `screens` chỉ có `md`/`lg`/`xl` — **không có `sm:`**, viết `sm:` sẽ không có tác dụng.
 - **AWS S3 (`config/s3.js`):** cấu hình tùy chọn — thiếu `AWS_REGION`/`S3_BUCKET` thì server vẫn chạy, API upload trả `503`. Xem `backend/.env.example`. Quyền sửa/xem tài liệu dùng lại `assertCanManageLesson` / `assertCanViewLessonContent` (export từ `lessonService.js`). Frontend upload qua `services/uploadService.js` (MIME chuẩn theo đuôi tệp, PUT bằng `fetch` không kèm Authorization).
 - **Biến môi trường:** mọi module cần `process.env` phải import `backend/src/config/env.js` (đã được import trong `server.js`, `config/database.js`, `utils/jwt.js`). Không dùng giá trị secret dự phòng.
 - **Route mới cần mở khi `must_change_password = true`:** thêm vào `MUST_CHANGE_PASSWORD_ALLOWLIST` trong `middlewares/authMiddleware.js`.

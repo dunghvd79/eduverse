@@ -48,6 +48,10 @@ import UserManagementPage from '../pages/admin/UserManagementPage';
 import AuditLogsPage from '../pages/admin/AuditLogsPage';
 import PlatformSettingsPage from '../pages/admin/PlatformSettingsPage';
 
+// Quản lý lớp học dùng chung cho Quản lý đào tạo & Admin (Giảng viên dùng qua TeacherClasses*Page)
+import ClassListPage from '../components/class/ClassListPage';
+import ClassManagePage from '../components/class/ClassManagePage';
+
 export default function AppRoutes() {
   return (
     <Routes>
@@ -101,6 +105,8 @@ export default function AppRoutes() {
         <Route path="approvals" element={<CourseApprovalQueuePage />} />
         <Route path="approvals/:id/review" element={<CourseReviewDetailPage />} />
         <Route path="categories" element={<CategoryManagementPage />} />
+        <Route path="classes" element={<ClassListPage basePath="/manager/classes" />} />
+        <Route path="classes/:id" element={<ClassManagePage basePath="/manager/classes" />} />
         <Route path="reports" element={<ManagerReportsPage />} />
         <Route path="profile" element={<ProfilePage />} />
       </Route>
@@ -109,6 +115,8 @@ export default function AppRoutes() {
       <Route path="/admin" element={<AdminLayout />}>
         <Route path="dashboard" element={<AdminDashboardPage />} />
         <Route path="users" element={<UserManagementPage />} />
+        <Route path="classes" element={<ClassListPage basePath="/admin/classes" />} />
+        <Route path="classes/:id" element={<ClassManagePage basePath="/admin/classes" />} />
         <Route path="audit-logs" element={<AuditLogsPage />} />
         <Route path="settings" element={<PlatformSettingsPage />} />
         <Route path="profile" element={<ProfilePage />} />
