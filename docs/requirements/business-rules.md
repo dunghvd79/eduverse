@@ -45,10 +45,16 @@
 
 | # | Quy tắc | Chi tiết |
 |---|---|---|
-| BR-030 | Hỗ trợ **2 loại câu hỏi** | Multiple Choice (nhiều lựa chọn) và True/False (đúng/sai) |
+| BR-030 | Hỗ trợ **3 loại câu hỏi** | Một đáp án (`single_choice`), Nhiều đáp án (`multiple_choice` — phải chọn đúng và đủ), Đúng/Sai (`true_false`) |
 | BR-031 | Bài kiểm tra **chấm tự động** | Hệ thống so sánh đáp án và tính điểm ngay |
 | BR-032 | Bài tập nộp bằng **upload file** | Học viên upload file, giảng viên tải về chấm thủ công |
 | BR-033 | Giảng viên nhập **điểm + nhận xét** cho bài tập | Chấm thủ công, có thể gửi phản hồi cho học viên |
+| BR-034 | **Điểm tổng kết** = Quiz 40% + Bài tập 50% + Tiến độ 10% | Thang 10, làm tròn 2 chữ số. Chi tiết: [`grading-policy.md`](grading-policy.md) — chốt 12/10/2026 |
+| BR-035 | Bài kiểm tra làm nhiều lần lấy **điểm cao nhất** | Lượt hết giờ (`timed_out`) tính 0 điểm |
+| BR-036 | Bài kiểm tra chưa làm / bài tập chưa nộp tính **0 điểm** | Vẫn nằm trong mẫu số khi tính điểm trung bình thành phần |
+| BR-037 | **Xếp loại**: Giỏi ≥ 8 · Khá ≥ 6.5 · Trung bình ≥ 5 · Chưa đạt < 5 | Dựa trên điểm tổng kết |
+| BR-038 | Lớp **không có Quiz hoặc không có Bài tập** | Bỏ thành phần đó, chia lại tỷ trọng theo tỷ lệ các phần còn lại |
+| BR-039 | Bài tập **đã nộp chưa chấm** tạm tính 0; **bị yêu cầu nộp lại** dùng điểm lần chấm gần nhất | File Excel ghi chú "Chưa chấm" để GV chấm trước khi chốt điểm |
 
 ---
 
@@ -81,4 +87,4 @@
 
 ---
 
-_Cập nhật lần cuối: 21/09/2026_
+_Cập nhật lần cuối: 12/10/2026_

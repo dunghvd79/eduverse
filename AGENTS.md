@@ -12,7 +12,7 @@
 ## 2. Tech Stack Cốt Lõi (Phiên bản v2.0)
 - **Backend:** Express.js (Node.js 20, JavaScript ES Modules: `import/export`), Sequelize ORM v6, Joi v17, Redis 7 (`ioredis`).
 - **Frontend:** React 18 (Vite, JavaScript thuần `.jsx`), Tailwind CSS, shadcn/ui, TanStack Query v5 + Zustand v4, Axios.
-- **Services:** AWS S3 (Storage - Presigned URLs), Nodemailer + Gmail (SMTP), Google Gemini API (gemini-1.5-flash).
+- **Services:** AWS S3 (Storage - Presigned URLs), Nodemailer + Gmail (SMTP), Google Gemini API (model cấu hình qua biến môi trường `GEMINI_MODEL`, mặc định `gemini-flash-latest`; dự phòng `GEMINI_FALLBACK_MODEL`).
 - **Real-time:** Socket.IO v4 (Phase 2).
 - **DevOps:** Docker + Docker Compose.
 
