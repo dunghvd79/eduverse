@@ -1,6 +1,6 @@
 # 🧭 Trạng Thái Tiến Độ Dự Án (Project State)
 
-> **Cập nhật lần cuối:** 09/10/2026  
+> **Cập nhật lần cuối:** 12/10/2026  
 > **Người cập nhật:** dunghvd79, Hoàng Ngọc Sơn & AI Assistant  
 > **Giai đoạn hiện tại:** Phase 1 — Hoàn thành Sprint 2 + Đợt rà soát & vá bảo mật Module Auth; đang triển khai Sprint 3 (Courses/Chapters/Lessons)
 
@@ -23,6 +23,7 @@
    - **Gia cố Auth bổ sung (06–09/10/2026):** thêm rate limiter cho refresh/reset/change-password, kiểm tra `is_active` ở verify-otp/resend-otp/reset-password, refactor DRY validation & limiter; sửa lỗi xóa cookie làm đăng xuất nhiều tab và limiter đổi mật khẩu bị bỏ sót (kiểm thử 8/8 + hồi quy 16/16 đạt).
    - **Sprint 3 — Danh mục khóa học & Khóa chỉnh sửa (09/10/2026):** thêm module Categories (backend + trang quản lý + lọc Catalog), khóa sửa nội dung khi `pending`/`published`; sửa thêm lỗi trình soạn đề cương ghi đè mất nội dung bài, curriculum công khai lộ `videoUrl`, trang "Khóa học của tôi" hiển thị khóa của giảng viên khác. Test API 26/26 + hồi quy 25/25, 16/16, 8/8.
    - **Sprint 3 — Backend hoàn thành, Frontend đã nối API (09/10/2026):** 21 endpoint Courses/Chapters/Lessons/Lesson Progress theo `api-courses.md` (`courseController.js`, `courseRoutes.js` mount tại `/api/v1`, `lessonService.js`, `optionalAuthenticateToken`). Frontend `services/courseService.js` + 7 trang (catalog, chi tiết khóa học, khóa học của giảng viên, curriculum builder, hàng đợi duyệt, chi tiết duyệt, trình học). Code do **tuanmanh205** viết (commit `57f4686` trên `feature-ngocson`, nằm nhầm trong thư mục con `eduverse-feature-dung/`), được ghép thủ công sang `feature-dung` kèm review và sửa lỗi. Kiểm thử E2E API 25/25 đạt.
+   - **Sprint 3 — Upload S3 & Tài liệu bài học (12/10/2026):** `POST /uploads/presigned-url` (avatar, course_thumbnail, lesson_material) + 5 endpoint `/lessons/:lessonId/materials` theo `api-uploads.md`; component `LessonMaterialsPanel` gắn vào trang Soạn đề cương (thêm/đổi tên/xóa) và trang Học (tải về). Ý tưởng & phần lõi S3 lấy từ commit `6b91ead` của **tuanmanh205** (nhánh `tuanmanh205-sprint3-course-api`), viết lại theo đúng spec và kiến trúc hiện tại. Test API 56/56 (S3 giả lập). **Chưa test với bucket AWS thật.**
 
 ## 2. Các Việc Đã Hoàn Thành ✅
 - [x] Toàn bộ Phase 0 (Use cases, ERD, Schema, Sequences, API Docs, Blueprint, Wireframes).
@@ -67,7 +68,11 @@
    - [ ] Luồng "mở lại để chỉnh sửa" khóa đã `published` (phiên bản mới → duyệt lại) — chưa có, cần chốt nghiệp vụ.
    - [ ] Trang **Chi tiết duyệt** (`/manager/approvals/:id/review`) mới chỉ hiện tiêu đề bài, Quản lý chưa xem được nội dung bài để duyệt.
    - [ ] Trang chủ (`HomePage`) vẫn dùng danh mục & khóa học giả (mock) — chưa nối API.
-   - [ ] Tài liệu đính kèm bài học (`CourseMaterial`) — phụ thuộc module Uploads (S3).
+   - [x] Tài liệu đính kèm bài học (`CourseMaterial`) + Presigned upload S3 (12/10/2026).
+   - [ ] **Cấu hình bucket AWS S3 thật** (bucket, CORS cho PUT/GET từ frontend, policy Public Read cho `public/*`, IAM `s3:PutObject/GetObject/DeleteObject/ListBucket`) rồi test upload thật trên trình duyệt.
+   - [ ] `GET /lessons/:lessonId/video-stream-url` + mở purpose `lesson_video` (cần cho phép `videoUrl` nhận S3 key).
+   - [ ] Nối upload avatar (trang Hồ sơ) và ảnh bìa khóa học vào presigned-url (backend đã sẵn sàng).
+   - [ ] Dọn tệp S3 khi xóa bài học/chương, dọn avatar/thumbnail cũ.
 2. **Triển khai Sprint 4: Module Lớp học & Thành viên (Classes, Enrollments - `api-classes.md`).**
 3. **Triển khai Sprint 5: Module Trắc nghiệm & Đề thi (Quizzes, Gemini AI - `api-quizzes.md`).**
 
@@ -80,12 +85,13 @@
 - **Rà soát backend (09/10/2026) — đã sửa 7 mục:** API danh sách bài công khai lộ `contentText`/`videoUrl`; chương/bài thuộc khóa đã xóa mềm gây `500` (nay `404`); thống kê hồ sơ giảng viên luôn bằng 0 (so sánh status viết hoa); sắp xếp chấp nhận ID trùng; thông báo xóa danh mục chưa rõ; CORS bị chặn trả `500` (nay `403`); Admin được gửi duyệt khóa học. Test 19/19 + hồi quy 108/108.
 - **Validation Middleware dùng chung (`middlewares/validateMiddleware.js`):** mọi route phải validate đủ 3 nguồn đầu vào — `validateBody(schema)` cho `req.body`, `validateQuery(schema)` cho `req.query`, `validateIdParam(...names)` cho `:id`/`:courseId`… (UUID) hoặc `validateIdOrSlugParam()` cho route nhận cả slug. Thứ tự: xác thực → phân quyền → params → query/body → controller. Các file `validations/*.js` chỉ chứa Joi schema, không chứa middleware. Express 5: `req.query` là getter chỉ đọc nên `validateQuery` ghi đè bằng `Object.defineProperty`.
 - **Quyền xem nội dung khóa học:** dùng `assertCourseVisible` (export từ `courseService.js`) cho mọi API đọc chương/bài. Nội dung đầy đủ bài học (`GET /lessons/:id`) chỉ cho chủ khóa, Quản lý, Admin, giảng viên dạy lớp của khóa, hoặc học viên đã ghi danh `active`.
+- **AWS S3 (`config/s3.js`):** cấu hình tùy chọn — thiếu `AWS_REGION`/`S3_BUCKET` thì server vẫn chạy, API upload trả `503`. Xem `backend/.env.example`. Quyền sửa/xem tài liệu dùng lại `assertCanManageLesson` / `assertCanViewLessonContent` (export từ `lessonService.js`). Frontend upload qua `services/uploadService.js` (MIME chuẩn theo đuôi tệp, PUT bằng `fetch` không kèm Authorization).
 - **Biến môi trường:** mọi module cần `process.env` phải import `backend/src/config/env.js` (đã được import trong `server.js`, `config/database.js`, `utils/jwt.js`). Không dùng giá trị secret dự phòng.
 - **Route mới cần mở khi `must_change_password = true`:** thêm vào `MUST_CHANGE_PASSWORD_ALLOWLIST` trong `middlewares/authMiddleware.js`.
 - **Route guard frontend:** toàn bộ 4 portal đi qua `PortalLayout` (`components/portal/PortalUI.jsx`) — kiểm tra đăng nhập, role ↔ portal (`training_manager` → `/manager`), và bắt đổi mật khẩu tạm.
 - **Refresh token chỉ dùng 1 lần:** frontend phải gọi qua `refreshAccessToken()` trong `stores/useAuthStore.js`, không tự gọi `axios.post('/auth/refresh-token')`.
 - **Xóa cookie refresh:** controller `refreshToken` chỉ gọi `clearRefreshCookie` khi lỗi `401` và không có cờ `preserveCookie`. Lỗi mới trong `refreshSession` mà không muốn xóa cookie thì đặt `err.preserveCookie = true`.
-- **Nhánh Git:** `feature-dung` đã được merge vào `main` qua PR #7 (08/10/2026). Các commit sau đó trên `feature-dung` (từ `e677acc`) cần PR mới. Các nhánh `feature-ngocson`, `feature-anh`, `feature-manh` nên cập nhật từ `main` thường xuyên để tránh conflict lớn.
+- **Nhánh Git:** `feature-dung` đã được merge vào `main` qua PR #7 và PR #8. Các commit Sprint 3 từ `2ce7fa9` trở đi trên `feature-dung` chưa vào `main`, cần PR mới. Nhánh `tuanmanh205-sprint3-course-api` viết song song Sprint 3 (bảng `course_categories`, còn lỗi lộ nội dung bài) — **không merge**, phần S3 đã được chuyển sang `feature-dung`. Các nhánh `feature-ngocson`, `feature-anh`, `feature-manh` nên cập nhật từ `main` thường xuyên để tránh conflict lớn.
 - Toàn bộ diagram chỉ dùng các loại Mermaid phổ biến (`flowchart`, `sequenceDiagram`, `erDiagram`). Tránh dùng `gitgraph`.
 - Tất cả tài liệu viết bằng Markdown trong `docs/` theo chuẩn Docs-as-Code.
 - Đảm bảo 100% Traceability (tính truy vết) đồng bộ giữa Use Case, Sequence Diagram, Database Schema, API Spec, Design System và Frontend Blueprint.

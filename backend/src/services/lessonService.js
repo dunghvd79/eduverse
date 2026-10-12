@@ -59,11 +59,14 @@ const assertCanManageChapter = async (chapterId, currentUser) => {
   return chapter;
 };
 
-const assertCanManageLesson = async (lessonId, currentUser) => {
+/**
+ * Lấy bài học kèm chương và khóa học. 404 nếu bài học không tồn tại hoặc khóa học đã bị xóa mềm.
+ */
+export const findLessonWithCourse = async (lessonId) => {
   const lesson = await Lesson.findByPk(lessonId, {
     include: [{
       model: Chapter,
-      include: [{ model: Course, attributes: ['id', 'owner_id', 'status'] }]
+      include: [{ model: Course, attributes: ['id', 'title', 'owner_id', 'status'] }]
     }]
   });
 
@@ -71,6 +74,15 @@ const assertCanManageLesson = async (lessonId, currentUser) => {
     throw new AppError('Không tìm thấy bài học', 404, 'Not Found');
   }
   assertCourseExists(lesson.chapter?.course);
+
+  return lesson;
+};
+
+/**
+ * Quyền sửa bài học (và tài liệu đính kèm): chủ khóa học hoặc Admin, khóa học ở trạng thái draft/rejected.
+ */
+export const assertCanManageLesson = async (lessonId, currentUser) => {
+  const lesson = await findLessonWithCourse(lessonId);
 
   const isOwner = lesson.chapter.course.owner_id === currentUser.id;
   const isAdmin = currentUser.role === 'admin';
@@ -88,7 +100,7 @@ const assertCanManageLesson = async (lessonId, currentUser) => {
  * chủ khóa học, Quản lý đào tạo, Admin, giảng viên dạy lớp của khóa,
  * hoặc học viên đã ghi danh (active) vào một lớp của khóa học đã published.
  */
-const assertCanViewLessonContent = async (course, currentUser) => {
+export const assertCanViewLessonContent = async (course, currentUser) => {
   assertCourseVisible(course, currentUser);
 
   const isOwner = course.owner_id === currentUser.id;
@@ -124,17 +136,7 @@ export const getLessons = async (chapterId, currentUser = null) => {
 };
 
 export const getLessonById = async (lessonId, currentUser) => {
-  const lesson = await Lesson.findByPk(lessonId, {
-    include: [{
-      model: Chapter,
-      include: [{ model: Course, attributes: ['id', 'title', 'owner_id', 'status'] }]
-    }]
-  });
-
-  if (!lesson) {
-    throw new AppError('Không tìm thấy bài học', 404, 'Not Found');
-  }
-  assertCourseExists(lesson.chapter?.course);
+  const lesson = await findLessonWithCourse(lessonId);
 
   await assertCanViewLessonContent(lesson.chapter.course, currentUser);
 
