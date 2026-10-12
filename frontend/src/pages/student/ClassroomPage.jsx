@@ -1,8 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { CheckCircle2, ChevronLeft, ChevronRight, Download, FileText, PlayCircle } from 'lucide-react';
+import { CheckCircle2, ChevronLeft, ChevronRight, PlayCircle } from 'lucide-react';
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Button, Badge, Card, Progress } from '../../components/portal/PortalUI';
 import courseService from '../../services/courseService';
+import LessonMaterialsPanel from '../../components/course/LessonMaterialsPanel';
 import { toast } from '../../components/common/Toast';
 
 export default function ClassroomPage() {
@@ -162,14 +163,7 @@ export default function ClassroomPage() {
           </div>
 
           <Card>
-            <div className="flex items-center gap-3">
-              <FileText size={20}/>
-              <div>
-                <b>Tài liệu bài học</b>
-                <p className="text-sm text-slate-500">Tài liệu đính kèm sẽ được kết nối ở phần Course Materials.</p>
-              </div>
-              <Download size={18} className="ml-auto text-slate-400"/>
-            </div>
+            <LessonMaterialsPanel lessonId={lessonId} />
           </Card>
         </section>
       </div>

@@ -3,6 +3,7 @@ import { FileText, Plus, Save, Send, Trash2, Video, ClipboardCheck, FileQuestion
 import { useNavigate, useParams } from 'react-router-dom';
 import { PortalHeader, Button, Card, Badge, Field } from '../../components/portal/PortalUI';
 import courseService from '../../services/courseService';
+import LessonMaterialsPanel from '../../components/course/LessonMaterialsPanel';
 import { toast } from '../../components/common/Toast';
 
 const TYPE_LABEL = {
@@ -409,6 +410,10 @@ export default function CourseCurriculumBuilderPage() {
                   </Button>
                 </div>
               )}
+
+              <div className="pt-4 border-t border-slate-200">
+                <LessonMaterialsPanel lessonId={selectedLesson.id} editable={!isLocked} />
+              </div>
             </div>
           ) : (
             <div className="h-full min-h-[420px] flex items-center justify-center text-center text-slate-500">
