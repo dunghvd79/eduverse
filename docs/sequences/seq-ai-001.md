@@ -131,7 +131,7 @@ sequenceDiagram
 
 - **Hiệu năng & Độ tin cậy:**
   - **Cơ chế Model linh hoạt (Dynamic Model Selection):**
-    - Tên model **không hardcode**, được đọc động qua `process.env.GEMINI_MODEL` (mặc định `gemini-1.5-flash`).
+    - Tên model **không hardcode**, được đọc động qua `process.env.GEMINI_MODEL` (mặc định `gemini-flash-latest`; model dự phòng khi quá tải: `GEMINI_FALLBACK_MODEL`, mặc định `gemini-flash-lite-latest`).
     - Hỗ trợ Giảng viên chọn chế độ qua request (`modelTier: 'FAST' | 'PRO'`): Dùng bản **Flash** cho trắc nghiệm nhanh thông thường, hoặc bản **Pro** cho các đề thi chuyên sâu cần suy luận logic nhiều bước.
   - **Structured Outputs (JSON Mode):** Sử dụng tính năng `responseSchema` của Gemini API để ép buộc AI trả về đúng chuẩn JSON, giảm thiểu tỷ lệ lỗi phân tích chuỗi (Parse error) xuống dưới 1%.
   - **Fallback / Retry Policy:** Áp dụng cơ chế Exponential Backoff retry tối đa 2 lần với các lỗi mạng tạm thời hoặc mã HTTP 429/503 từ Google API.

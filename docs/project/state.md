@@ -84,8 +84,9 @@
    - **Tình trạng AI (tạm dừng 12/10/2026, quay lại sau):** key Free level (gói Google AI Pro không áp dụng cho API — Paid tier phải bật "Configure billing" trên project Cloud). `.env` máy dunghvd79 đặt `GEMINI_MODEL=gemini-3.8-flash` (~12-25s/lần, hay bị `503 high demand`). Đã có: tự thử lại 2 lần + chuyển model dự phòng `GEMINI_FALLBACK_MODEL` (mặc định `gemini-flash-lite-latest`, ~2-3s). Tài liệu mẫu để demo: đoạn "Tiếng Anh cơ bản bậc B1" (≥100 từ).
    - [ ] (Khi quay lại) Cân nhắc: đổi model chính sang Flash-Lite cho nhanh/ổn định, hoặc bật Paid tier + Budget alert trước buổi bảo vệ; tùy chọn cho giảng viên chọn model trên giao diện (danh sách duyệt sẵn).
    - [ ] Lượt làm bỏ dở quá giờ hiện được chốt khi có người mở lại dữ liệu; chưa có Cron/BullMQ chốt chủ động.
-   - [ ] AGENTS.md / tài liệu tech-stack còn ghi `gemini-1.5-flash` (đã ngừng) — code dùng `GEMINI_MODEL`, mặc định `gemini-flash-latest`.
+   - [x] AGENTS.md, tech-stack, seq-ai-001, actor-admin đã cập nhật: model cấu hình qua `GEMINI_MODEL` (12/10/2026).
 4. **Sprint 5 (tiếp): Bài tập (`api-assignments.md`, 18 endpoint) + `GET /classes/:id/grades/export-excel`.**
+   - ✅ **Công thức điểm tổng kết đã chốt (12/10/2026):** Quiz 40% · Bài tập 50% · Tiến độ 10%; Quiz lấy điểm cao nhất; chưa làm/chưa nộp = 0; Giỏi ≥ 8 · Khá ≥ 6.5 · Trung bình ≥ 5 · Chưa đạt < 5. Chi tiết: `docs/requirements/grading-policy.md` (BR-034 → BR-037). Trường hợp đặc biệt cũng đã chốt: lớp không có Quiz/Bài tập → chia lại tỷ trọng; bài đã nộp chưa chấm → tạm 0 + ghi "Chưa chấm"; nộp lại → điểm lần chấm gần nhất (BR-038, BR-039).
 
 ## 4. Ghi Chú Kỹ Thuật Quan Trọng
 - **Migration CSDL:** không chạy `sequelize.sync({ alter: true })` trên DB chung để thêm bảng/cột mới; viết script idempotent trong `backend/src/scripts/migrations/` (mẫu: `20261009-add-categories.js`) và thêm lệnh vào `package.json`. Mỗi thành viên cần chạy `npm run db:migrate:categories` nếu dùng DB riêng.
@@ -107,6 +108,7 @@
 - **Route guard frontend:** toàn bộ 4 portal đi qua `PortalLayout` (`components/portal/PortalUI.jsx`) — kiểm tra đăng nhập, role ↔ portal (`training_manager` → `/manager`), và bắt đổi mật khẩu tạm.
 - **Refresh token chỉ dùng 1 lần:** frontend phải gọi qua `refreshAccessToken()` trong `stores/useAuthStore.js`, không tự gọi `axios.post('/auth/refresh-token')`.
 - **Xóa cookie refresh:** controller `refreshToken` chỉ gọi `clearRefreshCookie` khi lỗi `401` và không có cờ `preserveCookie`. Lỗi mới trong `refreshSession` mà không muốn xóa cookie thì đặt `err.preserveCookie = true`.
+- **Quy trình Git:** xem `docs/project/git-workflow.md` (nhánh, commit, PR, migration, không commit secret).
 - **Nhánh Git:** `feature-dung` đã được merge vào `main` qua PR #7 và PR #8. Các commit Sprint 3 từ `2ce7fa9` trở đi trên `feature-dung` chưa vào `main`, cần PR mới. Nhánh `tuanmanh205-sprint3-course-api` viết song song Sprint 3 (bảng `course_categories`, còn lỗi lộ nội dung bài) — **không merge**, phần S3 đã được chuyển sang `feature-dung`. Các nhánh `feature-ngocson`, `feature-anh`, `feature-manh` nên cập nhật từ `main` thường xuyên để tránh conflict lớn.
 - Toàn bộ diagram chỉ dùng các loại Mermaid phổ biến (`flowchart`, `sequenceDiagram`, `erDiagram`). Tránh dùng `gitgraph`.
 - Tất cả tài liệu viết bằng Markdown trong `docs/` theo chuẩn Docs-as-Code.

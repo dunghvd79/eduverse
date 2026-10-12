@@ -637,8 +637,9 @@
   7. **Cụm cột Điểm Assignments:** Điểm từng bài tập lớn/bài tập về nhà đã được giảng viên chấm.
   8. `Điểm TB Quizzes`: Trung bình cộng điểm bài kiểm tra trắc nghiệm.
   9. `Điểm TB Assignments`: Trung bình cộng điểm bài tập tự luận.
-  10. `Điểm Tổng kết (GPA - Thang 10)`: Điểm trung bình gia quyền (hoặc theo công thức cấu hình).
-  11. `Xếp loại`: Giỏi / Khá / Trung bình / Chưa đạt.
+  10. `Điểm Tổng kết (GPA - Thang 10)`: = 0.4 × Điểm TB Quizzes + 0.5 × Điểm TB Assignments + 0.1 × (Tiến độ % / 10) — xem [`grading-policy.md`](../requirements/grading-policy.md).
+  11. `Xếp loại`: Giỏi (≥ 8) / Khá (≥ 6.5) / Trung bình (≥ 5) / Chưa đạt (< 5).
+* **Quy tắc tính điểm (đã chốt 12/10/2026):** mỗi Quiz lấy điểm cao nhất; Quiz chưa làm / bài tập chưa nộp tính 0 điểm. Chi tiết và các trường hợp đặc biệt: [`grading-policy.md`](../requirements/grading-policy.md).
 
 #### Các lỗi thường gặp:
 | HTTP Code | Error | Message | Nguyên nhân |
