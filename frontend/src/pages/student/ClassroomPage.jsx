@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { CheckCircle2, ChevronLeft, ChevronRight, PlayCircle } from 'lucide-react';
-import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, PlayCircle, RotateCcw } from 'lucide-react';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Button, Badge, Card, Progress } from '../../components/portal/PortalUI';
 import courseService from '../../services/courseService';
 import LessonMaterialsPanel from '../../components/course/LessonMaterialsPanel';
@@ -45,6 +45,9 @@ export default function ClassroomPage() {
   const currentIndex = flatLessons.findIndex(item => item.id === lessonId);
   const previous = flatLessons[currentIndex - 1];
   const next = flatLessons[currentIndex + 1];
+  // Trạng thái hoàn thành lấy từ đề cương theo lớp (GET /lessons/:id không trả tiến độ)
+  const isCompleted = !!flatLessons[currentIndex]?.isCompleted;
+  const lessonUrl = (id) => `/student/courses/${courseId}/learn/${id}${classId ? `?classId=${classId}` : ''}`;
 
   const setProgress = async (isCompleted) => {
     if (!classId) {
@@ -84,17 +87,22 @@ export default function ClassroomPage() {
           </div>
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          {classId && (
+            <Button variant="secondary" onClick={() => navigate(`/student/classes/${classId}`)}>
+              <ArrowLeft size={16}/> Về lớp học
+            </Button>
+          )}
           <Button
             variant="secondary"
             disabled={!previous}
-            onClick={() => previous && navigate(`/student/courses/${courseId}/learn/${previous.id}${classId ? `?classId=${classId}` : ''}`)}
+            onClick={() => previous && navigate(lessonUrl(previous.id))}
           >
             <ChevronLeft size={16}/> Bài trước
           </Button>
           <Button
             disabled={!next}
-            onClick={() => next && navigate(`/student/courses/${courseId}/learn/${next.id}${classId ? `?classId=${classId}` : ''}`)}
+            onClick={() => next && navigate(lessonUrl(next.id))}
           >
             Bài tiếp theo <ChevronRight size={16}/>
           </Button>
@@ -108,14 +116,14 @@ export default function ClassroomPage() {
             <div key={chapter.id}>
               <div className="px-2 py-3 font-semibold text-sm">{chapter.title}</div>
               {(chapter.lessons || []).map(item => (
-                <a
+                <Link
                   key={item.id}
-                  href={`/student/courses/${courseId}/learn/${item.id}${classId ? `?classId=${classId}` : ''}`}
+                  to={lessonUrl(item.id)}
                   className={`lesson-item ${item.id === lessonId ? 'active' : ''}`}
                 >
                   <span className="lesson-check">{item.isCompleted ? '✓' : ''}</span>
                   <span className="truncate">{item.title}</span>
-                </a>
+                </Link>
               ))}
             </div>
           ))}
@@ -147,20 +155,23 @@ export default function ClassroomPage() {
             </Card>
           )}
 
-          <div className="flex justify-between items-center">
-            <Button
-              onClick={() => setProgress(true)}
-              disabled={updating || !classId}
-            >
-              <CheckCircle2 size={17}/> {updating ? 'Đang lưu...' : 'Đánh dấu đã hoàn thành'}
-            </Button>
-
-            {lesson.isCompleted && (
-              <span className="text-sm font-semibold text-emerald-600">
-                ✓ Đã hoàn thành
-              </span>
+          <div className="flex flex-wrap justify-between items-center gap-2">
+            {isCompleted ? (
+              <>
+                <span className="text-sm font-semibold text-emerald-600">✓ Đã hoàn thành bài học này</span>
+                <Button variant="secondary" onClick={() => setProgress(false)} disabled={updating || !classId}>
+                  <RotateCcw size={15}/> Bỏ đánh dấu hoàn thành
+                </Button>
+              </>
+            ) : (
+              <Button onClick={() => setProgress(true)} disabled={updating || !classId}>
+                <CheckCircle2 size={17}/> {updating ? 'Đang lưu...' : 'Đánh dấu đã hoàn thành'}
+              </Button>
             )}
           </div>
+          {!classId && (
+            <p className="text-sm text-slate-500">Vào bài học từ trang lớp học để hệ thống ghi nhận tiến độ.</p>
+          )}
 
           <Card>
             <LessonMaterialsPanel lessonId={lessonId} />

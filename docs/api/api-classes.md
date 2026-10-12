@@ -660,3 +660,27 @@
 - **Bảo mật Quyền xem Thành viên:**
   - Danh sách học viên (`GET /members`) chỉ cho phép thành viên thuộc lớp đó hoặc giảng viên đứng lớp xem, tránh tình trạng người ngoài lớp dò quét danh sách sinh viên.
 
+
+---
+
+## 4. Trạng Thái Triển Khai (cập nhật 12/10/2026)
+
+| Endpoint | Trạng thái | Ghi chú |
+|---|:---:|---|
+| 7 endpoint quản lý lớp (`GET/POST/PATCH/DELETE /classes`, `my-classes`, `:id`, `regenerate-code`) | ✅ | |
+| `POST /classes/enroll`, 3 endpoint `/classes/:id/members` | ✅ | |
+| `GET /classes/:id/progress` | ✅ | |
+| `GET /classes/:id/grades/export-excel` | ⏳ | Chờ Sprint 5 (cần điểm Quiz/Assignment để tổng hợp). |
+
+**Khác biệt / bổ sung so với đặc tả ở trên:**
+- **Mã lớp (`classCode`) chỉ trả cho người quản lý lớp đó** (GV phụ trách, Quản lý đào tạo, Admin); người khác nhận `null`. Lý do: `GET /classes` mở cho mọi tài khoản, nếu trả mã thì ai cũng tự ghi danh được vào mọi lớp.
+- **Giảng viên mở lớp cho bất kỳ khóa học `published` nào** và luôn tự phụ trách (bỏ qua `teacherId`). Quản lý/Admin không truyền `teacherId` thì mặc định là **chủ khóa học**; `teacherId` phải là tài khoản `teacher` đang hoạt động (`400` nếu không).
+- `classCode` / `customCode` / mã khi ghi danh **không phân biệt hoa thường** (tự chuyển chữ hoa). Mã tự sinh dùng bảng chữ không có `I, O, 0, 1` để tránh nhầm khi đọc.
+- `PATCH /classes/:id` nhận thêm `startDate`. `endDate >= startDate` được kiểm tra trên giá trị sau khi gộp với dữ liệu hiện có.
+- `GET /classes/my-classes`: học viên nhận thêm `progress { totalLessons, completedLessons, progressPercentage }`; giảng viên nhận thêm `totalStudents`; Quản lý/Admin nhận mảng rỗng (dùng `GET /classes`).
+- `GET /classes/:id` trả thêm `permissions { canManage, canManageMembers, isMember }` và `progress` (nếu người xem là học viên trong lớp) để frontend hiển thị đúng nút thao tác.
+- `GET /classes/:id/members`: học viên trong lớp chỉ thấy bạn học `active` và **không thấy email**; chỉ GV phụ trách/Quản lý/Admin lọc được `status=dropped`.
+- `POST /classes/:id/members`: chỉ thêm được tài khoản `student` đang hoạt động (`400` nếu là role khác hoặc bị khóa); lớp `closed` không thêm được học viên (`400`).
+- `GET /classes/:id/progress`: `meta` phân trang nằm **trong** `data` (thống nhất với các API danh sách khác), không nằm cạnh `data` như ví dụ ở mục 2.12.
+- `GET /courses/:id/curriculum?classId=` (api-courses.md) trả thêm `totalLessons`, `completedLessons`, `progressPercentage` cho trình học.
+- **CSDL:** partial unique index `uq_classes_code_active` và `uq_enrollments_active` được tạo bằng migration `npm run db:migrate:classes` (thay các UNIQUE toàn bảng do `sync({ alter: true })` tạo trùng lặp trước đây).

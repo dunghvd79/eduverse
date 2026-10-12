@@ -9,6 +9,7 @@ import userRoutes from './routes/userRoutes.js';
 import courseRoutes from './routes/courseRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
+import classRoutes from './routes/classRoutes.js';
 import { errorHandler } from './middlewares/errorMiddleware.js';
 import { sendError } from './utils/response.js';
 import { AppError } from './utils/AppError.js';
@@ -63,6 +64,7 @@ app.get('/api/v1/health', (req, res) => {
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/categories', categoryRoutes);
+app.use('/api/v1/classes', classRoutes);
 app.use('/api/v1', courseRoutes);
 app.use('/api/v1', uploadRoutes);
 
