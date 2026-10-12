@@ -6,6 +6,31 @@
 
 ---
 
+## 0. Chốt Phiên Làm Việc Gần Nhất (13/10/2026) — đọc mục này trước
+
+**Tình trạng Git:** nhánh `feature-dung` đã push, **10 commit chưa vào `main`** (Sprint 3 → Sprint 5, từ `2ce7fa9` đến `5a9ae2b`) — **chưa tạo Pull Request** (người dùng sẽ tự review rồi tạo sau). Thư mục làm việc sạch.
+
+**Đã xong trong 2 ngày 12–13/10/2026:** Upload S3 + tài liệu bài học · Sprint 4 Lớp học & Ghi danh · Sprint 5 Bài kiểm tra + Gemini AI · Bài tập (nộp file S3, chấm, ZIP) · Bảng điểm + xuất Excel/CSV · tài liệu `grading-policy.md`, `git-workflow.md`.
+
+**Migration đã chạy trên Neon dev** (ai dùng DB riêng phải tự chạy trong `backend/`): `db:migrate:categories`, `db:migrate:classes`, `db:migrate:quizzes`, `db:migrate:assignments`. Sau khi pull nhớ `npm install` (thư viện mới: `@aws-sdk/*`, `archiver`, `exceljs`).
+
+**Việc người dùng cần tự làm:**
+1. Review & tạo PR `feature-dung` → `main`; báo nhóm chạy `npm install` + migration (nếu DB riêng), mỗi người tự tạo key Gemini.
+2. **Dựng bucket AWS S3 thật** (CORS PUT/GET từ frontend, Public Read cho `public/*`, IAM `s3:PutObject/GetObject/DeleteObject/ListBucket`, điền 4 biến vào `backend/.env`) — bắt buộc để học viên nộp bài / tải tài liệu thật. Tất cả luồng S3 hiện mới test bằng S3 giả lập.
+3. Thử tay toàn bộ luồng trên trình duyệt: tạo khóa → đề cương + quiz + bài tập → duyệt → mở lớp → học viên nhập mã, học, làm quiz, nộp bài → GV chấm → xuất bảng điểm.
+4. Nhắn tuanmanh205: không merge nhánh `tuanmanh205-sprint3-course-api`; tạo nhánh mới từ `main`; commit đứng tên mình; xóa thư mục thừa `eduverse-feature-dung/` trên `feature-ngocson`.
+5. Chốt 2 nghiệp vụ còn treo: mở lại để sửa khóa đã `published`? Admin tự duyệt khóa của mình?
+
+**Việc kỹ thuật tiếp theo (đề xuất theo thứ tự):**
+1. Dọn tồn Sprint 3: trang Chi tiết duyệt chưa xem được nội dung bài; Trang chủ (`HomePage`) còn dữ liệu giả; nối upload avatar & ảnh bìa khóa học (backend sẵn sàng); API phát video `video-stream-url` + purpose `lesson_video`; menu GV còn link demo `Đề cương` (`/teacher/courses/1/curriculum`).
+2. Dashboard 4 role + trang Báo cáo của Quản lý dùng số liệu thật (đã có đủ dữ liệu lớp, quiz, bài tập, điểm).
+3. Thông báo in-app/email (giao bài, chấm điểm, yêu cầu nộp lại) — hiện chưa có module.
+4. Chuẩn bị bảo vệ: backlog bảo mật Auth (mục 3.0), Docker Compose, dữ liệu mẫu đẹp để demo, cân nhắc Gemini Paid tier / model Flash-Lite cho demo ổn định.
+
+**Script kiểm thử tạm** (nằm ngoài repo, trong thư mục scratchpad của phiên AI — không còn sau phiên): API 56 (tài liệu) + 73 (lớp) + 92 (quiz) + 68 (bài tập) + 25 (bảng điểm), E2E Edge 21 + 22 + 24 + 11 — đều đạt ở lần chạy cuối. Nếu cần kiểm thử lại, viết test chính thức vào `docs/testing/` / thư mục test của repo.
+
+---
+
 ## 1. Tóm Tắt Trạng Thái Hiện Tại
 1. Dự án đã **hoàn thành toàn diện 100% Phase 0 — Đặc Tả Kiến Trúc & Thiết Kế Hệ Thống** (Use Cases, ERD 18 bảng, Sequence Diagrams, 8/8 API Docs, C4 Architecture, Master Frontend Blueprint, Design System Tokens, Wireframes, Sitemap).
 2. **Tiến độ Phase 1 (Frontend):** Hoàn thành **100% (37/37 Màn hình)** và **6 Master Layouts**, kiểm thử build 2062 modules không lỗi. Đã tích hợp Zustand Auth Store & Axios Interceptor.
@@ -114,7 +139,7 @@
 - **Refresh token chỉ dùng 1 lần:** frontend phải gọi qua `refreshAccessToken()` trong `stores/useAuthStore.js`, không tự gọi `axios.post('/auth/refresh-token')`.
 - **Xóa cookie refresh:** controller `refreshToken` chỉ gọi `clearRefreshCookie` khi lỗi `401` và không có cờ `preserveCookie`. Lỗi mới trong `refreshSession` mà không muốn xóa cookie thì đặt `err.preserveCookie = true`.
 - **Quy trình Git:** xem `docs/project/git-workflow.md` (nhánh, commit, PR, migration, không commit secret).
-- **Nhánh Git:** `feature-dung` đã được merge vào `main` qua PR #7 và PR #8. Các commit Sprint 3 từ `2ce7fa9` trở đi trên `feature-dung` chưa vào `main`, cần PR mới. Nhánh `tuanmanh205-sprint3-course-api` viết song song Sprint 3 (bảng `course_categories`, còn lỗi lộ nội dung bài) — **không merge**, phần S3 đã được chuyển sang `feature-dung`. Các nhánh `feature-ngocson`, `feature-anh`, `feature-manh` nên cập nhật từ `main` thường xuyên để tránh conflict lớn.
+- **Nhánh Git:** `feature-dung` đã được merge vào `main` qua PR #7 và PR #8; từ `2ce7fa9` đến `5a9ae2b` (10 commit, 13/10/2026) chưa vào `main`, chờ PR mới. Các commit Sprint 3 từ `2ce7fa9` trở đi trên `feature-dung` chưa vào `main`, cần PR mới. Nhánh `tuanmanh205-sprint3-course-api` viết song song Sprint 3 (bảng `course_categories`, còn lỗi lộ nội dung bài) — **không merge**, phần S3 đã được chuyển sang `feature-dung`. Các nhánh `feature-ngocson`, `feature-anh`, `feature-manh` nên cập nhật từ `main` thường xuyên để tránh conflict lớn.
 - Toàn bộ diagram chỉ dùng các loại Mermaid phổ biến (`flowchart`, `sequenceDiagram`, `erDiagram`). Tránh dùng `gitgraph`.
 - Tất cả tài liệu viết bằng Markdown trong `docs/` theo chuẩn Docs-as-Code.
 - Đảm bảo 100% Traceability (tính truy vết) đồng bộ giữa Use Case, Sequence Diagram, Database Schema, API Spec, Design System và Frontend Blueprint.
