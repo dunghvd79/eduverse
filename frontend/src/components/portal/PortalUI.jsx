@@ -11,7 +11,7 @@ const roleConfig={
   ['Tổng quan','/student/dashboard',LayoutDashboard],['Khóa học của tôi','/student/my-courses',BookOpen],['Bài kiểm tra','/student/quizzes',ClipboardCheck],['Bài tập','/student/assignments',FileText],['Điểm số','/student/grades',BarChart3],['Hồ sơ','/student/profile',UserCircle]
  ]},
  teacher:{label:'Giảng viên',links:[
-  ['Tổng quan','/teacher/dashboard',LayoutDashboard],['Khóa học','/teacher/courses',BookOpen],['Đề cương','/teacher/courses/1/curriculum',FolderTree],['Lớp học','/teacher/classes',Users],['Bài kiểm tra','/teacher/quizzes',ClipboardCheck],['AI Quiz','/teacher/quizzes/ai-generator',Sparkles],['Bài tập','/teacher/assignments',FileText],['Sổ điểm','/teacher/classes/1/gradebook',BarChart3],['Hồ sơ','/teacher/profile',UserCircle]
+  ['Tổng quan','/teacher/dashboard',LayoutDashboard],['Khóa học','/teacher/courses',BookOpen],['Đề cương','/teacher/courses/1/curriculum',FolderTree],['Lớp học','/teacher/classes',Users],['Bài kiểm tra','/teacher/quizzes',ClipboardCheck],['AI Quiz','/teacher/quizzes/ai-generator',Sparkles],['Bài tập','/teacher/assignments',FileText],['Hồ sơ','/teacher/profile',UserCircle]
  ]},
  manager:{label:'Quản lý đào tạo',links:[
   ['Tổng quan','/manager/dashboard',LayoutDashboard],['Duyệt khóa học','/manager/approvals',ClipboardCheck],['Chi tiết duyệt','/manager/approvals/1/review',FileText],['Danh mục','/manager/categories',FolderTree],['Lớp học','/manager/classes',Users],['Báo cáo','/manager/reports',BarChart3],['Hồ sơ','/manager/profile',UserCircle]

@@ -90,7 +90,7 @@ const countActiveStudents = async (classIds) => {
   return Object.fromEntries(rows.map((r) => [r.class_id, Number(r.total)]));
 };
 
-const getCourseLessonIds = async (courseId) => {
+export const getCourseLessonIds = async (courseId) => {
   const lessons = await Lesson.findAll({
     attributes: ['id'],
     include: [{ model: Chapter, attributes: [], where: { course_id: courseId } }],
@@ -105,7 +105,7 @@ const toPercentage = (completed, total) => (total > 0 ? Math.round((completed / 
  * Tiến độ của từng học viên trong một lớp: { [studentId]: { completedLessons, lastActiveAt } }
  * Chỉ đếm bài học còn thuộc khóa học (bài đã xóa không tính).
  */
-const getStudentProgress = async (classId, lessonIds, studentIds) => {
+export const getStudentProgress = async (classId, lessonIds, studentIds) => {
   if (lessonIds.length === 0 || studentIds.length === 0) return {};
   const rows = await LessonProgress.findAll({
     attributes: [

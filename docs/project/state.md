@@ -2,7 +2,7 @@
 
 > **Cập nhật lần cuối:** 13/10/2026  
 > **Người cập nhật:** dunghvd79, Hoàng Ngọc Sơn & AI Assistant  
-> **Giai đoạn hiện tại:** Phase 1 — Sprint 5: xong Bài kiểm tra (Quizzes + Gemini AI) và Bài tập (Assignments); còn lại xuất bảng điểm Excel + Sổ điểm / Điểm số
+> **Giai đoạn hiện tại:** Phase 1 — ✅ Hoàn thành Sprint 5 (Bài kiểm tra + Gemini AI, Bài tập, Bảng điểm & xuất Excel). Tiếp theo: dọn việc tồn, dashboard số liệu thật, chuẩn bị demo
 
 ---
 
@@ -88,7 +88,7 @@
 4. **Sprint 5: Bài tập** — ✅ xong (13/10/2026): đủ 18/18 endpoint `api-assignments.md`. Backend `assignmentService.js` (khung bài tập, giao bài theo lớp, nộp/nộp lại qua S3, chấm đơn lẻ/hàng loạt, yêu cầu nộp lại giữ điểm cũ theo E3), `assignmentZipService.js` (ZIP cả lớp, ≤50MB trả ngay, lớn hơn chạy nền). Migration `npm run db:migrate:assignments` (đã chạy trên Neon dev). Frontend: GV — trang Bài tập, tạo/sửa đề từ Soạn đề cương, tab Bài tập trong lớp (giao bài, lịch nộp, thống kê), trang Chấm bài (lọc, chấm nhanh trên bảng, modal chấm/yêu cầu nộp lại, tải ZIP); HV — trang Bài tập, trang nộp bài (đề, đếm ngược, nộp/nộp lại, điểm & nhận xét), tab Bài tập trong lớp, thẻ bài tập trong trình học. Test API 68/68 + E2E Edge 24/24 (S3 giả lập, nộp file thật qua trình duyệt). **Chưa test với bucket S3 thật.**
    - [ ] Thông báo (in-app/email) khi giao bài, chấm điểm, yêu cầu nộp lại — chưa có module thông báo.
    - [ ] Job nén ZIP lưu trong bộ nhớ (chưa có Redis/BullMQ).
-5. **Sprint 5 (còn lại): `GET /classes/:id/grades/export-excel` + trang Sổ điểm (GV) + trang Điểm số (HV)** theo `grading-policy.md`. Menu GV còn link demo `Sổ điểm` (`/teacher/classes/1/gradebook`).
+5. **Sprint 5: Bảng điểm** — ✅ xong (13/10/2026): `gradebookService.js` tính điểm theo `grading-policy.md` (E1-E3), xuất `.xlsx` (2 sheet) / `.csv` (`exceljs`); thêm `GET /classes/:id/gradebook` và `GET /classes/:id/my-grades`. Frontend: tab "Bảng điểm" trong trang lớp (GV/Quản lý/Admin, lọc xếp loại, xuất Excel/CSV), trang "Điểm số" của HV. Đã bỏ link demo "Sổ điểm" trên menu GV (link cũ `/teacher/classes/:id/gradebook` mở thẳng tab Bảng điểm). Test 25/25 (số liệu tính tay) + E2E Edge 11/11.
    - ✅ **Công thức điểm tổng kết đã chốt (12/10/2026):** Quiz 40% · Bài tập 50% · Tiến độ 10%; Quiz lấy điểm cao nhất; chưa làm/chưa nộp = 0; Giỏi ≥ 8 · Khá ≥ 6.5 · Trung bình ≥ 5 · Chưa đạt < 5. Chi tiết: `docs/requirements/grading-policy.md` (BR-034 → BR-037). Trường hợp đặc biệt cũng đã chốt: lớp không có Quiz/Bài tập → chia lại tỷ trọng; bài đã nộp chưa chấm → tạm 0 + ghi "Chưa chấm"; nộp lại → điểm lần chấm gần nhất (BR-038, BR-039).
 
 ## 4. Ghi Chú Kỹ Thuật Quan Trọng

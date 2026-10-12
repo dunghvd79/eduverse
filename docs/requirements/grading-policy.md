@@ -86,4 +86,14 @@ $$\text{Tổng kết} = 0.4 \times 5.17 + 0.5 \times 8.00 + 0.1 \times 8.00 = 2.
 
 ---
 
-_Cập nhật lần cuối: 12/10/2026_
+---
+
+## 7. Triển khai
+
+- Backend: `backend/src/services/gradebookService.js` (tính điểm), `gradebookExportService.js` (xuất Excel/CSV bằng `exceljs`).
+- API: `GET /classes/:id/gradebook`, `GET /classes/:id/my-grades`, `GET /classes/:id/grades/export-excel?format=xlsx|csv` ([`api-classes.md`](../api/api-classes.md) mục 4).
+- Giao diện: tab **"Bảng điểm"** trong trang lớp (GV phụ trách, Quản lý, Admin), trang **"Điểm số"** của học viên.
+- Điểm tổng kết được tính trên giá trị chưa làm tròn của các thành phần rồi mới làm tròn 2 chữ số (tránh lệch do làm tròn 2 lần).
+- Kiểm thử: 25 kịch bản với số liệu tính tay trước (gồm E1, E2, E3) — đạt 100% (13/10/2026).
+
+_Cập nhật lần cuối: 13/10/2026_
