@@ -124,7 +124,7 @@ export default function StudentClassDetailPage() {
         </Card>
       </div>
 
-      <div className="tabs-card">
+      <div className="tabs-card flex-wrap">
         <button className={`tab ${tab === 'lessons' ? 'active' : ''}`} onClick={() => setTab('lessons')}>Bài học</button>
         <button className={`tab ${tab === 'quizzes' ? 'active' : ''}`} onClick={() => setTab('quizzes')}>Bài kiểm tra ({quizzes.length})</button>
         <button className={`tab ${tab === 'assignments' ? 'active' : ''}`} onClick={() => setTab('assignments')}>Bài tập ({assignments.length})</button>

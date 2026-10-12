@@ -8,6 +8,7 @@ import { PortalHeader, Button, Card, Table, Badge, StatCard, Progress } from '..
 import ClassFormModal from './ClassFormModal';
 import ClassQuizzesTab from './ClassQuizzesTab';
 import ClassAssignmentsTab from './ClassAssignmentsTab';
+import ClassGradebook from './ClassGradebook';
 import classService, { CLASS_STATUS, PROGRESS_STATUS, formatDate } from '../../services/classService';
 import { useAuthStore } from '../../stores/useAuthStore';
 import { toast } from '../common/Toast';
@@ -240,13 +241,13 @@ function ProgressTab({ cls }) {
 // ==========================================
 // TRANG CHI TIẾT LỚP (Giảng viên / Quản lý / Admin)
 // ==========================================
-export default function ClassManagePage({ basePath }) {
+export default function ClassManagePage({ basePath, initialTab = 'members' }) {
   const { id } = useParams();
   const navigate = useNavigate();
   const role = useAuthStore(state => state.user?.role);
   const [cls, setCls] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState('members');
+  const [tab, setTab] = useState(initialTab);
   const [showEdit, setShowEdit] = useState(false);
 
   const load = async () => {
@@ -340,17 +341,19 @@ export default function ClassManagePage({ basePath }) {
         )}
       </Card>
 
-      <div className="tabs-card">
+      <div className="tabs-card flex-wrap">
         <button className={`tab ${tab === 'members' ? 'active' : ''}`} onClick={() => setTab('members')}>Học viên</button>
         <button className={`tab ${tab === 'progress' ? 'active' : ''}`} onClick={() => setTab('progress')}>Tiến độ học tập</button>
         <button className={`tab ${tab === 'quizzes' ? 'active' : ''}`} onClick={() => setTab('quizzes')}>Bài kiểm tra</button>
         <button className={`tab ${tab === 'assignments' ? 'active' : ''}`} onClick={() => setTab('assignments')}>Bài tập</button>
+        <button className={`tab ${tab === 'gradebook' ? 'active' : ''}`} onClick={() => setTab('gradebook')}>Bảng điểm</button>
       </div>
 
       {tab === 'members' && <MembersTab cls={cls} canManageMembers={canManageMembers} onChanged={load} />}
       {tab === 'progress' && <ProgressTab cls={cls} />}
       {tab === 'quizzes' && <ClassQuizzesTab cls={cls} role={role} />}
       {tab === 'assignments' && <ClassAssignmentsTab cls={cls} role={role} />}
+      {tab === 'gradebook' && <ClassGradebook cls={cls} />}
 
       {showEdit && (
         <ClassFormModal

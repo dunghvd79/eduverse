@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import * as controller from '../controllers/classController.js';
 import * as quizController from '../controllers/quizController.js';
+import * as gradebookController from '../controllers/gradebookController.js';
 import { authenticateToken, authorizeRoles } from '../middlewares/authMiddleware.js';
 import { validateBody, validateQuery, validateIdParam } from '../middlewares/validateMiddleware.js';
 import {
@@ -14,6 +15,11 @@ import {
   queryProgressSchema
 } from '../validations/classValidation.js';
 import { updateClassQuizSchema } from '../validations/quizValidation.js';
+import Joi from 'joi';
+
+const exportGradesQuerySchema = Joi.object({
+  format: Joi.string().valid('xlsx', 'csv').default('xlsx').messages({ 'any.only': 'format phải là xlsx hoặc csv' })
+});
 
 const router = Router();
 
@@ -68,5 +74,15 @@ router.get('/:id/progress', ...classStaff, validateIdParam(), validateQuery(quer
 router.get('/:id/quizzes', authenticateToken, validateIdParam(), quizController.getClassQuizzes);
 // Đặt lịch mở/đóng, bật/tắt đề cho lớp | Role: GV phụ trách, training_manager, admin
 router.put('/:id/quizzes/:quizId', ...classStaff, validateIdParam('id', 'quizId'), validateBody(updateClassQuizSchema), quizController.updateClassQuiz);
+
+// ==========================================
+// 5. BẢNG ĐIỂM (docs/requirements/grading-policy.md)
+// ==========================================
+// Xuất bảng điểm Excel/CSV (?format=xlsx|csv) | Role: GV phụ trách, training_manager, admin
+router.get('/:id/grades/export-excel', ...classStaff, validateIdParam(), validateQuery(exportGradesQuerySchema), gradebookController.exportGrades);
+// Bảng điểm dạng JSON cho trang Sổ điểm (bổ sung) | Role: GV phụ trách, training_manager, admin
+router.get('/:id/gradebook', ...classStaff, validateIdParam(), gradebookController.getGradebook);
+// Điểm của chính học viên trong lớp (bổ sung) | Role: student trong lớp
+router.get('/:id/my-grades', authenticateToken, authorizeRoles('student'), validateIdParam(), gradebookController.getMyGrades);
 
 export default router;

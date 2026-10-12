@@ -671,7 +671,9 @@
 | 7 endpoint quản lý lớp (`GET/POST/PATCH/DELETE /classes`, `my-classes`, `:id`, `regenerate-code`) | ✅ | |
 | `POST /classes/enroll`, 3 endpoint `/classes/:id/members` | ✅ | |
 | `GET /classes/:id/progress` | ✅ | |
-| `GET /classes/:id/grades/export-excel` | ⏳ | Chờ Sprint 5 (cần điểm Quiz/Assignment để tổng hợp). |
+| `GET /classes/:id/grades/export-excel` | ✅ | Xong 13/10/2026 — `?format=xlsx` (mặc định) hoặc `csv`, công thức theo [`grading-policy.md`](../requirements/grading-policy.md) |
+| `GET /classes/:id/gradebook` *(bổ sung)* | ✅ | Bảng điểm JSON cho trang Sổ điểm — GV phụ trách, Quản lý, Admin |
+| `GET /classes/:id/my-grades` *(bổ sung)* | ✅ | Điểm của chính học viên trong lớp (`me`, cùng cấu trúc 1 dòng của bảng điểm) |
 
 **Khác biệt / bổ sung so với đặc tả ở trên:**
 - **Mã lớp (`classCode`) chỉ trả cho người quản lý lớp đó** (GV phụ trách, Quản lý đào tạo, Admin); người khác nhận `null`. Lý do: `GET /classes` mở cho mọi tài khoản, nếu trả mã thì ai cũng tự ghi danh được vào mọi lớp.
@@ -684,4 +686,5 @@
 - `POST /classes/:id/members`: chỉ thêm được tài khoản `student` đang hoạt động (`400` nếu là role khác hoặc bị khóa); lớp `closed` không thêm được học viên (`400`).
 - `GET /classes/:id/progress`: `meta` phân trang nằm **trong** `data` (thống nhất với các API danh sách khác), không nằm cạnh `data` như ví dụ ở mục 2.12.
 - `GET /courses/:id/curriculum?classId=` (api-courses.md) trả thêm `totalLessons`, `completedLessons`, `progressPercentage` cho trình học.
+- **Xuất bảng điểm:** file `.xlsx` có 2 sheet ("Bảng điểm" + "Quy tắc tính điểm"), dòng tiêu đề ghi công thức với tỷ trọng thực tế, thêm cột **Ghi chú** ("Chưa chấm: ..."). Cột "Mã học viên" là UUID tài khoản (hệ thống chưa có MSSV). File `.csv` có BOM UTF-8 để Excel mở đúng tiếng Việt. Tên file `Bang_Diem_Lop_<MaLop>_<YYYYMMDD>`. Header `Content-Disposition` được expose qua CORS.
 - **CSDL:** partial unique index `uq_classes_code_active` và `uq_enrollments_active` được tạo bằng migration `npm run db:migrate:classes` (thay các UNIQUE toàn bảng do `sync({ alter: true })` tạo trùng lặp trước đây).
