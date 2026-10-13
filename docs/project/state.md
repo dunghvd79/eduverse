@@ -6,28 +6,28 @@
 
 ---
 
-## 0. Chốt Phiên Làm Việc Gần Nhất (13/10/2026) — đọc mục này trước
+## 0. Chốt Phiên Làm Việc Gần Nhất (13/10/2026 - Chiều/Tối) — đọc mục này trước
 
-**Tình trạng Git:** nhánh `feature-dung` đã push, **10 commit chưa vào `main`** (Sprint 3 → Sprint 5, từ `2ce7fa9` đến `5a9ae2b`) — **chưa tạo Pull Request** (người dùng sẽ tự review rồi tạo sau). Thư mục làm việc sạch.
+**Tình trạng Git:** nhánh `feature-dung`, chuẩn bị commit và push các cải tiến mới nhất về Portal Giảng viên và Trang chủ.
 
-**Đã xong trong 2 ngày 12–13/10/2026:** Upload S3 + tài liệu bài học · Sprint 4 Lớp học & Ghi danh · Sprint 5 Bài kiểm tra + Gemini AI · Bài tập (nộp file S3, chấm, ZIP) · Bảng điểm + xuất Excel/CSV · tài liệu `grading-policy.md`, `git-workflow.md`.
+**Đã xong trong phiên 13/10/2026 (Chiều & Tối):**
+1. **Thiết kế lại Toàn diện Dashboard Giảng viên (`/teacher/dashboard`):**
+   - 4 thẻ KPI chỉ số cao cấp (Học viên đang học, Lớp đang phụ trách, Bài nộp chờ chấm, Khóa học đã tạo) chuẩn Enterprise SaaS, có vạch màu định danh và live status dot.
+   - Thẻ lớp học thế hệ mới (Modern Class Cards): tiến độ học tập, phổ điểm xếp loại (Giỏi/Khá/TB/Chưa đạt), hàng phím tắt 1-chạm (Sổ điểm, Bài tập, Học viên).
+   - Đồng bộ deep-linking tab URL (`?tab=gradebook`, `?tab=assignments`, `?tab=members`) trên `ClassManagePage.jsx`.
+   - Action Center "Việc cần làm hôm nay" và Teaching Toolkit (Tạo đề AI, Ngân hàng đề, Quản lý bài tập).
+   - Sửa component `Button` trong `PortalUI.jsx` để hợp nhất an toàn `className` với `.ui-btn`, sửa nút Tạo đề AI.
+2. **Thiết kế lại Toàn diện Trang Khóa học của tôi (`/teacher/courses`):**
+   - Dải 4 thẻ thống kê mini tương tác (Đã xuất bản, Chờ duyệt, Bản nháp, Bị từ chối) click-to-filter.
+   - Thanh điều khiển tích hợp (Unified Toolbar): ô tìm kiếm tức thời, dropdown lọc Danh mục, dropdown sắp xếp và bộ chuyển đổi chế độ xem Lưới (Grid 16:9) / Danh sách (List Table).
+   - Phân cấp nút hành động: Nút chính "Soạn giáo trình" / "Xem đề cương", nút "Gửi duyệt", và menu 3 chấm bảo vệ tác vụ nhạy cảm (Sửa thông tin, Xóa).
+3. **Trang chủ & Khóa học & Danh mục:**
+   - Căn chỉnh Section 2 & Section 3 trên `HomePage.jsx`: tiêu đề 1 dòng chống rớt chữ, bỏ huy hiệu trang trí rườm rà, căn giữa bố cục.
+   - Thiết kế lại banner tìm kiếm Course Catalog gradient chuẩn nhận diện EduVerse.
+   - Script seed 6 khóa học chuẩn thật vào Neon DB (`seedEduVerseCourses.js`).
+   - Sửa `categoryService.js` bóc tách dữ liệu chuẩn giúp Quản lý đào tạo tải danh mục mượt mà.
 
 **Migration đã chạy trên Neon dev** (ai dùng DB riêng phải tự chạy trong `backend/`): `db:migrate:categories`, `db:migrate:classes`, `db:migrate:quizzes`, `db:migrate:assignments`. Sau khi pull nhớ `npm install` (thư viện mới: `@aws-sdk/*`, `archiver`, `exceljs`).
-
-**Việc người dùng cần tự làm:**
-1. Review & tạo PR `feature-dung` → `main`; báo nhóm chạy `npm install` + migration (nếu DB riêng), mỗi người tự tạo key Gemini.
-2. **Dựng bucket AWS S3 thật** (CORS PUT/GET từ frontend, Public Read cho `public/*`, IAM `s3:PutObject/GetObject/DeleteObject/ListBucket`, điền 4 biến vào `backend/.env`) — bắt buộc để học viên nộp bài / tải tài liệu thật. Tất cả luồng S3 hiện mới test bằng S3 giả lập.
-3. Thử tay toàn bộ luồng trên trình duyệt: tạo khóa → đề cương + quiz + bài tập → duyệt → mở lớp → học viên nhập mã, học, làm quiz, nộp bài → GV chấm → xuất bảng điểm.
-4. Nhắn tuanmanh205: không merge nhánh `tuanmanh205-sprint3-course-api`; tạo nhánh mới từ `main`; commit đứng tên mình; xóa thư mục thừa `eduverse-feature-dung/` trên `feature-ngocson`.
-5. Chốt 2 nghiệp vụ còn treo: mở lại để sửa khóa đã `published`? Admin tự duyệt khóa của mình?
-
-**Việc kỹ thuật tiếp theo (đề xuất theo thứ tự):**
-1. Dọn tồn Sprint 3: trang Chi tiết duyệt chưa xem được nội dung bài; Trang chủ (`HomePage`) còn dữ liệu giả; nối upload avatar & ảnh bìa khóa học (backend sẵn sàng); API phát video `video-stream-url` + purpose `lesson_video`; menu GV còn link demo `Đề cương` (`/teacher/courses/1/curriculum`).
-2. Dashboard 4 role + trang Báo cáo của Quản lý dùng số liệu thật (đã có đủ dữ liệu lớp, quiz, bài tập, điểm).
-3. Thông báo in-app/email (giao bài, chấm điểm, yêu cầu nộp lại) — hiện chưa có module.
-4. Chuẩn bị bảo vệ: backlog bảo mật Auth (mục 3.0), Docker Compose, dữ liệu mẫu đẹp để demo, cân nhắc Gemini Paid tier / model Flash-Lite cho demo ổn định.
-
-**Script kiểm thử tạm** (nằm ngoài repo, trong thư mục scratchpad của phiên AI — không còn sau phiên): API 56 (tài liệu) + 73 (lớp) + 92 (quiz) + 68 (bài tập) + 25 (bảng điểm), E2E Edge 21 + 22 + 24 + 11 — đều đạt ở lần chạy cuối. Nếu cần kiểm thử lại, viết test chính thức vào `docs/testing/` / thư mục test của repo.
 
 ---
 

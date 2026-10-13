@@ -3,7 +3,7 @@ import {
   ArrowLeft, BarChart3, CheckCircle2, ChevronLeft, ChevronRight, Copy, Pencil,
   RefreshCw, Search, Trash2, UserMinus, UserPlus, Users
 } from 'lucide-react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { PortalHeader, Button, Card, Table, Badge, StatCard, Progress } from '../portal/PortalUI';
 import ClassFormModal from './ClassFormModal';
 import ClassQuizzesTab from './ClassQuizzesTab';
@@ -244,11 +244,24 @@ function ProgressTab({ cls }) {
 export default function ClassManagePage({ basePath, initialTab = 'members' }) {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlTab = searchParams.get('tab');
   const role = useAuthStore(state => state.user?.role);
   const [cls, setCls] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState(initialTab);
+  const [tab, setTab] = useState(urlTab || initialTab);
   const [showEdit, setShowEdit] = useState(false);
+
+  useEffect(() => {
+    if (urlTab && ['members', 'progress', 'quizzes', 'assignments', 'gradebook'].includes(urlTab)) {
+      setTab(urlTab);
+    }
+  }, [urlTab]);
+
+  const handleTabChange = (newTab) => {
+    setTab(newTab);
+    setSearchParams({ tab: newTab });
+  };
 
   const load = async () => {
     try {
@@ -341,11 +354,11 @@ export default function ClassManagePage({ basePath, initialTab = 'members' }) {
       </Card>
 
       <div className="tabs-card flex-wrap">
-        <button className={`tab ${tab === 'members' ? 'active' : ''}`} onClick={() => setTab('members')}>Học viên</button>
-        <button className={`tab ${tab === 'progress' ? 'active' : ''}`} onClick={() => setTab('progress')}>Tiến độ học tập</button>
-        <button className={`tab ${tab === 'quizzes' ? 'active' : ''}`} onClick={() => setTab('quizzes')}>Bài kiểm tra</button>
-        <button className={`tab ${tab === 'assignments' ? 'active' : ''}`} onClick={() => setTab('assignments')}>Bài tập</button>
-        <button className={`tab ${tab === 'gradebook' ? 'active' : ''}`} onClick={() => setTab('gradebook')}>Bảng điểm</button>
+        <button className={`tab ${tab === 'members' ? 'active' : ''}`} onClick={() => handleTabChange('members')}>Học viên</button>
+        <button className={`tab ${tab === 'progress' ? 'active' : ''}`} onClick={() => handleTabChange('progress')}>Tiến độ học tập</button>
+        <button className={`tab ${tab === 'quizzes' ? 'active' : ''}`} onClick={() => handleTabChange('quizzes')}>Bài kiểm tra</button>
+        <button className={`tab ${tab === 'assignments' ? 'active' : ''}`} onClick={() => handleTabChange('assignments')}>Bài tập</button>
+        <button className={`tab ${tab === 'gradebook' ? 'active' : ''}`} onClick={() => handleTabChange('gradebook')}>Bảng điểm</button>
       </div>
 
       {tab === 'members' && <MembersTab cls={cls} canManageMembers={canManageMembers} onChanged={load} />}

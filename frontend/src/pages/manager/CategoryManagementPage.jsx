@@ -18,8 +18,9 @@ export default function CategoryManagementPage() {
   const load = async () => {
     try {
       setLoading(true);
-      const data = await categoryService.list({ includeHidden: true });
-      setCategories(data || []);
+      const res = await categoryService.list({ includeHidden: true });
+      const items = Array.isArray(res) ? res : (res?.data || []);
+      setCategories(items);
     } catch (error) {
       toast.error(error?.message || 'Không thể tải danh mục.');
     } finally {

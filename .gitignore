@@ -38,3 +38,4 @@ docker-compose.override.yml
 
 # Local agent & personal notes
 context-local.md
+.claude/
