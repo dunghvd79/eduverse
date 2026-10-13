@@ -76,7 +76,7 @@ export default function ResetPasswordPage() {
           <button
             type="button"
             onClick={() => setShowPassword((prev) => !prev)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition p-1 focus:outline-none"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-600 transition p-1 focus:outline-none"
             title={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
             aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
           >
@@ -99,7 +99,7 @@ export default function ResetPasswordPage() {
           <button
             type="button"
             onClick={() => setShowConfirm((prev) => !prev)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition p-1 focus:outline-none"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-600 transition p-1 focus:outline-none"
             title={showConfirm ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
             aria-label={showConfirm ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
           >

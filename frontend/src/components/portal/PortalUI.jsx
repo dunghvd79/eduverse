@@ -11,13 +11,13 @@ const roleConfig={
   ['Tổng quan','/student/dashboard',LayoutDashboard],['Khóa học của tôi','/student/my-courses',BookOpen],['Bài kiểm tra','/student/quizzes',ClipboardCheck],['Bài tập','/student/assignments',FileText],['Điểm số','/student/grades',BarChart3],['Hồ sơ','/student/profile',UserCircle]
  ]},
  teacher:{label:'Giảng viên',links:[
-  ['Tổng quan','/teacher/dashboard',LayoutDashboard],['Khóa học','/teacher/courses',BookOpen],['Đề cương','/teacher/courses/1/curriculum',FolderTree],['Lớp học','/teacher/classes',Users],['Bài kiểm tra','/teacher/quizzes',ClipboardCheck],['AI Quiz','/teacher/quizzes/ai-generator',Sparkles],['Bài tập','/teacher/assignments',FileText],['Hồ sơ','/teacher/profile',UserCircle]
+  ['Tổng quan','/teacher/dashboard',LayoutDashboard],['Khóa học','/teacher/courses',BookOpen],['Đề cương','/teacher/courses/1/curriculum',FolderTree],['Lớp học','/teacher/classes',Users],['Bài kiểm tra','/teacher/quizzes',ClipboardCheck],['Tạo đề bằng AI','/teacher/quizzes/ai-generator',Sparkles],['Bài tập','/teacher/assignments',FileText],['Hồ sơ','/teacher/profile',UserCircle]
  ]},
  manager:{label:'Quản lý đào tạo',links:[
   ['Tổng quan','/manager/dashboard',LayoutDashboard],['Duyệt khóa học','/manager/approvals',ClipboardCheck],['Chi tiết duyệt','/manager/approvals/1/review',FileText],['Danh mục','/manager/categories',FolderTree],['Lớp học','/manager/classes',Users],['Báo cáo','/manager/reports',BarChart3],['Hồ sơ','/manager/profile',UserCircle]
  ]},
  admin:{label:'Quản trị viên',links:[
-  ['Tổng quan','/admin/dashboard',LayoutDashboard],['Người dùng','/admin/users',Users],['Lớp học','/admin/classes',GraduationCap],['Audit Logs','/admin/audit-logs',ShieldCheck],['Cài đặt hệ thống','/admin/settings',Settings],['Hồ sơ','/admin/profile',UserCircle]
+  ['Tổng quan','/admin/dashboard',LayoutDashboard],['Người dùng','/admin/users',Users],['Lớp học','/admin/classes',GraduationCap],['Nhật ký hệ thống','/admin/audit-logs',ShieldCheck],['Cài đặt hệ thống','/admin/settings',Settings],['Hồ sơ','/admin/profile',UserCircle]
  ]}
 };
 
@@ -77,7 +77,7 @@ export function PortalLayout({role}) {
   </section>
  </div>
 }
-export const PortalHeader=({eyebrow,title,desc,actions})=><div className="page-heading"><div><div className="eyebrow">{eyebrow}</div><h1>{title}</h1>{desc&&<p>{desc}</p>}</div>{actions&&<div className="heading-actions">{actions}</div>}</div>;
+export const PortalHeader=({title,desc,actions})=><div className="page-heading"><div><h1>{title}</h1>{desc&&<p>{desc}</p>}</div>{actions&&<div className="heading-actions">{actions}</div>}</div>;
 export const Button=({children,variant='primary',...p})=><button className={`ui-btn ${variant}`} {...p}>{children}</button>;
 export const StatCard=({icon:Icon,label,value,trend,sub})=><div className="stat-card"><div className="stat-icon"><Icon size={21}/></div><div><span>{label}</span><strong>{value}</strong>{trend&&<small className="trend">{trend}</small>}{sub&&<small>{sub}</small>}</div></div>;
 export const Progress=({value})=><div className="progress-track"><div style={{width:`${value}%`}}/></div>;

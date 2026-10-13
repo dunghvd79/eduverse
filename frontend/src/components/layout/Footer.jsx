@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 
 export default function Footer() {
   return (
-    <footer className="bg-slate-900 text-slate-400 text-sm pt-12 pb-8 border-t border-slate-800">
+    <footer className="bg-slate-900 text-slate-500 text-sm pt-12 pb-8 border-t border-slate-800">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 pb-10 border-b border-slate-800">
           {/* EduVerse Info Col */}
@@ -18,7 +18,7 @@ export default function Footer() {
                 </text>
               </svg>
             </div>
-            <p className="text-slate-400 text-sm leading-relaxed max-w-sm">
+            <p className="text-slate-500 text-sm leading-relaxed max-w-sm">
               Nền tảng công nghệ giáo dục trực tuyến chất lượng cao, định vị Tiếng Anh mũi nhọn kết hợp toàn diện chương trình THPT Lớp 10 - 11 - 12 và Luyện thi Đại học hàng đầu Việt Nam.
             </p>
             <div className="text-xs text-slate-500 space-y-1">

@@ -214,7 +214,6 @@ export default function ProfilePage() {
   return (
     <>
       <PortalHeader 
-        eyebrow="TÀI KHOẢN & BẢO MẬT" 
         title="Hồ sơ cá nhân" 
         desc="Quản lý thông tin định danh, liên hệ và thiết lập mật khẩu truy cập hệ thống EduVerse."
       />
@@ -251,7 +250,7 @@ export default function ProfilePage() {
               <p className="text-xs text-slate-500 m-0 mb-1 flex items-center justify-center sm:justify-start gap-1">
                 <Mail size={13} /> {profileData.email}
               </p>
-              <p className="text-xs text-slate-400 m-0 flex items-center justify-center sm:justify-start gap-1">
+              <p className="text-xs text-slate-500 m-0 flex items-center justify-center sm:justify-start gap-1">
                 <Calendar size={13} /> Tham gia: {formattedDate}
               </p>
             </div>
@@ -280,7 +279,7 @@ export default function ProfilePage() {
                 <button
                   type="button"
                   onClick={() => setProfileData({ ...profileData, avatarUrl: '' })}
-                  className="text-xs text-slate-400 hover:text-red-500 px-2 py-1 rounded border border-slate-200 ml-1"
+                  className="text-xs text-slate-500 hover:text-red-500 px-2 py-1 rounded border border-slate-200 ml-1"
                   title="Xóa avatar về chữ viết tắt"
                 >
                   Xóa ảnh
@@ -325,7 +324,7 @@ export default function ProfilePage() {
                     disabled 
                     className="bg-slate-100 text-slate-500 cursor-not-allowed pr-24"
                   />
-                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                  <span className="absolute right-2.5 top-1/2 -translate-y-1/2 text-xs font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
                     ĐÃ XÁC THỰC
                   </span>
                 </div>
@@ -355,7 +354,7 @@ export default function ProfilePage() {
             <label className="field mb-5">
               <div className="flex justify-between items-center mb-1">
                 <span>Giới thiệu bản thân (Bio)</span>
-                <span className="text-[11px] text-slate-400">{profileData.bio?.length || 0}/500</span>
+                <span className="text-xs text-slate-500">{profileData.bio?.length || 0}/500</span>
               </div>
               <textarea 
                 rows={3} 
@@ -415,7 +414,7 @@ export default function ProfilePage() {
                 <button
                   type="button"
                   onClick={() => setShowCurrentPass(!showCurrentPass)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 border-0 bg-transparent cursor-pointer p-0"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-600 border-0 bg-transparent cursor-pointer p-0"
                 >
                   {showCurrentPass ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -436,7 +435,7 @@ export default function ProfilePage() {
                 <button
                   type="button"
                   onClick={() => setShowNewPass(!showNewPass)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 border-0 bg-transparent cursor-pointer p-0"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-600 border-0 bg-transparent cursor-pointer p-0"
                 >
                   {showNewPass ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
@@ -446,7 +445,7 @@ export default function ProfilePage() {
             {/* Password Strength Meter */}
             {passwordData.newPassword && (
               <div className="mb-4">
-                <div className="flex justify-between items-center text-[11px] mb-1">
+                <div className="flex justify-between items-center text-xs mb-1">
                   <span className="text-slate-500">Độ an toàn mật khẩu:</span>
                   <span className={`font-bold ${
                     strength <= 25 ? 'text-red-500' : strength <= 50 ? 'text-amber-500' : strength <= 75 ? 'text-blue-500' : 'text-emerald-500'
@@ -479,7 +478,7 @@ export default function ProfilePage() {
                 <button
                   type="button"
                   onClick={() => setShowConfirmPass(!showConfirmPass)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 border-0 bg-transparent cursor-pointer p-0"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-600 border-0 bg-transparent cursor-pointer p-0"
                 >
                   {showConfirmPass ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>

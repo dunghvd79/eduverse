@@ -70,13 +70,13 @@ export default function StudentQuizzesPage() {
 
   return (
     <>
-      <PortalHeader eyebrow="QUIZZES" title="Bài kiểm tra" desc={groups ? `${pending} bài kiểm tra đang chờ bạn hoàn thành.` : 'Bài kiểm tra trắc nghiệm của các lớp bạn đang học.'} />
+      <PortalHeader title="Bài kiểm tra" desc={groups ? `${pending} bài kiểm tra đang chờ bạn hoàn thành.` : 'Bài kiểm tra trắc nghiệm của các lớp bạn đang học.'} />
       {!groups ? (
         <div className="p-10 text-center text-slate-500">Đang tải bài kiểm tra...</div>
       ) : groups.length === 0 ? (
         <Card>
           <div className="p-8 text-center">
-            <ClipboardCheck className="mx-auto mb-3 text-slate-400" size={32} />
+            <ClipboardCheck className="mx-auto mb-3 text-slate-500" size={32} />
             <p className="text-slate-500">Bạn chưa tham gia lớp học nào.</p>
           </div>
         </Card>

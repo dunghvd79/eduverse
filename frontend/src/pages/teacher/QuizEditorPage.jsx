@@ -233,7 +233,7 @@ function ResultsTab({ quiz }) {
               <option value="studentName:ASC">Tên A → Z</option>
             </select>
             <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 h-9 w-full md:w-56">
-              <Search size={15} className="text-slate-400" />
+              <Search size={15} className="text-slate-500" />
               <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tìm học viên..." className="flex-1 min-w-0 text-sm outline-none" />
             </label>
           </div>
@@ -327,7 +327,6 @@ export default function QuizEditorPage() {
   return (
     <>
       <PortalHeader
-        eyebrow="QUIZ EDITOR"
         title={quiz.title}
         desc={`${quiz.course?.title} › ${quiz.lessonTitle} · ${quiz.durationMinutes} phút · tối đa ${quiz.maxAttempts} lần · điểm đạt ${formatScore(quiz.passScore)}/10 · ${quiz.showAnswersAfterSubmit ? 'cho xem đáp án' : 'ẩn đáp án'}`}
         actions={

@@ -39,7 +39,6 @@ export default function CourseApprovalQueuePage() {
   return (
     <>
       <PortalHeader
-        eyebrow="CONTENT REVIEW"
         title="Hàng đợi phê duyệt"
         desc="Kiểm tra nội dung khóa học trước khi xuất bản."
         actions={
@@ -80,7 +79,7 @@ export default function CourseApprovalQueuePage() {
             headers={['Khóa học', 'Danh mục', 'Giảng viên', 'Bài học', 'Cập nhật', 'Trạng thái', 'Thao tác']}
             rows={courses.map(course => [
               <b>{course.title}</b>,
-              course.category?.name || <span className="text-slate-400">Chưa chọn</span>,
+              course.category?.name || <span className="text-slate-500">Chưa chọn</span>,
               course.owner?.fullName || '—',
               course.totalLessons ?? 0,
               course.updatedAt ? new Date(course.updatedAt).toLocaleString('vi-VN') : '—',

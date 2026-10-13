@@ -32,7 +32,7 @@ const Pagination = ({ meta, onChange }) => (meta && meta.totalPages > 1 ? (
 
 const SearchBox = ({ value, onChange, placeholder }) => (
   <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 h-9 w-full md:w-64">
-    <Search size={15} className="text-slate-400" />
+    <Search size={15} className="text-slate-500" />
     <input value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} className="flex-1 min-w-0 text-sm outline-none" />
   </label>
 );
@@ -227,7 +227,7 @@ function ProgressTab({ cls }) {
                 <div className="table-progress"><Progress value={item.progressPercentage} /><small>{item.progressPercentage}%</small></div>,
                 `${item.completedLessons}/${item.totalLessons}`,
                 <Badge tone={tone}>{label}</Badge>,
-                item.lastActiveAt ? new Date(item.lastActiveAt).toLocaleString('vi-VN') : <span className="text-slate-400">Chưa học</span>
+                item.lastActiveAt ? new Date(item.lastActiveAt).toLocaleString('vi-VN') : <span className="text-slate-500">Chưa học</span>
               ];
             })}
           />
@@ -305,7 +305,6 @@ export default function ClassManagePage({ basePath, initialTab = 'members' }) {
   return (
     <>
       <PortalHeader
-        eyebrow="CLASS DETAIL"
         title={cls.name}
         desc={`${cls.course?.title || ''} · Giảng viên: ${cls.teacher?.fullName || '—'} · ${formatDate(cls.startDate)} – ${formatDate(cls.endDate)}`}
         actions={
