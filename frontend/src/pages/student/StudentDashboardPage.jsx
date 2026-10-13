@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, Trophy, CalendarDays, ClipboardCheck, PlayCircle } from 'lucide-react';
+import { BookOpen, Trophy, CalendarDays, ClipboardCheck, PlayCircle, Compass } from 'lucide-react';
 import { PortalHeader, Button, StatCard, Progress, Card, SectionTitle, Badge, LoadError } from '../../components/portal/PortalUI';
 import { useAuthStore } from '../../stores/useAuthStore';
 import { toast } from '../../components/common/Toast';
@@ -39,9 +39,14 @@ export default function StudentDashboardPage() {
       title={`Chào mừng trở lại, ${displayName} 👋`}
       desc="Tiếp tục lộ trình học tập và theo dõi tiến độ của bạn."
       actions={(
-        <Button disabled={!continueLearning} onClick={() => navigate(`/student/classes/${continueLearning.classId}`)}>
-          <PlayCircle size={17} /> Tiếp tục học
-        </Button>
+        <div className="flex items-center gap-2.5">
+          <Button variant="secondary" onClick={() => navigate('/courses')}>
+            <Compass size={16} /> Khám phá khóa học
+          </Button>
+          <Button disabled={!continueLearning} onClick={() => navigate(`/student/classes/${continueLearning.classId}`)}>
+            <PlayCircle size={17} /> Tiếp tục học
+          </Button>
+        </div>
       )}
     />
   );
