@@ -112,7 +112,6 @@ export default function CategoryManagementPage() {
   return (
     <>
       <PortalHeader
-        eyebrow="CATALOG"
         title="Quản lý danh mục"
         desc="Tạo, chỉnh sửa, ẩn/hiện và sắp xếp danh mục khóa học."
         actions={

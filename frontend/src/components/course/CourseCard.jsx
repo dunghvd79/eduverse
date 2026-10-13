@@ -37,12 +37,12 @@ export default function CourseCard({ course }) {
           loading="lazy"
         />
         {badge && (
-          <span className={`absolute top-2.5 left-2.5 text-[11px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${badgeClass}`}>
+          <span className={`absolute top-2.5 left-2.5 text-xs font-bold px-2 py-0.5 rounded uppercase tracking-wider ${badgeClass}`}>
             {badge}
           </span>
         )}
         {lessonCount && (
-          <span className="absolute bottom-2.5 right-2.5 bg-slate-900/80 text-white text-[11px] font-medium px-2 py-0.5 rounded backdrop-blur-xs">
+          <span className="absolute bottom-2.5 right-2.5 bg-slate-900/80 text-white text-xs font-medium px-2 py-0.5 rounded backdrop-blur-xs">
             {lessonCount}
           </span>
         )}
@@ -53,7 +53,7 @@ export default function CourseCard({ course }) {
         <div>
           <div className="flex items-center gap-1 text-amber-500 text-xs font-bold mb-1.5">
             <span>★ {rating}</span>
-            <span className="text-slate-400 font-normal">({reviewCount} đánh giá)</span>
+            <span className="text-slate-500 font-normal">({reviewCount} đánh giá)</span>
           </div>
 
           <Link to={`/courses/${slug || id}`} className="block">
@@ -72,7 +72,7 @@ export default function CourseCard({ course }) {
           <div>
             <div className="text-lg font-bold text-primary tabular-number">{price}</div>
             {originalPrice && (
-              <div className="text-xs text-slate-400 line-through tabular-number">{originalPrice}</div>
+              <div className="text-xs text-slate-500 line-through tabular-number">{originalPrice}</div>
             )}
           </div>
           <Link

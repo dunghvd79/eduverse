@@ -33,7 +33,6 @@ function QuizIntro({ quiz, onStart, starting, onBack, lastAttemptId, onViewResul
   return (
     <>
       <PortalHeader
-        eyebrow="BÀI KIỂM TRA"
         title={quiz.title}
         desc={`${quiz.course?.title} · ${quiz.className || ''}`}
         actions={<Button variant="secondary" onClick={onBack}><ArrowLeft size={16} /> Về lớp học</Button>}

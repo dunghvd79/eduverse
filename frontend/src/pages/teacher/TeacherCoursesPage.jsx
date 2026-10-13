@@ -10,8 +10,8 @@ const EMPTY_FORM = { title: '', description: '', price: '0', categoryId: '' };
 const isEditable = (course) => course.status === 'draft' || course.status === 'rejected';
 
 const STATUS_LABEL = {
-  published: ['Published', 'green'],
-  draft: ['Draft', 'gray'],
+  published: ['Đã xuất bản', 'green'],
+  draft: ['Nháp', 'gray'],
   pending: ['Chờ duyệt', 'orange'],
   rejected: ['Từ chối', 'red']
 };
@@ -138,7 +138,6 @@ export default function TeacherCoursesPage() {
   return (
     <>
       <PortalHeader
-        eyebrow="COURSE MANAGEMENT"
         title="Khóa học của tôi"
         desc="Tạo, chỉnh sửa đề cương và gửi khóa học tới bộ phận đào tạo duyệt."
         actions={
@@ -157,8 +156,8 @@ export default function TeacherCoursesPage() {
         <div className="tabs">
           {[
             ['', `Tất cả ${counts.all}`],
-            ['published', `Published ${counts.published}`],
-            ['draft', `Draft ${counts.draft}`],
+            ['published', `Đã xuất bản ${counts.published}`],
+            ['draft', `Nháp ${counts.draft}`],
             ['pending', `Chờ duyệt ${counts.pending}`],
             ['rejected', `Từ chối ${counts.rejected}`]
           ].map(([value, label]) => (
@@ -179,7 +178,7 @@ export default function TeacherCoursesPage() {
           <div className="p-8 text-center text-slate-500">Đang tải khóa học...</div>
         ) : visibleCourses.length === 0 ? (
           <div className="p-10 text-center">
-            <BookOpen className="mx-auto mb-3 text-slate-400" size={32} />
+            <BookOpen className="mx-auto mb-3 text-slate-500" size={32} />
             <p className="text-slate-500">Chưa có khóa học phù hợp.</p>
           </div>
         ) : (
@@ -194,7 +193,7 @@ export default function TeacherCoursesPage() {
                     <div className="text-xs text-red-600 mt-1">Lý do: {course.rejectionReason}</div>
                   )}
                 </div>,
-                course.category?.name || <span className="text-slate-400">Chưa chọn</span>,
+                course.category?.name || <span className="text-slate-500">Chưa chọn</span>,
                 course.totalLessons ?? 0,
                 course.updatedAt ? new Date(course.updatedAt).toLocaleDateString('vi-VN') : '—',
                 <Badge tone={tone}>{label}</Badge>,

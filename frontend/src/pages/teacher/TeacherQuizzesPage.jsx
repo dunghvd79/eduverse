@@ -35,7 +35,6 @@ export default function TeacherQuizzesPage() {
   return (
     <>
       <PortalHeader
-        eyebrow="QUIZ MANAGEMENT"
         title="Bài kiểm tra"
         desc="Soạn đề trắc nghiệm cho các bài học loại Quiz, sinh câu hỏi bằng AI và xem kết quả của học viên."
         actions={
@@ -50,7 +49,7 @@ export default function TeacherQuizzesPage() {
       <div className="filter-bar">
         <span className="text-sm text-slate-500">{quizzes.length} bài kiểm tra</span>
         <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 h-9 w-full md:w-64">
-          <Search size={15} className="text-slate-400" />
+          <Search size={15} className="text-slate-500" />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tìm theo tên đề, khóa học..." className="flex-1 min-w-0 text-sm outline-none" />
         </label>
       </div>
@@ -60,7 +59,7 @@ export default function TeacherQuizzesPage() {
           <div className="p-8 text-center text-slate-500">Đang tải bài kiểm tra...</div>
         ) : visible.length === 0 ? (
           <div className="p-10 text-center">
-            <ClipboardCheck className="mx-auto mb-3 text-slate-400" size={32} />
+            <ClipboardCheck className="mx-auto mb-3 text-slate-500" size={32} />
             <p className="text-slate-500">{quizzes.length ? 'Không có bài kiểm tra phù hợp.' : 'Chưa có bài kiểm tra nào. Thêm bài học loại "Quiz" trong đề cương rồi bấm "Tạo bài kiểm tra".'}</p>
           </div>
         ) : (

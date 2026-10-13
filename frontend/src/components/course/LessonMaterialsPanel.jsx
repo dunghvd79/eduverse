@@ -140,7 +140,7 @@ export default function LessonMaterialsPanel({ lessonId, editable = false }) {
 
       {materials.map(material => (
         <div key={material.id} className="flex items-center gap-3 rounded-lg border border-slate-200 p-3">
-          <FileText size={18} className="flex-shrink-0 text-slate-400" />
+          <FileText size={18} className="flex-shrink-0 text-slate-500" />
 
           {editingId === material.id ? (
             <>

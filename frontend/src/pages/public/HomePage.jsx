@@ -268,7 +268,7 @@ export default function HomePage() {
                 <div className="inline-flex items-center justify-center px-3 py-1.5 rounded-xl bg-primary text-white font-black text-sm mb-3 group-hover:scale-105 transition-transform w-auto">
                   English
                 </div>
-                <span className="text-[11px] font-bold text-primary uppercase tracking-wider block">Ngoại ngữ</span>
+                <span className="text-xs font-bold text-primary uppercase tracking-wider block">Ngoại ngữ</span>
                 <h3 className="text-base font-bold text-slate-900 mt-1 mb-2 group-hover:text-primary transition-colors">
                   Tiếng Anh
                 </h3>
@@ -290,7 +290,7 @@ export default function HomePage() {
                 <div className="inline-flex items-center justify-center px-3 py-1.5 rounded-xl bg-sky-100 text-sky-600 font-black text-sm mb-3 group-hover:scale-105 transition-transform w-auto">
                   MATH
                 </div>
-                <span className="text-[11px] font-bold text-sky-600 uppercase tracking-wider block">Lớp 10 - 11 - 12</span>
+                <span className="text-xs font-bold text-sky-600 uppercase tracking-wider block">Lớp 10 - 11 - 12</span>
                 <h3 className="text-base font-bold text-slate-900 mt-1 mb-2 group-hover:text-primary transition-colors">
                   Toán học THPT
                 </h3>
@@ -312,7 +312,7 @@ export default function HomePage() {
                 <div className="inline-flex items-center justify-center px-3 py-1.5 rounded-xl bg-amber-100 text-amber-600 font-black text-sm mb-3 group-hover:scale-105 transition-transform w-auto">
                   LIT
                 </div>
-                <span className="text-[11px] font-bold text-amber-600 uppercase tracking-wider block">Kỹ năng &amp; Luận</span>
+                <span className="text-xs font-bold text-amber-600 uppercase tracking-wider block">Kỹ năng &amp; Luận</span>
                 <h3 className="text-base font-bold text-slate-900 mt-1 mb-2 group-hover:text-primary transition-colors">
                   Ngữ văn &amp; Đọc hiểu
                 </h3>
@@ -334,7 +334,7 @@ export default function HomePage() {
                 <div className="inline-flex items-center justify-center px-3 py-1.5 rounded-xl bg-emerald-100 text-emerald-600 font-black text-sm mb-3 group-hover:scale-105 transition-transform w-auto">
                   SCI
                 </div>
-                <span className="text-[11px] font-bold text-emerald-600 uppercase tracking-wider block">Lý - Hóa - Sinh</span>
+                <span className="text-xs font-bold text-emerald-600 uppercase tracking-wider block">Lý - Hóa - Sinh</span>
                 <h3 className="text-base font-bold text-slate-900 mt-1 mb-2 group-hover:text-primary transition-colors">
                   Khoa học Tự nhiên
                 </h3>
@@ -356,7 +356,7 @@ export default function HomePage() {
                 <div className="inline-flex items-center justify-center px-3 py-1.5 rounded-xl bg-blue-100 text-primary font-black text-sm mb-3 group-hover:scale-105 transition-transform w-auto">
                   HSA
                 </div>
-                <span className="text-[11px] font-bold text-primary uppercase tracking-wider block">HSA • APT • V-SAT</span>
+                <span className="text-xs font-bold text-primary uppercase tracking-wider block">HSA • APT • V-SAT</span>
                 <h3 className="text-base font-bold text-slate-900 mt-1 mb-2 group-hover:text-primary transition-colors">
                   Luyện thi ĐGNL
                 </h3>

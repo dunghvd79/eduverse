@@ -200,7 +200,6 @@ export default function CourseCurriculumBuilderPage() {
   return (
     <>
       <PortalHeader
-        eyebrow="CURRICULUM BUILDER"
         title={course?.title || 'Đề cương khóa học'}
         desc={`Trạng thái: ${STATUS_TEXT[course?.status] || course?.status || 'Bản nháp'} · ${course?.category?.name || 'Chưa chọn danh mục'} · ${chapters.length} chương`}
         actions={
@@ -253,7 +252,7 @@ export default function CourseCurriculumBuilderPage() {
           {chapters.map((chapter, index) => (
             <div className="chapter" key={chapter.id}>
               <div className="flex items-start gap-2">
-                <ChevronDown size={16} className="mt-1 text-slate-400" />
+                <ChevronDown size={16} className="mt-1 text-slate-500" />
                 <div className="min-w-0">
                   <b>{index + 1}. {chapter.title}</b>
                   <small>{(chapter.lessons || []).length} bài học</small>

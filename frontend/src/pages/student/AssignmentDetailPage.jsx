@@ -81,7 +81,6 @@ export default function AssignmentDetailPage() {
   return (
     <>
       <PortalHeader
-        eyebrow="ASSIGNMENT"
         title={assignment.title}
         desc={`${assignment.className} · ${assignment.lessonTitle}`}
         actions={<Button variant="secondary" onClick={() => navigate(`/student/classes/${classId}`)}><ArrowLeft size={16} /> Về lớp học</Button>}
