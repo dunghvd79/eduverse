@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
-import {NavLink, Navigate, Outlet, useLocation, useNavigate} from 'react-router-dom';
-import {BookOpen, LayoutDashboard, GraduationCap, Users, ClipboardCheck, FileText, BarChart3, Settings, ShieldCheck, FolderTree, Sparkles, Menu, X, Search, Bell, ChevronRight, LogOut, UserCircle, RefreshCw} from 'lucide-react';
+import {Link, NavLink, Navigate, Outlet, useLocation, useNavigate} from 'react-router-dom';
+import {BookOpen, LayoutDashboard, GraduationCap, Users, ClipboardCheck, FileText, BarChart3, Settings, ShieldCheck, FolderTree, Sparkles, Menu, X, Search, Bell, ChevronRight, LogOut, UserCircle, RefreshCw, Home, Compass} from 'lucide-react';
 import { useAuthStore } from '../../stores/useAuthStore';
 
 // Ánh xạ role trong DB sang tiền tố URL của portal
@@ -8,7 +8,7 @@ const PORTAL_BY_ROLE = { student: 'student', teacher: 'teacher', training_manage
 
 const roleConfig={
  student:{label:'Học viên',color:'blue',links:[
-  ['Tổng quan','/student/dashboard',LayoutDashboard],['Khóa học của tôi','/student/my-courses',BookOpen],['Bài kiểm tra','/student/quizzes',ClipboardCheck],['Bài tập','/student/assignments',FileText],['Điểm số','/student/grades',BarChart3],['Hồ sơ','/student/profile',UserCircle]
+  ['Trang chủ','/',Home],['Khám phá','/courses',Compass],['Tổng quan','/student/dashboard',LayoutDashboard],['Khóa học của tôi','/student/my-courses',BookOpen],['Bài kiểm tra','/student/quizzes',ClipboardCheck],['Bài tập','/student/assignments',FileText],['Điểm số','/student/grades',BarChart3],['Hồ sơ','/student/profile',UserCircle]
  ]},
  teacher:{label:'Giảng viên',links:[
   ['Tổng quan','/teacher/dashboard',LayoutDashboard],['Khóa học','/teacher/courses',BookOpen],['Lớp học','/teacher/classes',Users],['Bài kiểm tra','/teacher/quizzes',ClipboardCheck],['Tạo đề bằng AI','/teacher/quizzes/ai-generator',Sparkles],['Bài tập','/teacher/assignments',FileText],['Hồ sơ','/teacher/profile',UserCircle]
@@ -63,16 +63,16 @@ export function PortalLayout({role}) {
 
  return <div className="portal-shell">
   <aside className={`portal-sidebar ${open?'is-open':''}`}>
-   <div className="portal-brand"><div className="brand-mark">E</div><div><b>Edu<span>Verse</span></b><small>{cfg.label}</small></div><button className="mobile-close" onClick={()=>setOpen(false)}><X size={20}/></button></div>
+   <div className="portal-brand"><Link to="/" className="flex items-center gap-[11px] text-inherit no-underline flex-1 min-w-0 hover:opacity-90 transition-opacity" title="Về trang chủ EduVerse"><div className="brand-mark">E</div><div><b>Edu<span>Verse</span></b><small>{cfg.label}</small></div></Link><button className="mobile-close" onClick={()=>setOpen(false)}><X size={20}/></button></div>
    <nav className="portal-nav">
     <div className="nav-caption">KHÔNG GIAN {role==='student'?'HỌC TẬP':role==='teacher'?'GIẢNG DẠY':role==='manager'?'ĐÀO TẠO':'QUẢN TRỊ'}</div>
-    {cfg.links.map(([label,path,Icon])=><NavLink key={path} to={path} onClick={()=>setOpen(false)} className={({isActive})=>'portal-nav-link '+(isActive?'active':'')}><Icon size={18}/><span>{label}</span></NavLink>)}
+    {cfg.links.map(([label,path,Icon], idx)=>(<React.Fragment key={path}><NavLink to={path} end={path === '/'} onClick={()=>setOpen(false)} className={({isActive})=>'portal-nav-link '+(isActive?'active':'')}><Icon size={18}/><span>{label}</span></NavLink>{role === 'student' && idx === 1 && <div className="my-2 border-t border-slate-200" />}</React.Fragment>))}
    </nav>
    <div className="portal-sidebar-bottom"><div className="mini-user cursor-pointer transition-opacity hover:opacity-85" onClick={()=>nav(`/${role}/profile`)} title="Xem hồ sơ cá nhân"><div className="avatar overflow-hidden">{user?.avatarUrl ? <img src={user.avatarUrl} alt={displayName} className="w-full h-full object-cover" /> : initials}</div><div><b>{displayName}</b><small>{cfg.label}</small></div></div><button type="button" className="portal-logout bg-transparent border-0 cursor-pointer flex items-center gap-1.5" onClick={handleLogout}><LogOut size={17}/> Đăng xuất</button></div>
   </aside>
   {open&&<div className="sidebar-overlay" onClick={()=>setOpen(false)}/>}
   <section className="portal-main">
-   <header className="portal-topbar"><button className="mobile-menu" onClick={()=>setOpen(true)}><Menu/></button><div className="crumb"><span>EduVerse</span><ChevronRight size={15}/><b>{cfg.label}</b></div><div className="top-actions"><div className="search-mini"><Search size={17}/><input placeholder="Tìm kiếm..."/></div><button className="icon-btn"><Bell size={19}/><i/></button><div className="top-avatar cursor-pointer overflow-hidden transition-transform hover:scale-105" onClick={()=>nav(`/${role}/profile`)} title="Xem hồ sơ cá nhân">{user?.avatarUrl ? <img src={user.avatarUrl} alt={displayName} className="w-full h-full object-cover" /> : initials}</div></div></header>
+   <header className="portal-topbar"><button className="mobile-menu" onClick={()=>setOpen(true)}><Menu/></button><div className="crumb"><Link to="/" className="text-slate-500 hover:text-[#1168bd] no-underline transition-colors font-medium flex items-center gap-1" title="Về trang chủ EduVerse"><span>EduVerse</span></Link><ChevronRight size={15}/><b>{cfg.label}</b></div><div className="top-actions"><div className="search-mini"><Search size={17}/><input placeholder="Tìm kiếm..."/></div><button className="icon-btn"><Bell size={19}/><i/></button><div className="top-avatar cursor-pointer overflow-hidden transition-transform hover:scale-105" onClick={()=>nav(`/${role}/profile`)} title="Xem hồ sơ cá nhân">{user?.avatarUrl ? <img src={user.avatarUrl} alt={displayName} className="w-full h-full object-cover" /> : initials}</div></div></header>
    <main className="portal-content"><Outlet/></main>
   </section>
  </div>

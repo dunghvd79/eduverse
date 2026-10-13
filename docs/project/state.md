@@ -26,6 +26,13 @@
    - Thiết kế lại banner tìm kiếm Course Catalog gradient chuẩn nhận diện EduVerse.
    - Script seed 6 khóa học chuẩn thật vào Neon DB (`seedEduVerseCourses.js`).
    - Sửa `categoryService.js` bóc tách dữ liệu chuẩn giúp Quản lý đào tạo tải danh mục mượt mà.
+4. **Trải nghiệm Điều hướng Người dùng & Học viên chuẩn Enterprise:**
+   - **Đăng nhập phân luồng (`LoginPage.jsx`):** Học viên đăng nhập sẽ tự động chuyển về Trang chủ (`/`) hoặc trang đang xem trước đó (`referrer`), giảng viên/quản lý/admin giữ nguyên điều hướng thẳng vào Không gian làm việc.
+   - **Header Trang công khai tương tác (`Header.jsx`):** Khi đã đăng nhập, thay thế cặp nút Đăng nhập/Đăng ký bằng nút CTA nhanh ("Bàn học của tôi" cho Học viên / "Không gian làm việc" cho GV/Admin) kèm Dropdown Avatar đầy đủ thông tin tài khoản, phím tắt vào Portal và Đăng xuất.
+   - **Lối thoát & Khám phá trong Student Portal (`PortalUI.jsx` & `StudentDashboardPage.jsx`):**
+     - Logo EduVerse và Breadcrumb ở thanh Topbar dẫn về Trang chủ (`/`).
+     - Sidebar học viên bổ sung mục "Trang chủ" (`/`) và "Khám phá" (`/courses`) với đường kẻ phân tách tinh tế và thuộc tính `end` chống sáng nhầm link gốc.
+     - Dashboard học viên bổ sung nút phụ "Khám phá khóa học" (`/courses`) bên cạnh "Tiếp tục học".
 
 **Migration đã chạy trên Neon dev** (ai dùng DB riêng phải tự chạy trong `backend/`): `db:migrate:categories`, `db:migrate:classes`, `db:migrate:quizzes`, `db:migrate:assignments`. Sau khi pull nhớ `npm install` (thư viện mới: `@aws-sdk/*`, `archiver`, `exceljs`).
 
