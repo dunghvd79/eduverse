@@ -19,7 +19,31 @@
 }
 
 .hero-banner-bg {
-  background: radial-gradient(circle at 85% 30%, #fef3c7 0%, #f0fdf4 35%, #f8fafc 70%, #ffffff 100%);
+  background: radial-gradient(circle at 88% 18%, rgba(254, 240, 138, 0.4) 0%, rgba(219, 234, 254, 0) 45%),
+              linear-gradient(180deg, #dbeafe 0%, #eaf5fe 42%, #f5faff 78%, #ffffff 100%);
+}
+
+.nav-hero-blend {
+  background: radial-gradient(circle at 88% 100%, rgba(254, 240, 138, 0.35) 0%, rgba(219, 234, 254, 0) 45%),
+              linear-gradient(180deg, #cde6fe 0%, #dbeafe 100%);
+}
+
+@keyframes floatSlow {
+  0%, 100% { transform: translateY(0) translateX(0); }
+  50% { transform: translateY(-7px) translateX(4px); }
+}
+
+@keyframes floatGentle {
+  0%, 100% { transform: translateY(0) translateX(0); }
+  50% { transform: translateY(-9px) translateX(-5px); }
+}
+
+.animate-cloud-slow {
+  animation: floatSlow 8s ease-in-out infinite;
+}
+
+.animate-cloud-gentle {
+  animation: floatGentle 11s ease-in-out infinite;
 }
 
 /* Shimmer skeleton utility from Design System */

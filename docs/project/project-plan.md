@@ -75,7 +75,8 @@
 | 21/09/2026 | Khởi tạo dự án, chốt tech stack, tạo cấu trúc thư mục |
 | 24/09/2026 | Hoàn thành Use Cases, CSDL Schema 18 bảng, 6 Sequence Diagrams, trọn bộ 8/8 tài liệu API Specs (101 Endpoints) |
 | 26/09/2026 | Hoàn thành trọn vẹn 100% Phase 0 Thiết kế: Cập nhật Tech Stack (Express.js/Sequelize), Sửa C4 Level 2 Container Diagram, Hoàn thiện tài liệu UI (sitemap.md & wireframes.md 10 màn hình cốt lõi) |
+| 13/10/2026 | Hoàn thành Sprint 3–5 (Upload S3, Lớp học, Bài kiểm tra Gemini AI, Bài tập & Bảng điểm). Nâng cấp toàn diện Portal Giảng viên: Dashboard chỉ số KPI & Class Cards chuẩn Enterprise LMS, Quản lý Khóa học đa chế độ (Lưới 16:9 / Bảng dữ liệu) kèm bộ lọc tức thời; chuẩn hóa dữ liệu khóa học thật trên Database Neon.tech |
 
 ---
 
-_Cập nhật lần cuối: 26/09/2026_
+_Cập nhật lần cuối: 13/10/2026_
