@@ -11,7 +11,7 @@ const {
 
 // Ân hạn mạng khi nộp bài (api-quizzes.md mục 3: Server-side Time Authority)
 const GRACE_SECONDS = 30;
-const FINISHED = ['completed', 'timed_out'];
+export const FINISHED = ['completed', 'timed_out'];
 
 // ==========================================
 // HELPERS
@@ -20,7 +20,7 @@ const toNumber = (value) => (value === null || value === undefined ? null : Numb
 const round2 = (value) => Math.round(value * 100) / 100;
 
 const deadlineOf = (attempt, quiz) => new Date(new Date(attempt.started_at).getTime() + quiz.duration_minutes * 60 * 1000);
-const isExpired = (attempt, quiz, now = new Date()) =>
+export const isExpired = (attempt, quiz, now = new Date()) =>
   now.getTime() > deadlineOf(attempt, quiz).getTime() + GRACE_SECONDS * 1000;
 
 const isPassed = (attempt, quiz) =>
@@ -77,7 +77,7 @@ const resolveStudentClass = async (courseId, studentId, classId) => {
 /**
  * Lịch mở đề theo lớp. Lớp chưa có bản ghi class_quizzes = mở tự do (không giới hạn giờ).
  */
-const availabilityOf = (cls, classQuiz, now = new Date()) => {
+export const availabilityOf = (cls, classQuiz, now = new Date()) => {
   const schedule = {
     openTime: classQuiz?.open_time || null,
     closeTime: classQuiz?.close_time || null,

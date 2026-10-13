@@ -273,7 +273,7 @@ const findClassAssignmentContext = async (cls, assignmentId) => {
  * Trạng thái cửa sổ nộp bài:
  * not_scheduled (chưa giao) | not_open (chưa mở) | on_time | late (được nộp muộn) | closed
  */
-const windowOf = (classAssignment, now = new Date()) => {
+export const windowOf = (classAssignment, now = new Date()) => {
   if (!classAssignment) return 'not_scheduled';
   const open = classAssignment.open_time ? new Date(classAssignment.open_time) : null;
   const deadline = new Date(classAssignment.deadline);
@@ -335,7 +335,7 @@ const toNumber = (value) => (value === null || value === undefined ? null : Numb
 /**
  * Bài cần chấm: chưa có điểm, hoặc nộp lại sau lần chấm gần nhất
  */
-const needsGrading = (submission) =>
+export const needsGrading = (submission) =>
   ['submitted', 'late_submitted'].includes(submission.status)
   && (submission.grade === null || (submission.graded_at && new Date(submission.submitted_at) > new Date(submission.graded_at)));
 
