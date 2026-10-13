@@ -106,7 +106,7 @@
 - **`activeStudents`:** số học viên khác nhau đang học (ghi danh `active`) trong các lớp `active`.
 - **Bài chờ chấm:** cùng quy tắc với trang chấm bài: `status ∈ {submitted, late_submitted}` và (chưa có điểm **hoặc** nộp lại sau lần chấm gần nhất), chỉ học viên còn trong lớp. Tính trên **mọi** lớp phụ trách (kể cả lớp đã đóng, vì vẫn chấm được). `needsGrading` gom theo bài tập của từng lớp, bài nộp chờ lâu nhất lên đầu, tối đa 8 nhóm; `submissionsNeedGrading` là tổng.
 - **`rejectedCourses`:** tối đa 5 khóa bị từ chối gần nhất, kèm lý do.
-- **Bảng lớp:** lớp `active` lên trước, tối đa 10 lớp (`classes.total` là tổng). `averageProgress`, `averageFinalScore` lấy từ bảng điểm lớp; `null` khi lớp chưa có học viên. Không trả tên/email học viên.
+- **Bảng lớp:** lớp `active` lên trước, tối đa 10 lớp (`classes.total` là tổng). `averageProgress`, `averageFinalScore` và `distribution` (số học viên theo xếp loại của `grading-policy.md`) lấy từ bảng điểm lớp; hai giá trị trung bình là `null` khi lớp chưa có học viên. Không trả tên/email học viên.
 
 #### Response Thành Công (`200 OK`) — phần `data`:
 ```json
@@ -145,7 +145,8 @@
         "course": { "id": "37f0c425-...", "title": "Lập trình Ứng dụng Web..." },
         "studentCount": 3,
         "averageProgress": 33.3,
-        "averageFinalScore": 5.12
+        "averageFinalScore": 5.12,
+        "distribution": { "Giỏi": 0, "Khá": 1, "Trung bình": 1, "Chưa đạt": 1 }
       }
     ]
   },

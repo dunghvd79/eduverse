@@ -386,7 +386,9 @@ export const getTeacherDashboard = async (user) => {
           course: { id: cls.course.id, title: cls.course.title },
           studentCount: studentCountOf[cls.id] || 0,
           averageProgress: progresses.length ? round1(mean(progresses)) : null,
-          averageFinalScore: book?.summary.averageFinalScore ?? null
+          averageFinalScore: book?.summary.averageFinalScore ?? null,
+          // Số học viên theo xếp loại (Giỏi/Khá/Trung bình/Chưa đạt), null khi không tính được bảng điểm
+          distribution: book?.summary.distribution ?? null
         };
       })
     },
