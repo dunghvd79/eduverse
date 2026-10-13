@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {NavLink, Navigate, Outlet, useLocation, useNavigate} from 'react-router-dom';
-import {BookOpen, LayoutDashboard, GraduationCap, Users, ClipboardCheck, FileText, BarChart3, Settings, ShieldCheck, FolderTree, Sparkles, Menu, X, Search, Bell, ChevronRight, LogOut, UserCircle} from 'lucide-react';
+import {BookOpen, LayoutDashboard, GraduationCap, Users, ClipboardCheck, FileText, BarChart3, Settings, ShieldCheck, FolderTree, Sparkles, Menu, X, Search, Bell, ChevronRight, LogOut, UserCircle, RefreshCw} from 'lucide-react';
 import { useAuthStore } from '../../stores/useAuthStore';
 
 // Ánh xạ role trong DB sang tiền tố URL của portal
@@ -86,3 +86,4 @@ export const SectionTitle=({title,action})=><div className="section-title"><h2>{
 export const Table=({headers,rows})=><div className="table-wrap"><table><thead><tr>{headers.map(h=><th key={h}>{h}</th>)}</tr></thead><tbody>{rows.map((r,i)=><tr key={i}>{r.map((c,j)=><td key={j}>{c}</td>)}</tr>)}</tbody></table></div>;
 export const Badge=({children,tone='blue'})=><span className={`badge ${tone}`}>{children}</span>;
 export const Field=({label,children,placeholder,...p})=><label className="field"><span>{label}</span>{children||<input placeholder={placeholder} {...p}/>}</label>;
+export const LoadError=({message,onRetry})=><Card><div className="p-8 text-center text-slate-500"><p className="mb-4">{message}</p><Button variant="secondary" onClick={onRetry}><RefreshCw size={15}/> Thử lại</Button></div></Card>;
