@@ -1,38 +1,38 @@
 # 🧭 Trạng Thái Tiến Độ Dự Án (Project State)
 
-> **Cập nhật lần cuối:** 13/10/2026  
+> **Cập nhật lần cuối:** 14/10/2026  
 > **Người cập nhật:** dunghvd79, Hoàng Ngọc Sơn & AI Assistant  
-> **Giai đoạn hiện tại:** Phase 1 — ✅ Hoàn thành Sprint 5 (Bài kiểm tra + Gemini AI, Bài tập, Bảng điểm & xuất Excel). Tiếp theo: dọn việc tồn, dashboard số liệu thật, chuẩn bị demo
+> **Giai đoạn hiện tại:** Phase 1 — ✅ Hoàn thành Sprint 6 (Bài tập & Bảng điểm), Tính năng Vòng đời khóa học (Unpublish to Draft), Custom Confirm Modal toàn hệ thống & Bộ điều phối Local Storage Fallback. Đã push remote `origin/feature-dung`.
 
 ---
 
-## 0. Chốt Phiên Làm Việc Gần Nhất (13/10/2026 - Chiều/Tối) — đọc mục này trước
+## 0. Chốt Phiên Làm Việc Gần Nhất (14/10/2026) — đọc mục này trước
 
-**Tình trạng Git:** nhánh `feature-dung`, chuẩn bị commit và push các cải tiến mới nhất về Portal Giảng viên và Trang chủ.
+**Tình trạng Git:** nhánh `feature-dung`, đã commit và push thành công lên GitHub remote (`origin/feature-dung`) với commit `5de9354` & `e4b60a8`.
 
-**Đã xong trong phiên 13/10/2026 (Chiều & Tối):**
-1. **Thiết kế lại Toàn diện Dashboard Giảng viên (`/teacher/dashboard`):**
-   - 4 thẻ KPI chỉ số cao cấp (Học viên đang học, Lớp đang phụ trách, Bài nộp chờ chấm, Khóa học đã tạo) chuẩn Enterprise SaaS, có vạch màu định danh và live status dot.
-   - Thẻ lớp học thế hệ mới (Modern Class Cards): tiến độ học tập, phổ điểm xếp loại (Giỏi/Khá/TB/Chưa đạt), hàng phím tắt 1-chạm (Sổ điểm, Bài tập, Học viên).
-   - Đồng bộ deep-linking tab URL (`?tab=gradebook`, `?tab=assignments`, `?tab=members`) trên `ClassManagePage.jsx`.
-   - Action Center "Việc cần làm hôm nay" và Teaching Toolkit (Tạo đề AI, Ngân hàng đề, Quản lý bài tập).
-   - Sửa component `Button` trong `PortalUI.jsx` để hợp nhất an toàn `className` với `.ui-btn`, sửa nút Tạo đề AI.
-2. **Thiết kế lại Toàn diện Trang Khóa học của tôi (`/teacher/courses`):**
-   - Dải 4 thẻ thống kê mini tương tác (Đã xuất bản, Chờ duyệt, Bản nháp, Bị từ chối) click-to-filter.
-   - Thanh điều khiển tích hợp (Unified Toolbar): ô tìm kiếm tức thời, dropdown lọc Danh mục, dropdown sắp xếp và bộ chuyển đổi chế độ xem Lưới (Grid 16:9) / Danh sách (List Table).
-   - Phân cấp nút hành động: Nút chính "Soạn giáo trình" / "Xem đề cương", nút "Gửi duyệt", và menu 3 chấm bảo vệ tác vụ nhạy cảm (Sửa thông tin, Xóa).
-3. **Trang chủ & Khóa học & Danh mục:**
-   - Căn chỉnh Section 2 & Section 3 trên `HomePage.jsx`: tiêu đề 1 dòng chống rớt chữ, bỏ huy hiệu trang trí rườm rà, căn giữa bố cục.
-   - Thiết kế lại banner tìm kiếm Course Catalog gradient chuẩn nhận diện EduVerse.
-   - Script seed 6 khóa học chuẩn thật vào Neon DB (`seedEduVerseCourses.js`).
-   - Sửa `categoryService.js` bóc tách dữ liệu chuẩn giúp Quản lý đào tạo tải danh mục mượt mà.
-4. **Trải nghiệm Điều hướng Người dùng & Học viên chuẩn Enterprise:**
-   - **Đăng nhập phân luồng (`LoginPage.jsx`):** Học viên đăng nhập sẽ tự động chuyển về Trang chủ (`/`) hoặc trang đang xem trước đó (`referrer`), giảng viên/quản lý/admin giữ nguyên điều hướng thẳng vào Không gian làm việc.
-   - **Header Trang công khai tương tác (`Header.jsx`):** Khi đã đăng nhập, thay thế cặp nút Đăng nhập/Đăng ký bằng nút CTA nhanh ("Bàn học của tôi" cho Học viên / "Không gian làm việc" cho GV/Admin) kèm Dropdown Avatar đầy đủ thông tin tài khoản, phím tắt vào Portal và Đăng xuất.
-   - **Lối thoát & Khám phá trong Student Portal (`PortalUI.jsx` & `StudentDashboardPage.jsx`):**
-     - Logo EduVerse và Breadcrumb ở thanh Topbar dẫn về Trang chủ (`/`).
-     - Sidebar học viên bổ sung mục "Trang chủ" (`/`) và "Khám phá" (`/courses`) với đường kẻ phân tách tinh tế và thuộc tính `end` chống sáng nhầm link gốc.
-     - Dashboard học viên bổ sung nút phụ "Khám phá khóa học" (`/courses`) bên cạnh "Tiếp tục học".
+**Đã xong trong phiên 14/10/2026:**
+1. **Nâng cấp Giao diện Trang chủ & Chân trang (`HomePage.jsx`, `Footer.jsx`):**
+   - Section 4 thẻ công cụ: Thay thế toàn bộ thuật ngữ IT ngoại lai bằng tiếng Việt sư phạm chuẩn chỉ, căn chỉnh icon vector SVG và tiêu đề `h3` ngang hàng trên 1 dòng.
+   - Footer: Đổi màu nền sang dải gradient xanh EduVerse (`#0b4887` - `#0e5aa5` - `#093a6e`), huy hiệu logo nền trắng nổi bật, tăng tương phản các liên kết.
+2. **Cải tiến Quản lý Bài kiểm tra Giảng viên (`TeacherQuizzesPage.jsx`, `quizService.js`, `quizValidation.js`):**
+   - Backend: Bổ sung liên kết `Chapter` (`title`, `order_index`) vào danh sách Quiz. Hỗ trợ lọc theo `isPublished`.
+   - Frontend: Bổ sung bộ lọc Khóa học và Trạng thái xuất bản; hiển thị Breadcrumb Khóa học & Chương mục cho từng bài quiz trong bảng.
+3. **Vòng đời Khóa học & Quyền biên tập (Unpublish / Revert to Draft):**
+   - Mở quyền xóa mềm cho giảng viên với các khóa học ở trạng thái `draft`, `pending`, `rejected` (chỉ khóa khi `published`).
+   - Sửa lỗi ActionMenu 3-dots bị che/khuất ngoài khung thẻ khóa học (`overflow-hidden` -> hiển thị popup hướng lên `bottom-full`).
+   - Bổ sung API `PATCH /api/v1/courses/:id/unpublish` cho phép Giảng viên chuyển khóa học `published` hoặc `pending` về `draft` để chỉnh sửa học liệu, video, quiz.
+   - Bổ sung nút tác vụ "Tạm dừng để sửa" / "Rút yêu cầu duyệt" trên Card, Table và trang Soạn đề cương (`CourseCurriculumBuilderPage.jsx`).
+4. **Hệ thống Custom Confirm Modal cao cấp ([`ConfirmModal.jsx`](file:///e:/2026%20Year/K%C3%AC_1_N%C4%83m_4/Do_An_Lien_Nganh/eduverse/frontend/src/components/common/ConfirmModal.jsx)):**
+   - Xóa bỏ triệt để 100% các hộp thoại `window.confirm` xấu xí mặc định của trình duyệt trên toàn bộ ứng dụng.
+   - Xây dựng modal Promise-based với giao diện đẳng cấp, backdrop-blur, icon badge phân loại (`warning`, `danger`, `info`), hỗ trợ phím tắt `Enter`/`Esc`.
+   - Áp dụng trên toàn hệ thống: Xóa khóa học, xóa bài tập, xóa câu hỏi quiz, nộp bài kiểm tra, nộp lại bài tập, xóa danh mục, xóa học viên khỏi lớp.
+5. **Bộ điều phối lưu trữ tệp (Local Storage Fallback - [`storageService.js`](file:///e:/2026%20Year/K%C3%AC_1_N%C4%83m_4/Do_An_Lien_Nganh/eduverse/backend/src/services/storageService.js)):**
+   - Khắc phục triệt để lỗi 503 ("Chức năng lưu trữ tệp chưa được cấu hình thiếu AWS_REGION hoặc S3_BUCKET").
+   - Kiến trúc Hybrid thông minh: Tự động lưu trữ cục bộ vào `backend/uploads/` khi chạy local, và tự động dùng S3 khi có biến môi trường AWS.
+   - Hỗ trợ tải lên PUT stream trực tiếp, kiểm tra metadata, tải về bảo mật bằng chữ ký HMAC và phục vụ ảnh tĩnh qua `/uploads`.
+   - Cập nhật `.gitignore` bỏ qua `uploads/` và `backend/uploads/`.
+
+
 
 **Migration đã chạy trên Neon dev** (ai dùng DB riêng phải tự chạy trong `backend/`): `db:migrate:categories`, `db:migrate:classes`, `db:migrate:quizzes`, `db:migrate:assignments`. Sau khi pull nhớ `npm install` (thư viện mới: `@aws-sdk/*`, `archiver`, `exceljs`).
 

@@ -35,12 +35,12 @@
 
 ### Phase 1: MVP Development (Tuần 3–7)
 
-- [ ] Sprint 1: Khởi tạo Project & Cài đặt môi trường (Express.js Backend + React Vite Frontend + Docker)
-- [ ] Sprint 2: Module Auth + Quản lý Người dùng (Users & RBAC)
-- [ ] Sprint 3: Module Khóa học + Chương học + Bài học (Courses, Chapters, Lessons)
-- [ ] Sprint 4: Module Lớp học + Ghi danh + Upload tài liệu đa phương tiện (Classes, Enrollments, Uploads)
-- [ ] Sprint 5: Module Bài kiểm tra trắc nghiệm + Gemini AI sinh đề thi (Quizzes, Gemini AI)
-- [ ] Sprint 6: Module Bài tập nộp file + Chấm điểm + Thống kê tiến độ (Assignments, Grading, Progress)
+- [x] Sprint 1: Khởi tạo Project & Cài đặt môi trường (Express.js Backend + React Vite Frontend + Docker)
+- [x] Sprint 2: Module Auth + Quản lý Người dùng (Users & RBAC)
+- [x] Sprint 3: Module Khóa học + Chương học + Bài học (Courses, Chapters, Lessons)
+- [x] Sprint 4: Module Lớp học + Ghi danh + Upload tài liệu đa phương tiện (Classes, Enrollments, Uploads)
+- [x] Sprint 5: Module Bài kiểm tra trắc nghiệm + Gemini AI sinh đề thi (Quizzes, Gemini AI)
+- [x] Sprint 6: Module Bài tập nộp file + Chấm điểm + Thống kê tiến độ (Assignments, Grading, Progress)
 
 ### Phase 2: Tính năng bổ sung (Tuần 8 — Nâng cao)
 
@@ -76,7 +76,9 @@
 | 24/09/2026 | Hoàn thành Use Cases, CSDL Schema 18 bảng, 6 Sequence Diagrams, trọn bộ 8/8 tài liệu API Specs (101 Endpoints) |
 | 26/09/2026 | Hoàn thành trọn vẹn 100% Phase 0 Thiết kế: Cập nhật Tech Stack (Express.js/Sequelize), Sửa C4 Level 2 Container Diagram, Hoàn thiện tài liệu UI (sitemap.md & wireframes.md 10 màn hình cốt lõi) |
 | 13/10/2026 | Hoàn thành Sprint 3–5 (Upload S3, Lớp học, Bài kiểm tra Gemini AI, Bài tập & Bảng điểm). Nâng cấp toàn diện Portal Giảng viên: Dashboard chỉ số KPI & Class Cards chuẩn Enterprise LMS, Quản lý Khóa học đa chế độ (Lưới 16:9 / Bảng dữ liệu) kèm bộ lọc tức thời; chuẩn hóa dữ liệu khóa học thật trên Database Neon.tech |
+| 14/10/2026 | Hoàn thành Vòng đời khóa học (Unpublish to Draft), hệ thống Custom Confirm Modal toàn ứng dụng, Bộ điều phối Local Storage Fallback tự động khi chưa có AWS S3, cải tiến danh sách Quiz và chuẩn hóa giao diện Trang chủ & Footer |
 
 ---
 
-_Cập nhật lần cuối: 13/10/2026_
+_Cập nhật lần cuối: 14/10/2026_
+
