@@ -7,7 +7,6 @@ import heroStudentCutout from '../../assets/hero_student_cutout.png';
 export default function HomePage() {
   const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState('all');
-  const [selectedExamTab, setSelectedExamTab] = useState('all');
   // Advisory Form State
   const [advisoryForm, setAdvisoryForm] = useState({
     name: '',
@@ -178,110 +177,6 @@ export default function HomePage() {
     ? courses
     : courses.filter((c) => c.category === selectedCategory);
 
-  // Thư viện đề thi online thực chiến (Chuẩn phong cách Study4 Test Grid)
-  const examTabs = [
-    { id: 'all', label: 'Tất cả đề thi' },
-    { id: 'ielts', label: 'IELTS Academic' },
-    { id: 'toeic', label: 'TOEIC ETS' },
-    { id: 'thpt', label: 'Toán & THPT Quốc Gia' },
-    { id: 'dgnl', label: 'Đánh giá Năng lực (HSA/APT)' },
-  ];
-
-  const onlineExams = [
-    {
-      id: 1,
-      title: 'IELTS Collection 1 Listening Test 1',
-      duration: '40 phút',
-      attempts: '341,172',
-      comments: '561',
-      parts: '4 phần thi',
-      questions: '40 câu hỏi',
-      tags: ['IELTS Academic', 'Listening'],
-      category: 'ielts',
-    },
-    {
-      id: 2,
-      title: 'IELTS Collection 1 Reading Test 1',
-      duration: '60 phút',
-      attempts: '235,398',
-      comments: '495',
-      parts: '3 phần thi',
-      questions: '40 câu hỏi',
-      tags: ['IELTS Academic', 'Reading'],
-      category: 'ielts',
-    },
-    {
-      id: 3,
-      title: 'Đề thi thử Tốt nghiệp THPT 2026 - Môn Toán (Đề số 01)',
-      duration: '90 phút',
-      attempts: '185,420',
-      comments: '342',
-      parts: '3 dạng câu hỏi',
-      questions: '50 câu hỏi',
-      tags: ['Toán 12', 'Ma trận mới 2026'],
-      category: 'thpt',
-    },
-    {
-      id: 4,
-      title: 'Đề Luyện thi Đánh giá Năng lực HSA ĐHQG Hà Nội - Đề chuẩn',
-      duration: '150 phút',
-      attempts: '142,650',
-      comments: '298',
-      parts: '3 phần thi',
-      questions: '150 câu hỏi',
-      tags: ['ĐGNL ĐHQGHN', 'HSA Chuẩn'],
-      category: 'dgnl',
-    },
-    {
-      id: 5,
-      title: 'TOEIC Practice Test 2026 - Listening Test 01',
-      duration: '45 phút',
-      attempts: '128,940',
-      comments: '210',
-      parts: '4 phần thi',
-      questions: '100 câu hỏi',
-      tags: ['TOEIC ETS', 'Listening'],
-      category: 'toeic',
-    },
-    {
-      id: 6,
-      title: 'TOEIC Practice Test 2026 - Reading Test 01',
-      duration: '75 phút',
-      attempts: '115,300',
-      comments: '184',
-      parts: '3 phần thi',
-      questions: '100 câu hỏi',
-      tags: ['TOEIC ETS', 'Reading'],
-      category: 'toeic',
-    },
-    {
-      id: 7,
-      title: 'Đề thi thử THPT Quốc Gia môn Ngữ văn 2026 - Đọc hiểu & Luận',
-      duration: '120 phút',
-      attempts: '94,820',
-      comments: '165',
-      parts: '2 phần thi',
-      questions: 'Đọc hiểu & Viết bài',
-      tags: ['Ngữ văn 12', 'Nghị luận Xã hội'],
-      category: 'thpt',
-    },
-    {
-      id: 8,
-      title: 'Đề Luyện thi ĐGNL ĐHQG-HCM (APT) - Tư duy Logic & KHTN',
-      duration: '150 phút',
-      attempts: '89,410',
-      comments: '152',
-      parts: '3 phần thi',
-      questions: '120 câu hỏi',
-      tags: ['ĐGNL TP.HCM', 'Tư duy định lượng'],
-      category: 'dgnl',
-    },
-  ];
-
-  const filteredExams = selectedExamTab === 'all'
-    ? onlineExams
-    : onlineExams.filter(e => e.category === selectedExamTab);
-
   return (
     <div className="space-y-0 text-slate-800">
       {/* 🚀 1. HERO SECTION (Tương tự banner chính Study4, tỷ lệ vừa vặn) */}
@@ -382,27 +277,27 @@ export default function HomePage() {
               {/* Call to Actions - Thiết kế chuẩn EdTech Cao Cấp */}
               <div className="pt-3 sm:pt-4 space-y-3">
                 <div className="flex flex-wrap items-center gap-3.5">
-                  <a
-                    href="#online-tests"
+                  <Link
+                    to="/courses"
                     className="inline-flex items-center justify-center gap-2.5 px-6 sm:px-7 py-3 sm:py-3.5 bg-gradient-to-r from-[#1168bd] to-[#0c59a4] hover:from-[#0d5cb6] hover:to-[#0a4d8c] text-white text-sm sm:text-[15px] font-bold rounded-xl shadow-md shadow-blue-600/25 hover:shadow-lg hover:shadow-blue-600/35 hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] transition-all duration-200 group"
                   >
-                    <span>Luyện đề online ngay</span>
+                    <span>Khám phá khóa học ngay</span>
                     <span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center group-hover:scale-110 transition-transform">
                       <svg className="w-3 h-3 text-white fill-current group-hover:translate-x-0.5 transition-transform" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M10.293 3.293a1 1 0 011.414 0l6 6a1 1 0 010 1.414l-6 6a1 1 0 01-1.414-1.414L14.586 11H3a1 1 0 110-2h11.586l-4.293-4.293a1 1 0 010-1.414z" clipRule="evenodd" />
                       </svg>
                     </span>
-                  </a>
+                  </Link>
 
-                  <Link
-                    to="/courses"
+                  <a
+                    href="#categories"
                     className="inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-3 sm:py-3.5 bg-white hover:bg-slate-50 border border-slate-300 hover:border-primary text-slate-700 hover:text-primary text-sm sm:text-[15px] font-semibold rounded-xl shadow-2xs hover:shadow-xs hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98] transition-all duration-200 group"
                   >
-                    <span>Xem chương trình học</span>
-                    <svg className="w-4 h-4 text-slate-400 group-hover:text-primary group-hover:translate-x-0.5 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path d="M9 5l7 7-7 7" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" />
+                    <span>Xem danh mục ngành học</span>
+                    <svg className="w-4 h-4 text-slate-400 group-hover:text-primary group-hover:translate-y-0.5 transition-all" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path d="M19 9l-7 7-7-7" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.2" />
                     </svg>
-                  </Link>
+                  </a>
                 </div>
               </div>
             </div>
@@ -933,133 +828,15 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 📝 4. THƯ VIỆN ĐỀ THI ONLINE THỰC CHIẾN (Tính năng cốt lõi Study4) */}
-      <section className="py-12 bg-[#fafbfc] border-b border-slate-200" id="online-tests">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex flex-col sm:flex-row items-start sm:items-end justify-between mb-6 gap-3">
-            <div>
-              <div className="text-xs font-bold text-primary uppercase tracking-wider mb-1">
-                Phòng thi thực chiến 24/7
-              </div>
-              <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900">
-                Đề thi mới nhất &amp; Luyện thi Online
-              </h2>
-              <p className="text-slate-500 text-xs sm:text-sm mt-1">
-                Làm bài thi online bấm giờ chuẩn format phòng thi thật, chấm điểm tức thì kèm giải thích chi tiết từng câu.
-              </p>
-            </div>
-          </div>
 
-          {/* Tabs bộ lọc đề thi */}
-          <div className="flex items-center justify-start gap-2 overflow-x-auto pb-3 mb-6 no-scrollbar">
-            {examTabs.map((tab) => {
-              const isSelected = selectedExamTab === tab.id;
-              return (
-                <button
-                  key={tab.id}
-                  onClick={() => setSelectedExamTab(tab.id)}
-                  className={`px-4 py-1.5 text-xs sm:text-sm font-semibold rounded-full transition-all whitespace-nowrap cursor-pointer ${
-                    isSelected
-                      ? 'bg-primary text-white shadow-xs'
-                      : 'bg-white border border-slate-200 hover:bg-slate-100 text-slate-700'
-                  }`}
-                >
-                  {tab.label}
-                </button>
-              );
-            })}
-          </div>
 
-          {/* Test Item Grid (Style Study4 testitem-wrapper gray-bg) */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {filteredExams.map((test) => (
-              <div
-                key={test.id}
-                className="bg-white border border-slate-200 hover:border-primary rounded-xl p-4 shadow-2xs hover:shadow-md transition-all flex flex-col justify-between group"
-              >
-                <div>
-                  <h3 className="font-bold text-sm text-slate-900 group-hover:text-primary transition-colors line-clamp-2 leading-snug mb-2.5">
-                    {test.title}
-                  </h3>
-
-                  {/* Thông số đề thi: Thời gian, số lượt thi, số comment */}
-                  <div className="space-y-1.5 text-xs text-slate-500">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="inline-flex items-center gap-1 font-medium text-slate-700">
-                        <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <circle cx="12" cy="12" r="9" strokeWidth="2" />
-                          <path d="M12 7v5l3 3" strokeWidth="2" strokeLinecap="round" />
-                        </svg>
-                        {test.duration}
-                      </span>
-                      <span>•</span>
-                      <span className="inline-flex items-center gap-1">
-                        <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                        {test.attempts}
-                      </span>
-                      <span>•</span>
-                      <span className="inline-flex items-center gap-1">
-                        <svg className="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                        </svg>
-                        {test.comments}
-                      </span>
-                    </div>
-
-                    <div className="text-[11px] text-slate-500 font-medium">
-                      {test.parts} | {test.questions}
-                    </div>
-                  </div>
-
-                  {/* Tags môn thi */}
-                  <div className="flex flex-wrap gap-1.5 mt-3">
-                    {test.tags.map((tag, i) => (
-                      <span
-                        key={i}
-                        className="text-[10px] font-semibold px-2 py-0.5 rounded bg-slate-100 text-slate-600"
-                      >
-                        {tag}
-                      </span>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Nút hành động */}
-                <div className="pt-3 mt-4 border-t border-slate-100">
-                  <Link
-                    to={`/courses?exam=${test.id}`}
-                    className="w-full py-1.5 bg-white group-hover:bg-primary border border-slate-300 group-hover:border-primary text-slate-700 group-hover:text-white rounded-lg text-xs font-semibold text-center block transition-colors shadow-2xs"
-                  >
-                    Vào thi ngay
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </div>
-
-          <div className="text-center mt-8">
-            <Link
-              to="/courses?type=exam"
-              className="inline-flex items-center justify-center px-6 py-2.5 bg-primary hover:bg-primary-hover text-white text-xs sm:text-sm font-semibold rounded-lg shadow-xs hover:shadow transition-all"
-            >
-              Khám phá toàn bộ 3,000+ đề thi online →
-            </Link>
-          </div>
-        </div>
-      </section>
-
-      {/* 📬 5. FORM TƯ VẤN LỘ TRÌNH HỌC (Chuẩn khối sky-bg của Study4) */}
+      {/* 📬 4. FORM TƯ VẤN LỘ TRÌNH HỌC (Chuẩn khối sky-bg của Study4) */}
       <section className="py-12 bg-[#f0f7ff] border-b border-blue-100" id="consultation">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             {/* Cột trái: Giới thiệu công nghệ đào tạo (chuẩn Study4 text) */}
-            <div className="lg:col-span-7 space-y-3.5 text-slate-700 text-xs sm:text-sm leading-relaxed">
-              <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-100 text-primary font-bold text-xs uppercase tracking-wider">
-                Định vị công nghệ giáo dục
-              </div>
-              <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900 leading-snug">
+            <div className="lg:col-span-8 xl:col-span-7 space-y-4 text-slate-700 text-xs sm:text-sm leading-relaxed">
+              <h2 className="text-xl sm:text-2xl lg:text-[22px] xl:text-2xl font-extrabold text-slate-900 tracking-tight leading-snug whitespace-normal sm:whitespace-nowrap">
                 Lộ trình học cá nhân hóa với công nghệ khảo thí thông minh
               </h2>
               <p>
@@ -1068,28 +845,28 @@ export default function HomePage() {
               <p>
                 EduVerse áp dụng những công nghệ tối ưu vào học tập như <strong className="text-slate-900 font-semibold">Spaced-Repetition</strong> để ôn tập flashcards từ vựng và công thức, <strong className="text-slate-900 font-semibold">Trợ lý AI</strong> để chấm chữa phát âm, sửa bài thi nói/viết và chỉ rõ lỗ hổng kiến thức từng chuyên đề. Toàn bộ tiến độ luyện thi được thống kê chi tiết theo ngày để dễ dàng bứt phá điểm số.
               </p>
-              <div className="pt-2 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-semibold text-slate-800">
+              <div className="pt-2 grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs sm:text-sm font-medium text-slate-800">
                 <div className="flex items-center gap-2">
-                  <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold">✓</span>
+                  <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-xs shrink-0">✓</span>
                   <span>Học thử và làm bài test miễn phí</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold">✓</span>
+                  <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-xs shrink-0">✓</span>
                   <span>Ngân hàng giải thích chi tiết 100%</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold">✓</span>
+                  <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-xs shrink-0">✓</span>
                   <span>Trợ giảng hỗ trợ giải đáp 24/7</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold">✓</span>
+                  <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-xs shrink-0">✓</span>
                   <span>Cam kết chuẩn đầu ra rõ ràng</span>
                 </div>
               </div>
             </div>
 
             {/* Cột phải: Form tư vấn lộ trình học (Form trực tiếp Study4 style) */}
-            <div className="lg:col-span-5">
+            <div className="lg:col-span-4 xl:col-span-5">
               <div className="bg-white rounded-2xl p-6 sm:p-7 shadow-sm border border-blue-200/70">
                 <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-1">
                   Đăng ký tư vấn lộ trình học
@@ -1178,55 +955,71 @@ export default function HomePage() {
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            {/* Tool 1: Từ điển */}
-            <div className="p-5 rounded-xl border border-slate-200/80 hover:border-primary shadow-2xs hover:shadow transition bg-slate-50/50">
-              <div className="w-10 h-10 rounded-lg bg-blue-100 text-primary flex items-center justify-center font-bold mb-3">
-                📖
+            {/* Tool 1: Tra cứu & Sổ tay bài học */}
+            <div className="group relative p-5 rounded-2xl bg-white border border-slate-200/80 hover:border-primary/50 shadow-xs hover:shadow-lg hover:shadow-blue-900/5 hover:-translate-y-1 transition-all duration-300">
+              <div className="flex items-center gap-3.5 mb-3">
+                <div className="w-11 h-11 rounded-xl bg-sky-50 text-sky-600 border border-sky-100/90 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 group-hover:bg-sky-100/80 transition-all duration-300">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                  </svg>
+                </div>
+                <h3 className="font-bold text-slate-900 text-sm sm:text-[14.5px] tracking-tight leading-snug group-hover:text-primary transition-colors">
+                  Tra cứu &amp; Sổ tay bài học
+                </h3>
               </div>
-              <h3 className="font-bold text-slate-900 text-sm mb-1.5">
-                Tra từ điển 1-chạm &amp; Lưu từ
-              </h3>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                Tra cứu ngay nghĩa từ, phát âm IPA, từ đồng nghĩa và ví dụ thực chiến trong khi làm đề thi. Tự động lưu vào sổ từ vựng cá nhân.
+              <p className="text-xs sm:text-[13px] text-slate-600 leading-relaxed font-normal">
+                Tra cứu nhanh định nghĩa, khái niệm và công thức trọng tâm khi làm bài. Tự động lưu vào sổ tay học tập cá nhân để ôn luyện mọi lúc.
               </p>
             </div>
 
-            {/* Tool 2: Flashcards */}
-            <div className="p-5 rounded-xl border border-slate-200/80 hover:border-primary shadow-2xs hover:shadow transition bg-slate-50/50">
-              <div className="w-10 h-10 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold mb-3">
-                🗂️
+            {/* Tool 2: Thẻ ghi nhớ & Ôn tập nhanh */}
+            <div className="group relative p-5 rounded-2xl bg-white border border-slate-200/80 hover:border-primary/50 shadow-xs hover:shadow-lg hover:shadow-blue-900/5 hover:-translate-y-1 transition-all duration-300">
+              <div className="flex items-center gap-3.5 mb-3">
+                <div className="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 border border-emerald-100/90 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 group-hover:bg-emerald-100/80 transition-all duration-300">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                  </svg>
+                </div>
+                <h3 className="font-bold text-slate-900 text-sm sm:text-[14.5px] tracking-tight leading-snug group-hover:text-primary transition-colors">
+                  Thẻ ghi nhớ &amp; Ôn tập nhanh
+                </h3>
               </div>
-              <h3 className="font-bold text-slate-900 text-sm mb-1.5">
-                Flashcards Spaced Repetition
-              </h3>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                Ứng dụng thuật toán lặp lại ngắt quãng khoa học giúp học sinh ghi nhớ từ vựng tiếng Anh và công thức Toán học lâu hơn 300%.
+              <p className="text-xs sm:text-[13px] text-slate-600 leading-relaxed font-normal">
+                Hệ thống thẻ ghi nhớ thông minh giúp học sinh ôn tập công thức và bài học cốt lõi, tăng cường khả năng ghi nhớ kiến thức sâu bền.
               </p>
             </div>
 
-            {/* Tool 3: AI Sửa bài */}
-            <div className="p-5 rounded-xl border border-slate-200/80 hover:border-primary shadow-2xs hover:shadow transition bg-slate-50/50">
-              <div className="w-10 h-10 rounded-lg bg-purple-100 text-purple-600 flex items-center justify-center font-bold mb-3">
-                🤖
+            {/* Tool 3: Hướng dẫn giải & Sửa lỗi */}
+            <div className="group relative p-5 rounded-2xl bg-white border border-slate-200/80 hover:border-primary/50 shadow-xs hover:shadow-lg hover:shadow-blue-900/5 hover:-translate-y-1 transition-all duration-300">
+              <div className="flex items-center gap-3.5 mb-3">
+                <div className="w-11 h-11 rounded-xl bg-purple-50 text-purple-600 border border-purple-100/90 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 group-hover:bg-purple-100/80 transition-all duration-300">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                  </svg>
+                </div>
+                <h3 className="font-bold text-slate-900 text-sm sm:text-[14.5px] tracking-tight leading-snug group-hover:text-primary transition-colors">
+                  Hướng dẫn giải &amp; Sửa lỗi
+                </h3>
               </div>
-              <h3 className="font-bold text-slate-900 text-sm mb-1.5">
-                AI Chấm chữa Writing &amp; Speaking
-              </h3>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                Phân tích ngữ pháp, từ vựng và mạch lạc theo tiêu chuẩn khảo thí quốc tế. Đề xuất cách diễn đạt tự nhiên và nâng band điểm.
+              <p className="text-xs sm:text-[13px] text-slate-600 leading-relaxed font-normal">
+                Phân tích phương pháp giải bài cho từng câu hỏi, giải thích rõ ràng nguyên nhân chọn đáp án đúng và chỉ ra lỗi sai thường gặp để tiến bộ nhanh.
               </p>
             </div>
 
-            {/* Tool 4: Thi thử áp lực */}
-            <div className="p-5 rounded-xl border border-slate-200/80 hover:border-primary shadow-2xs hover:shadow transition bg-slate-50/50">
-              <div className="w-10 h-10 rounded-lg bg-amber-100 text-amber-600 flex items-center justify-center font-bold mb-3">
-                ⏱️
+            {/* Tool 4: Phòng thi thử & Luyện đề */}
+            <div className="group relative p-5 rounded-2xl bg-white border border-slate-200/80 hover:border-primary/50 shadow-xs hover:shadow-lg hover:shadow-blue-900/5 hover:-translate-y-1 transition-all duration-300">
+              <div className="flex items-center gap-3.5 mb-3">
+                <div className="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 border border-amber-100/90 flex items-center justify-center shrink-0 shadow-2xs group-hover:scale-105 group-hover:bg-amber-100/80 transition-all duration-300">
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+                <h3 className="font-bold text-slate-900 text-sm sm:text-[14.5px] tracking-tight leading-snug group-hover:text-primary transition-colors">
+                  Phòng thi thử &amp; Luyện đề
+                </h3>
               </div>
-              <h3 className="font-bold text-slate-900 text-sm mb-1.5">
-                Phòng thi bấm giờ áp lực thật
-              </h3>
-              <p className="text-xs text-slate-600 leading-relaxed">
-                Giao diện khảo thí chuẩn 100% so với format máy tính của kỳ thi thật. Chấm điểm tức thì kèm bảng xếp hạng cạnh tranh toàn quốc.
+              <p className="text-xs sm:text-[13px] text-slate-600 leading-relaxed font-normal">
+                Luyện đề bấm giờ theo đúng cấu trúc và thời gian của kỳ thi thật. Chấm điểm tức thì cùng nhận xét kết quả giúp học sinh tự tin bứt phá điểm số.
               </p>
             </div>
           </div>
