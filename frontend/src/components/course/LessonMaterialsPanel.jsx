@@ -130,7 +130,14 @@ export default function LessonMaterialsPanel({ lessonId, editable = false }) {
   const download = async (material) => {
     try {
       const { downloadUrl } = await materialService.getDownloadUrl(lessonId, material.id);
-      window.location.assign(downloadUrl);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.setAttribute('download', material.fileName || material.title || '');
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     } catch (err) {
       toast.error(err?.message || 'Không thể tải tài liệu.');
     }

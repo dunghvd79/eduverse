@@ -4,7 +4,7 @@ import { AppError } from '../utils/AppError.js';
 import { generateUniqueSlug } from '../utils/slugify.js';
 import { assertCategoryAssignable } from './categoryService.js';
 
-const { Course, Category, Chapter, Lesson, LessonProgress, User, Quiz, Assignment } = models;
+const { Course, Category, Chapter, Lesson, LessonProgress, User, Quiz, Assignment, ClassAssignment } = models;
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -302,16 +302,25 @@ export const getCourseCurriculum = async (courseId, { classId = null, currentUse
 
   // Map progress nếu có classId và studentId
   const progressMap = {};
-  if (classId && currentUser && currentUser.role === 'student') {
-    const progressList = await LessonProgress.findAll({
-      where: {
-        class_id: classId,
-        student_id: currentUser.id
-      }
+  const scheduledAssignments = new Set();
+  if (classId) {
+    if (currentUser && currentUser.role === 'student') {
+      const progressList = await LessonProgress.findAll({
+        where: {
+          class_id: classId,
+          student_id: currentUser.id
+        }
+      });
+      progressList.forEach(p => {
+        progressMap[p.lesson_id] = p.is_completed;
+      });
+    }
+
+    const caList = await ClassAssignment.findAll({
+      where: { class_id: classId },
+      attributes: ['assignment_id']
     });
-    progressList.forEach(p => {
-      progressMap[p.lesson_id] = p.is_completed;
-    });
+    caList.forEach(ca => scheduledAssignments.add(ca.assignment_id));
   }
 
   const plain = course.toJSON();
@@ -326,6 +335,7 @@ export const getCourseCurriculum = async (courseId, { classId = null, currentUse
       orderIndex: lesson.order_index,
       quizId: lesson.quiz?.id || null,
       assignmentId: lesson.assignment?.id || null,
+      isAssignmentScheduled: classId && lesson.assignment?.id ? scheduledAssignments.has(lesson.assignment.id) : undefined,
       isCompleted: classId ? !!progressMap[lesson.id] : undefined
     }))
   }));
