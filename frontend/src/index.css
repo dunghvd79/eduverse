@@ -3,6 +3,13 @@
 @tailwind utilities;
 
 @layer base {
+  /* Giải pháp chuẩn W3C & Tailwind CSS: Thu gọn tỷ lệ hiển thị trên Laptop & Desktop về 90% an toàn, sắc nét, không vỡ layout */
+  @media (min-width: 1024px) {
+    html {
+      font-size: 90%;
+    }
+  }
+
   body {
     font-family: 'Inter', sans-serif;
     color: #1e293b;

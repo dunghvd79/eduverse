@@ -31,6 +31,15 @@
    - Kiến trúc Hybrid thông minh: Tự động lưu trữ cục bộ vào `backend/uploads/` khi chạy local, và tự động dùng S3 khi có biến môi trường AWS.
    - Hỗ trợ tải lên PUT stream trực tiếp, kiểm tra metadata, tải về bảo mật bằng chữ ký HMAC và phục vụ ảnh tĩnh qua `/uploads`.
    - Cập nhật `.gitignore` bỏ qua `uploads/` và `backend/uploads/`.
+6. **Căn chỉnh Tỷ lệ Hiển thị Desktop Chuẩn W3C (`index.css`):**
+   - Bổ sung `@media (min-width: 1024px) { html { font-size: 90%; } }` giúp thu gọn tỷ lệ giao diện trên Laptop/Desktop về mức 90% cân đối, sắc nét, không vỡ layout/dropdown/tooltip/modal.
+   - Giữ nguyên 100% trên Mobile/Tablet để bảo toàn kích thước chạm ngón tay và khả năng đọc.
+7. **Sửa lỗi Tải Tài liệu Bài học (`materialService.js`, `LessonMaterialsPanel.jsx`):**
+   - Khắc phục lỗi `ReferenceError: material is not defined` trong hàm `getDownloadUrl` ở backend khi học sinh bấm tải tệp đính kèm.
+   - Nâng cấp cơ chế tải file frontend sang dùng thẻ `<a>` ẩn với thuộc tính `download`, tải file mượt mà trong nền không làm chuyển hướng trang.
+8. **Đồng bộ Trạng thái Giao Bài tập theo Lớp (`courseService.js`, `ClassroomPage.jsx`):**
+   - Backend: Bổ sung trường `isAssignmentScheduled` vào cấu trúc đề cương khi gọi kèm `classId`.
+   - Frontend: Hiển thị đúng thông báo *"Giảng viên chưa lên lịch / chưa giao bài tập này cho lớp học"* và nút disabled *"Chưa giao cho lớp"* khi bài tập chưa được lên lịch hạn nộp, ngăn ngừa click nhầm gây lỗi 404.
 
 
 

@@ -119,6 +119,7 @@ export const deleteMaterial = async (lessonId, materialId, currentUser) => {
 export const getDownloadUrl = async (lessonId, materialId, currentUser) => {
   const lesson = await findLessonWithCourse(lessonId);
   await assertCanViewLessonContent(lesson.chapter.course, currentUser);
+  const material = await findMaterialOfLesson(lesson.id, materialId);
   const downloadUrl = await createDownloadGetUrl(material.file_url, material.file_name);
 
   return {
