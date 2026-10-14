@@ -514,8 +514,9 @@ const getSystemStatus = async () => {
     uptimeSeconds: Math.round(process.uptime()),
     services: [
       database,
-      { key: 'storage', status: storageConfigured ? 'configured' : 'not_configured' },
+      { key: 'storage', status: storageConfigured ? 'configured' : 'local_storage' },
       { key: 'ai', status: process.env.GEMINI_API_KEY ? 'configured' : 'not_configured' },
+
       // Chưa cài Nodemailer: OTP/link đặt lại mật khẩu in ra console backend. Đổi khi có SMTP.
       { key: 'email', status: 'dev_console' }
     ]

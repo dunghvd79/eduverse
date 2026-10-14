@@ -3,6 +3,7 @@ import { BrowserRouter } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import AppRoutes from './routes/AppRoutes';
 import Toast from './components/common/Toast';
+import ConfirmModal from './components/common/ConfirmModal';
 import { useAuthStore } from './stores/useAuthStore';
 
 const queryClient = new QueryClient({
@@ -28,7 +29,9 @@ export default function App() {
       <BrowserRouter>
         <AppRoutes />
         <Toast />
+        <ConfirmModal />
       </BrowserRouter>
     </QueryClientProvider>
   );
 }
+

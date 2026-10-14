@@ -4,6 +4,7 @@ import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Button, Card, Badge, PortalHeader } from '../../components/portal/PortalUI';
 import quizService, { QUESTION_TYPE, formatDateTime, formatScore } from '../../services/quizService';
 import { toast } from '../../components/common/Toast';
+import { confirmModal } from '../../components/common/ConfirmModal';
 
 const LETTERS = 'ABCDEF';
 const storageKey = (attemptId) => `eduverse:quiz-attempt:${attemptId}`;
@@ -130,10 +131,17 @@ export default function QuizTakePage() {
     if (!attempt || submittedRef.current) return;
     if (!auto) {
       const unanswered = attempt.questions.filter(q => !(answers[q.id] || []).length).length;
-      const message = unanswered
-        ? `Bạn còn ${unanswered} câu chưa trả lời. Vẫn nộp bài?`
-        : 'Nộp bài? Sau khi nộp bạn không thể sửa câu trả lời.';
-      if (!window.confirm(message)) return;
+      const ok = await confirmModal({
+        title: 'Xác nhận nộp bài kiểm tra?',
+        message: unanswered
+          ? `Bạn vẫn còn ${unanswered} câu chưa trả lời. Bạn có chắc chắn muốn nộp bài ngay bây giờ?`
+          : 'Sau khi nộp bài, bạn sẽ không thể thay đổi các câu trả lời đã chọn.',
+        subtext: 'Hệ thống sẽ chấm điểm và lưu kết quả bài làm vào bảng điểm của bạn.',
+        confirmText: 'Nộp bài ngay',
+        cancelText: 'Làm tiếp',
+        type: unanswered ? 'warning' : 'info'
+      });
+      if (!ok) return;
     }
     submittedRef.current = true;
     setSubmitting(true);

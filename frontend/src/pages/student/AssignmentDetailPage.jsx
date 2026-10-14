@@ -7,6 +7,7 @@ import { getFileExtension } from '../../services/uploadService';
 import { formatDateTime, formatScore } from '../../services/quizService';
 import { timeLeft } from '../../utils/datetime';
 import { toast } from '../../components/common/Toast';
+import { confirmModal } from '../../components/common/ConfirmModal';
 
 /**
  * Học viên xem đề, nộp / nộp lại bài tập, xem điểm & nhận xét
@@ -60,7 +61,17 @@ export default function AssignmentDetailPage() {
   const submit = async (event) => {
     event.preventDefault();
     if (!file) return;
-    if (submission && !window.confirm('Nộp bài mới sẽ thay thế bài đã nộp trước đó. Tiếp tục?')) return;
+    if (submission) {
+      const ok = await confirmModal({
+        title: 'Nộp lại bài tập?',
+        message: 'Nộp bài mới sẽ thay thế hoàn toàn tệp bài làm và ghi chú đã nộp trước đó.',
+        subtext: 'Giảng viên sẽ chấm điểm dựa trên bài nộp mới nhất của bạn.',
+        confirmText: 'Xác nhận nộp lại',
+        cancelText: 'Hủy bỏ',
+        type: 'warning'
+      });
+      if (!ok) return;
+    }
     try {
       setSubmitting(true);
       const result = await assignmentService.submit(classId, assignmentId, file, note);

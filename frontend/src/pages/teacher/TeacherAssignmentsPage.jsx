@@ -4,6 +4,7 @@ import { PortalHeader, Button, Card, Table, Badge } from '../../components/porta
 import AssignmentFormModal from '../../components/assignment/AssignmentFormModal';
 import assignmentService from '../../services/assignmentService';
 import { toast } from '../../components/common/Toast';
+import { confirmModal } from '../../components/common/ConfirmModal';
 
 const COURSE_STATUS = { draft: ['Nháp', 'gray'], rejected: ['Bị từ chối', 'red'], pending: ['Chờ duyệt', 'orange'], published: ['Đã công khai', 'green'] };
 const isEditable = (assignment) => ['draft', 'rejected'].includes(assignment.course?.status);
@@ -37,7 +38,16 @@ export default function TeacherAssignmentsPage() {
   };
 
   const remove = async (assignment) => {
-    if (!window.confirm(`Xóa bài tập "${assignment.title}"?`)) return;
+    const ok = await confirmModal({
+      title: 'Xác nhận xóa bài tập?',
+      message: `Bạn có chắc chắn muốn xóa bài tập "${assignment.title}"?`,
+      subtext: 'Dữ liệu nộp bài của học viên (nếu có) sẽ bị ảnh hưởng.',
+      confirmText: 'Xóa bài tập',
+      cancelText: 'Hủy bỏ',
+      type: 'danger'
+    });
+    if (!ok) return;
+
     try {
       await assignmentService.remove(assignment.id);
       toast.success('Đã xóa bài tập.');
