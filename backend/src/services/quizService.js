@@ -15,7 +15,7 @@ export const MAX_BULK = 50;
 const quizInclude = [{
   model: Lesson,
   attributes: ['id', 'title', 'lesson_type', 'chapter_id'],
-  include: [{ model: Chapter, attributes: ['id', 'course_id'], include: [{ model: Course, attributes: COURSE_ATTRIBUTES }] }]
+  include: [{ model: Chapter, attributes: ['id', 'course_id', 'title', 'order_index'], include: [{ model: Course, attributes: COURSE_ATTRIBUTES }] }]
 }];
 
 export const courseOfQuiz = (quiz) => quiz.lesson?.chapter?.course || null;
@@ -57,10 +57,12 @@ const toNumber = (value) => (value === null || value === undefined ? null : Numb
 
 const mapQuiz = (quiz, extra = {}) => {
   const course = courseOfQuiz(quiz);
+  const chapter = quiz.lesson?.chapter || null;
   return {
     id: quiz.id,
     lessonId: quiz.lesson_id,
     lessonTitle: quiz.lesson?.title || null,
+    chapter: chapter ? { id: chapter.id, title: chapter.title, orderIndex: chapter.order_index } : null,
     course: course ? { id: course.id, title: course.title, status: course.status } : null,
     title: quiz.title,
     description: quiz.description,
@@ -256,10 +258,11 @@ const enrolledCourseIds = async (studentId) => {
  * - Quản lý/Admin: toàn bộ
  */
 export const getQuizzes = async (query, user) => {
-  const { page = 1, limit = 10, lessonId, courseId, search } = query;
+  const { page = 1, limit = 10, lessonId, courseId, search, isPublished } = query;
   const where = {};
   if (lessonId) where.lesson_id = lessonId;
   if (search) where.title = { [Op.iLike]: `%${search}%` };
+  if (isPublished !== undefined && user.role !== 'student') where.is_published = isPublished;
 
   const courseWhere = {};
   if (courseId) courseWhere.id = courseId;
@@ -282,7 +285,7 @@ export const getQuizzes = async (query, user) => {
       required: true,
       include: [{
         model: Chapter,
-        attributes: ['id', 'course_id'],
+        attributes: ['id', 'course_id', 'title', 'order_index'],
         required: true,
         include: [{ model: Course, attributes: COURSE_ATTRIBUTES, where: courseWhere, required: true }]
       }]
