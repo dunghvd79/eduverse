@@ -1,3 +1,4 @@
+import path from 'path';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -19,8 +20,12 @@ import { AppError } from './utils/AppError.js';
 
 const app = express();
 
-// Security HTTP headers
-app.use(helmet());
+// Security HTTP headers (cho phép load ảnh từ origin khác)
+app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
+
+// Phục vụ tệp tĩnh tải lên (avatar, thumbnails) khi chạy chế độ Local Storage
+app.use('/uploads', express.static(path.resolve(process.cwd(), 'uploads')));
+
 
 // CORS configuration
 const allowedOrigins = [

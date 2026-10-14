@@ -12,6 +12,7 @@ import ClassGradebook from './ClassGradebook';
 import classService, { CLASS_STATUS, PROGRESS_STATUS, formatDate } from '../../services/classService';
 import { useAuthStore } from '../../stores/useAuthStore';
 import { toast } from '../common/Toast';
+import { confirmModal } from '../common/ConfirmModal';
 
 const initials = (name = '') => name.trim().split(/\s+/).slice(-2).map(part => part[0]).join('').toUpperCase();
 
@@ -95,7 +96,16 @@ function MembersTab({ cls, canManageMembers, onChanged }) {
   };
 
   const removeMember = async (member) => {
-    if (!window.confirm(`Xóa "${member.fullName}" khỏi lớp? Học viên sẽ không còn xem được nội dung bài học của lớp này.`)) return;
+    const ok = await confirmModal({
+      title: 'Xóa học viên khỏi lớp?',
+      message: `Bạn có chắc chắn muốn xóa "${member.fullName}" khỏi lớp học này?`,
+      subtext: 'Học viên sẽ không còn xem được nội dung bài học, bài kiểm tra và bài tập của lớp.',
+      confirmText: 'Xóa học viên',
+      cancelText: 'Hủy bỏ',
+      type: 'danger'
+    });
+    if (!ok) return;
+
     try {
       await classService.removeMember(cls.id, member.studentId);
       toast.success('Đã xóa học viên khỏi lớp.');
@@ -305,7 +315,16 @@ export default function ClassManagePage({ basePath, initialTab = 'members' }) {
   };
 
   const deleteClass = async () => {
-    if (!window.confirm(`Xóa lớp "${cls.name}"? Học viên sẽ không còn truy cập được lớp này.`)) return;
+    const ok = await confirmModal({
+      title: 'Xác nhận xóa lớp học?',
+      message: `Bạn có chắc chắn muốn xóa lớp "${cls.name}"?`,
+      subtext: 'Toàn bộ dữ liệu điểm danh, tiến độ học viên của lớp này sẽ bị xóa.',
+      confirmText: 'Xóa lớp học',
+      cancelText: 'Hủy bỏ',
+      type: 'danger'
+    });
+    if (!ok) return;
+
     try {
       await classService.remove(cls.id);
       toast.success('Đã xóa lớp học.');

@@ -1,14 +1,11 @@
-import { DeleteObjectCommand, GetObjectCommand, HeadObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import models from '../models/index.js';
-import { getS3Client, getS3Config } from '../config/s3.js';
 import { AppError } from '../utils/AppError.js';
 import { assertCanManageLesson, assertCanViewLessonContent, findLessonWithCourse } from './lessonService.js';
 import { getFileExtension, materialKeyPrefix, sanitizeFileName } from './uploadService.js';
+import { checkObjectMetadata, deleteStorageObject, createDownloadGetUrl, DOWNLOAD_URL_EXPIRES_IN } from './storageService.js';
 
 const { CourseMaterial } = models;
 
-const DOWNLOAD_URL_EXPIRES_IN = 30 * 60;
 
 const mapMaterial = (material) => ({
   id: material.id,
@@ -29,22 +26,7 @@ const findMaterialOfLesson = async (lessonId, materialId) => {
   return material;
 };
 
-/**
- * Lấy metadata tệp trên S3. Tệp không tồn tại -> null.
- * S3 trả 403 (thay vì 404) khi IAM thiếu s3:ListBucket hoặc credentials sai -> báo lỗi cấu hình, không coi là "chưa upload".
- */
-export const headObject = async (bucket, key) => {
-  try {
-    return await getS3Client().send(new HeadObjectCommand({ Bucket: bucket, Key: key }));
-  } catch (error) {
-    const status = error.$metadata?.httpStatusCode;
-    if (error.name === 'NotFound' || status === 404) return null;
-    if (status === 403) {
-      throw new AppError('Máy chủ lưu trữ từ chối truy cập (kiểm tra credentials và quyền IAM s3:GetObject, s3:ListBucket)', 502, 'Bad Gateway');
-    }
-    throw error;
-  }
-};
+export const headObject = async (bucket, key) => checkObjectMetadata(key);
 
 /**
  * GET /lessons/:lessonId/materials
@@ -84,8 +66,7 @@ export const createMaterial = async (lessonId, data, currentUser) => {
     throw new AppError('Tệp này đã được gắn vào bài học', 409, 'Conflict');
   }
 
-  const { bucket } = getS3Config();
-  const head = await headObject(bucket, fileKey);
+  const head = await checkObjectMetadata(fileKey);
   if (!head) {
     throw new AppError('Tệp chưa được tải lên máy chủ lưu trữ', 400, 'Bad Request');
   }
@@ -126,16 +107,8 @@ export const updateMaterial = async (lessonId, materialId, { title }, currentUse
 export const deleteMaterial = async (lessonId, materialId, currentUser) => {
   const lesson = await assertCanManageLesson(lessonId, currentUser);
   const material = await findMaterialOfLesson(lesson.id, materialId);
-  const { bucket } = getS3Config();
-
   await material.destroy();
-
-  try {
-    await getS3Client().send(new DeleteObjectCommand({ Bucket: bucket, Key: material.file_url }));
-  } catch (error) {
-    console.error(`⚠️ Không xóa được tệp S3 "${material.file_url}":`, error.name, error.message);
-  }
-
+  await deleteStorageObject(material.file_url);
   return true;
 };
 
@@ -146,16 +119,7 @@ export const deleteMaterial = async (lessonId, materialId, currentUser) => {
 export const getDownloadUrl = async (lessonId, materialId, currentUser) => {
   const lesson = await findLessonWithCourse(lessonId);
   await assertCanViewLessonContent(lesson.chapter.course, currentUser);
-  const material = await findMaterialOfLesson(lesson.id, materialId);
-  const { bucket } = getS3Config();
-
-  // filename: bản ASCII cho trình duyệt cũ; filename*: tên gốc có dấu tiếng Việt (RFC 6266)
-  const disposition = `attachment; filename="${sanitizeFileName(material.file_name)}"; filename*=UTF-8''${encodeURIComponent(material.file_name)}`;
-  const downloadUrl = await getSignedUrl(
-    getS3Client(),
-    new GetObjectCommand({ Bucket: bucket, Key: material.file_url, ResponseContentDisposition: disposition }),
-    { expiresIn: DOWNLOAD_URL_EXPIRES_IN }
-  );
+  const downloadUrl = await createDownloadGetUrl(material.file_url, material.file_name);
 
   return {
     downloadUrl,

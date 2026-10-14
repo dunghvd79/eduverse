@@ -38,6 +38,12 @@ export const courseService = {
     return response.data;
   },
 
+  unpublish: async (id) => {
+    const response = await api.patch(`/courses/${id}/unpublish`);
+    return response.data;
+  },
+
+
   approve: async (id) => {
     const response = await api.patch(`/courses/${id}/approve`);
     return response.data;

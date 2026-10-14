@@ -21,16 +21,19 @@ import {
   GraduationCap,
   Sparkles,
   HelpCircle,
-  Tag
+  Tag,
+  RotateCcw
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button, Card, Badge, Field } from '../../components/portal/PortalUI';
 import courseService from '../../services/courseService';
 import categoryService from '../../services/categoryService';
 import { toast } from '../../components/common/Toast';
+import { confirmModal } from '../../components/common/ConfirmModal';
 
 const EMPTY_FORM = { title: '', description: '', price: '0', categoryId: '' };
 const isEditable = (course) => course.status === 'draft' || course.status === 'rejected';
+const isDeletable = (course) => course.status !== 'published';
 
 const STATUS_CONFIG = {
   published: {
@@ -131,7 +134,7 @@ function QuickFilterCard({ icon: Icon, title, count, subtitle, active, onClick, 
 }
 
 /** Menu 3 chấm thao tác */
-function ActionMenu({ course, onEdit, onDelete, isOpen, onToggle, onClose }) {
+function ActionMenu({ course, onEdit, onDelete, onUnpublish, isOpen, onToggle, onClose }) {
   const menuRef = useRef(null);
 
   useEffect(() => {
@@ -161,7 +164,7 @@ function ActionMenu({ course, onEdit, onDelete, isOpen, onToggle, onClose }) {
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full z-30 mt-1 w-44 rounded-xl border border-slate-200 bg-white p-1.5 shadow-lg text-xs animate-in fade-in zoom-in-95 duration-100">
+        <div className="absolute right-0 bottom-full z-50 mb-1.5 w-48 rounded-xl border border-slate-200 bg-white p-1.5 shadow-xl text-xs animate-in fade-in zoom-in-95 duration-100">
           <button
             type="button"
             onClick={(e) => {
@@ -169,11 +172,40 @@ function ActionMenu({ course, onEdit, onDelete, isOpen, onToggle, onClose }) {
               onClose();
               onEdit(course);
             }}
-            className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+            className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left font-medium text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
           >
             <Settings2 size={14} className="text-slate-500" /> Sửa thông tin
           </button>
-          {isEditable(course) && (
+
+          {course.status === 'published' && onUnpublish && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onClose();
+                onUnpublish(course);
+              }}
+              className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left font-medium text-amber-700 hover:bg-amber-50 transition-colors cursor-pointer"
+            >
+              <RotateCcw size={14} className="text-amber-600" /> Tạm dừng để sửa
+            </button>
+          )}
+
+          {course.status === 'pending' && onUnpublish && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                onClose();
+                onUnpublish(course);
+              }}
+              className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left font-medium text-amber-700 hover:bg-amber-50 transition-colors cursor-pointer"
+            >
+              <RotateCcw size={14} className="text-amber-600" /> Rút yêu cầu duyệt
+            </button>
+          )}
+
+          {isDeletable(course) && (
             <button
               type="button"
               onClick={(e) => {
@@ -181,7 +213,7 @@ function ActionMenu({ course, onEdit, onDelete, isOpen, onToggle, onClose }) {
                 onClose();
                 onDelete(course);
               }}
-              className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left font-medium text-rose-600 hover:bg-rose-50 transition-colors"
+              className="flex w-full items-center gap-2 rounded-lg px-2.5 py-2 text-left font-medium text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
             >
               <Trash2 size={14} className="text-rose-500" /> Xóa khóa học
             </button>
@@ -348,8 +380,44 @@ export default function TeacherCoursesPage() {
     }
   };
 
+  const unpublishCourse = async (course) => {
+    const isPublished = course.status === 'published';
+    const ok = await confirmModal({
+      title: isPublished ? 'Tạm dừng công khai khóa học?' : 'Rút yêu cầu phê duyệt?',
+      message: isPublished
+        ? `Chuyển khóa học "${course.title}" về Bản nháp để chỉnh sửa?`
+        : `Bạn có muốn rút lại yêu cầu phê duyệt khóa học "${course.title}" và chuyển về Bản nháp?`,
+      subtext: isPublished
+        ? 'Khóa học sẽ tạm thời ẩn khỏi trang chủ đối với học viên mới cho đến khi bạn hoàn tất chỉnh sửa và gửi duyệt lại.'
+        : 'Sau khi rút yêu cầu, bạn có thể tiếp tục bổ sung tài liệu, bài học hoặc đề thi.',
+      confirmText: isPublished ? 'Chuyển về nháp' : 'Rút yêu cầu',
+      cancelText: 'Giữ nguyên',
+      type: 'warning'
+    });
+
+    if (!ok) return;
+
+    try {
+      await courseService.unpublish(course.id);
+      toast.success(isPublished ? 'Đã chuyển về bản nháp. Bây giờ bạn có thể chỉnh sửa nội dung.' : 'Đã rút yêu cầu duyệt.');
+      loadCourses();
+    } catch (error) {
+      toast.error(error?.message || 'Không thể chuyển khóa học về bản nháp.');
+    }
+  };
+
   const deleteCourse = async (course) => {
-    if (!window.confirm(`Xóa khóa học "${course.title}"?`)) return;
+    const ok = await confirmModal({
+      title: 'Xác nhận xóa khóa học?',
+      message: `Bạn có chắc chắn muốn xóa khóa học "${course.title}"?`,
+      subtext: 'Khóa học sẽ được đưa vào thùng rác và không còn hiển thị trong danh sách giảng dạy.',
+      confirmText: 'Xóa khóa học',
+      cancelText: 'Hủy bỏ',
+      type: 'danger'
+    });
+
+    if (!ok) return;
+
     try {
       await courseService.remove(course.id);
       toast.success('Đã xóa khóa học.');
@@ -580,10 +648,10 @@ export default function TeacherCoursesPage() {
             return (
               <div
                 key={course.id}
-                className="group flex flex-col overflow-hidden rounded-2xl border border-slate-200/90 bg-white shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-slate-300 hover:shadow-md"
+                className="group flex flex-col rounded-2xl border border-slate-200/90 bg-white shadow-xs transition-all duration-200 hover:-translate-y-1 hover:border-slate-300 hover:shadow-md"
               >
                 {/* Ảnh bìa Course Banner (16:9) */}
-                <div className="relative aspect-video w-full overflow-hidden bg-gradient-to-br from-slate-800 to-slate-950">
+                <div className="relative aspect-video w-full overflow-hidden rounded-t-2xl bg-gradient-to-br from-slate-800 to-slate-950">
                   {course.thumbnailUrl ? (
                     <img
                       src={course.thumbnailUrl}
@@ -685,6 +753,7 @@ export default function TeacherCoursesPage() {
                       course={course}
                       onEdit={openEdit}
                       onDelete={deleteCourse}
+                      onUnpublish={unpublishCourse}
                       isOpen={menuOpenId === course.id}
                       onToggle={() => setMenuOpenId(menuOpenId === course.id ? null : course.id)}
                       onClose={() => setMenuOpenId(null)}
@@ -801,6 +870,7 @@ export default function TeacherCoursesPage() {
                             course={course}
                             onEdit={openEdit}
                             onDelete={deleteCourse}
+                            onUnpublish={unpublishCourse}
                             isOpen={menuOpenId === course.id}
                             onToggle={() => setMenuOpenId(menuOpenId === course.id ? null : course.id)}
                             onClose={() => setMenuOpenId(null)}

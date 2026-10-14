@@ -91,6 +91,16 @@ export const rejectCourse = async (req, res, next) => {
   }
 };
 
+export const unpublishCourse = async (req, res, next) => {
+  try {
+    const data = await courseService.unpublishCourse(req.params.id, req.user);
+    return sendSuccess(res, 200, 'Đã chuyển khóa học về trạng thái bản nháp.', data);
+  } catch (error) {
+    next(error);
+  }
+};
+
+
 export const getChapters = async (req, res, next) => {
   try {
     const data = await chapterService.getChapters(req.params.courseId, req.user || null);

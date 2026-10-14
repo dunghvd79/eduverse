@@ -4,6 +4,7 @@ import { Button } from '../portal/PortalUI';
 import materialService, { MATERIAL_EXTENSIONS, MATERIAL_MAX_SIZE } from '../../services/materialService';
 import { getFileExtension } from '../../services/uploadService';
 import { toast } from '../common/Toast';
+import { confirmModal } from '../common/ConfirmModal';
 
 const formatSize = (bytes) => {
   if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
@@ -107,7 +108,15 @@ export default function LessonMaterialsPanel({ lessonId, editable = false }) {
   };
 
   const remove = async (material) => {
-    if (!window.confirm(`Xóa tài liệu "${material.title}"?`)) return;
+    const ok = await confirmModal({
+      title: 'Xóa tài liệu đính kèm?',
+      message: `Bạn có chắc chắn muốn xóa tài liệu "${material.title}"?`,
+      subtext: 'Tài liệu này sẽ không còn xuất hiện trong bài học đối với học viên.',
+      confirmText: 'Xóa tài liệu',
+      cancelText: 'Hủy bỏ',
+      type: 'danger'
+    });
+    if (!ok) return;
 
     try {
       await materialService.remove(lessonId, material.id);
