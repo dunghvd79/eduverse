@@ -1,85 +1,37 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import CourseCard from '../../components/course/CourseCard';
+import courseService from '../../services/courseService';
+import categoryService from '../../services/categoryService';
+import { toCardCourse } from '../../utils/courseCard';
 
 export default function HomePage() {
-  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedCategory, setSelectedCategory] = useState(''); // '' = tất cả, còn lại là slug danh mục
+  const [categories, setCategories] = useState([]);
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const categories = [
-    { id: 'all', label: 'Tất cả chương trình' },
-    { id: 'english', label: 'Tiếng Anh Mũi nhọn' },
-    { id: 'math', label: 'Toán học 10-11-12' },
-    { id: 'literature', label: 'Ngữ văn THPT' },
-    { id: 'exam', label: 'Luyện thi THPT QG & ĐGNL' },
-  ];
+  useEffect(() => {
+    categoryService.list()
+      .then(data => setCategories(data || []))
+      .catch(() => setCategories([]));
+  }, []);
 
-  const featuredCourses = [
-    {
-      id: 'ielts-master-7',
-      slug: 'ielts-master-7',
-      thumbnail: 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&auto=format&fit=crop&q=80',
-      badge: 'Bestseller',
-      badgeType: 'rose',
-      lessonCount: '68 bài giảng',
-      rating: '4.9',
-      reviewCount: '1.450',
-      title: 'IELTS Master 7.0+ Toàn diện 4 Kỹ Năng & Luyện Đề Bứt Phá',
-      instructor: 'Đội ngũ Cựu Examiner',
-      price: '1.490.000đ',
-      originalPrice: '2.800.000đ',
-      category: 'english',
-    },
-    {
-      id: 'toan-12-9plus',
-      slug: 'toan-12-9plus',
-      thumbnail: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=800&auto=format&fit=crop&q=80',
-      badge: 'Phổ biến',
-      badgeType: 'emerald',
-      lessonCount: '56 chuyên đề',
-      rating: '4.9',
-      reviewCount: '1.120',
-      title: 'Toán 12 & Luyện thi Tốt nghiệp THPT 9+ (Bứt phá Điểm 9, 10)',
-      instructor: 'ThS. Trần Hoàng Nam',
-      price: '890.000đ',
-      originalPrice: '1.600.000đ',
-      category: 'math',
-    },
-    {
-      id: 'ngu-van-thpt',
-      slug: 'ngu-van-thpt',
-      thumbnail: 'https://images.unsplash.com/photo-1455390582262-044cdead277a?w=800&auto=format&fit=crop&q=80',
-      badge: 'Khuyên học',
-      badgeType: 'amber',
-      lessonCount: '42 bài giảng',
-      rating: '4.8',
-      reviewCount: '740',
-      title: 'Chinh phục Ngữ văn THPT: Kỹ năng Nghị luận Xã hội & Đọc hiểu Điểm cao',
-      instructor: 'Cô Phan Diệu Linh',
-      price: '790.000đ',
-      originalPrice: '1.450.000đ',
-      category: 'literature',
-    },
-    {
-      id: 'luyen-thi-dgnl-hsa',
-      slug: 'luyen-thi-dgnl-hsa',
-      thumbnail: 'https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=800&auto=format&fit=crop&q=80',
-      badge: 'Mới ra mắt',
-      badgeType: 'brand',
-      lessonCount: '75 đề thực chiến',
-      rating: '5.0',
-      reviewCount: '620',
-      title: 'Tổng ôn & Luyện đề Đánh giá Năng lực ĐHQG (HSA & APT) Toàn diện',
-      instructor: 'Ban Chuyên môn EduVerse',
-      price: '1.290.000đ',
-      originalPrice: '2.400.000đ',
-      category: 'exam',
-    },
-  ];
+  useEffect(() => {
+    let cancelled = false;
+    setLoading(true);
+    courseService.list({
+      status: 'published',
+      limit: 8,
+      ...(selectedCategory ? { category: selectedCategory } : {})
+    })
+      .then(data => { if (!cancelled) setCourses((data.items || []).map(toCardCourse)); })
+      .catch(() => { if (!cancelled) setCourses([]); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+    return () => { cancelled = true; };
+  }, [selectedCategory]);
 
-  const filteredCourses = selectedCategory === 'all'
-    ? featuredCourses
-    : featuredCourses.filter(c => c.category === selectedCategory);
-
+  const countOf = (slug) => categories.find(c => c.slug === slug)?.courseCount ?? 0;
   return (
     <div className="space-y-0">
       {/* 🚀 BEGIN: HeroCarouselSection */}
@@ -277,8 +229,8 @@ export default function HomePage() {
                 </p>
               </div>
               <div className="pt-3 border-t border-slate-200/80 flex items-center justify-between text-xs">
-                <span className="font-bold text-primary tabular-number">1,250+ đề &amp; bài</span>
-                <Link to="/courses?subject=english" className="text-slate-500 font-semibold group-hover:text-primary transition-colors">
+                <span className="font-bold text-primary tabular-number">{countOf('tieng-anh-quoc-te')} khóa học</span>
+                <Link to="/courses?category=tieng-anh-quoc-te" className="text-slate-500 font-semibold group-hover:text-primary transition-colors">
                   Học ngay →
                 </Link>
               </div>
@@ -299,8 +251,8 @@ export default function HomePage() {
                 </p>
               </div>
               <div className="pt-3 border-t border-slate-200 flex items-center justify-between text-xs">
-                <span className="font-bold text-slate-700 tabular-number">850+ đề thi</span>
-                <Link to="/courses?subject=math" className="text-slate-500 font-semibold group-hover:text-primary transition-colors">
+                <span className="font-bold text-slate-700 tabular-number">{countOf('toan-hoc-10-11-12')} khóa học</span>
+                <Link to="/courses?category=toan-hoc-10-11-12" className="text-slate-500 font-semibold group-hover:text-primary transition-colors">
                   Học ngay →
                 </Link>
               </div>
@@ -321,8 +273,8 @@ export default function HomePage() {
                 </p>
               </div>
               <div className="pt-3 border-t border-slate-200 flex items-center justify-between text-xs">
-                <span className="font-bold text-slate-700 tabular-number">520+ đề &amp; bài mẫu</span>
-                <Link to="/courses?subject=literature" className="text-slate-500 font-semibold group-hover:text-primary transition-colors">
+                <span className="font-bold text-slate-700 tabular-number">{countOf('ngu-van-thpt')} khóa học</span>
+                <Link to="/courses?category=ngu-van-thpt" className="text-slate-500 font-semibold group-hover:text-primary transition-colors">
                   Học ngay →
                 </Link>
               </div>
@@ -343,8 +295,8 @@ export default function HomePage() {
                 </p>
               </div>
               <div className="pt-3 border-t border-slate-200 flex items-center justify-between text-xs">
-                <span className="font-bold text-slate-700 tabular-number">920+ đề thi</span>
-                <Link to="/courses?subject=science" className="text-slate-500 font-semibold group-hover:text-primary transition-colors">
+                <span className="font-bold text-slate-700 tabular-number">{countOf('khoa-hoc-tu-nhien')} khóa học</span>
+                <Link to="/courses?category=khoa-hoc-tu-nhien" className="text-slate-500 font-semibold group-hover:text-primary transition-colors">
                   Học ngay →
                 </Link>
               </div>
@@ -365,8 +317,8 @@ export default function HomePage() {
                 </p>
               </div>
               <div className="pt-3 border-t border-slate-200 flex items-center justify-between text-xs">
-                <span className="font-bold text-slate-700 tabular-number">460+ đề thi</span>
-                <Link to="/courses?subject=exam" className="text-slate-500 font-semibold group-hover:text-primary transition-colors">
+                <span className="font-bold text-slate-700 tabular-number">{countOf('luyen-thi-dgnl-thpt-qg')} khóa học</span>
+                <Link to="/courses?category=luyen-thi-dgnl-thpt-qg" className="text-slate-500 font-semibold group-hover:text-primary transition-colors">
                   Học ngay →
                 </Link>
               </div>
@@ -387,40 +339,46 @@ export default function HomePage() {
             </p>
           </div>
 
-          {/* Categories Pills Navigation */}
+                    {/* Categories Pills Navigation */}
           <div className="flex items-center justify-start sm:justify-center gap-2 overflow-x-auto pb-4 mb-8 no-scrollbar">
-            {categories.map((cat) => {
-              const isSelected = selectedCategory === cat.id;
+            {[{ slug: '', name: 'Tất cả chương trình' }, ...categories].map((cat) => {
+              const isSelected = selectedCategory === cat.slug;
               return (
                 <button
-                  key={cat.id}
-                  onClick={() => setSelectedCategory(cat.id)}
+                  key={cat.slug || 'all'}
+                  onClick={() => setSelectedCategory(cat.slug)}
                   className={`px-5 py-2 text-sm font-semibold rounded-full transition-all whitespace-nowrap cursor-pointer ${
                     isSelected
                       ? 'bg-primary text-white shadow-sm'
                       : 'bg-slate-100 hover:bg-slate-200 text-slate-700'
                   }`}
                 >
-                  {cat.label}
+                  {cat.name}
                 </button>
               );
             })}
           </div>
 
           {/* Course Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {filteredCourses.map((course) => (
-              <CourseCard key={course.id} course={course} />
-            ))}
-          </div>
+          {loading ? (
+            <div className="py-16 text-center text-slate-500">Đang tải khóa học...</div>
+          ) : courses.length ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {courses.map((course) => (
+                <CourseCard key={course.id} course={course} />
+              ))}
+            </div>
+          ) : (
+            <p className="py-16 text-center text-slate-500">Chưa có khóa học nào trong danh mục này.</p>
+          )}
 
           {/* View All Button */}
           <div className="text-center mt-10">
             <Link
-              to="/courses"
+              to={selectedCategory ? `/courses?category=${selectedCategory}` : '/courses'}
               className="inline-flex items-center justify-center px-6 py-3 border border-slate-300 hover:border-primary text-sm font-semibold rounded-lg text-slate-700 hover:text-primary transition-colors"
             >
-              Xem tất cả hơn 200+ khóa học &amp; đề thi →
+              Xem tất cả khóa học →
             </Link>
           </div>
         </div>
