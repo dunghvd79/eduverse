@@ -17,7 +17,7 @@ const roleConfig={
   ['Tổng quan','/manager/dashboard',LayoutDashboard],['Duyệt khóa học','/manager/approvals',ClipboardCheck],['Danh mục','/manager/categories',FolderTree],['Lớp học','/manager/classes',Users],['Báo cáo','/manager/reports',BarChart3],['Hồ sơ','/manager/profile',UserCircle]
  ]},
  admin:{label:'Quản trị viên',links:[
-  ['Tổng quan','/admin/dashboard',LayoutDashboard],['Người dùng','/admin/users',Users],['Lớp học','/admin/classes',GraduationCap],['Audit Logs','/admin/audit-logs',ShieldCheck],['Cài đặt hệ thống','/admin/settings',Settings],['Hồ sơ','/admin/profile',UserCircle]
+  ['Tổng quan','/admin/dashboard',LayoutDashboard],['Người dùng','/admin/users',Users],['Khóa học','/admin/courses',BookOpen],['Lớp học','/admin/classes',GraduationCap],['Audit Logs','/admin/audit-logs',ShieldCheck],['Cài đặt hệ thống','/admin/settings',Settings],['Hồ sơ','/admin/profile',UserCircle]
  ]}
 };
 
