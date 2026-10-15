@@ -49,6 +49,7 @@ export default function ClassroomPage() {
   const isCompleted = !!flatLessons[currentIndex]?.isCompleted;
   const quizId = flatLessons[currentIndex]?.quizId;
   const assignmentId = flatLessons[currentIndex]?.assignmentId;
+  const isAssignmentScheduled = flatLessons[currentIndex]?.isAssignmentScheduled;
   const lessonUrl = (id) => `/student/courses/${courseId}/learn/${id}${classId ? `?classId=${classId}` : ''}`;
 
   const setProgress = async (isCompleted) => {
@@ -178,10 +179,24 @@ export default function ClassroomPage() {
                 <FileUp size={22} className="text-primary" />
                 <div className="flex-1 min-w-0">
                   <b>Bài tập nộp file</b>
-                  <p className="text-sm text-slate-500">{assignmentId ? 'Nộp bài xong, bài học được tính hoàn thành tự động.' : 'Giảng viên chưa soạn đề cho bài học này.'}</p>
+                  <p className="text-sm text-slate-500">
+                    {!assignmentId 
+                      ? 'Giảng viên chưa soạn đề cho bài học này.' 
+                      : isAssignmentScheduled 
+                        ? 'Nộp bài xong, bài học được tính hoàn thành tự động.' 
+                        : 'Giảng viên chưa lên lịch / chưa giao bài tập này cho lớp học.'}
+                  </p>
                 </div>
                 {assignmentId && classId && (
-                  <Button onClick={() => navigate(`/student/classes/${classId}/assignments/${assignmentId}`)}>Xem đề & nộp bài</Button>
+                  isAssignmentScheduled ? (
+                    <Button onClick={() => navigate(`/student/classes/${classId}/assignments/${assignmentId}`)}>
+                      Xem đề & nộp bài
+                    </Button>
+                  ) : (
+                    <Button variant="secondary" disabled title="Giảng viên chưa lên lịch hạn nộp cho lớp này">
+                      Chưa giao cho lớp
+                    </Button>
+                  )
                 )}
               </div>
             </Card>

@@ -53,6 +53,9 @@ router.post('/courses/:id/publish-request', ...teacherOrAdmin, validateIdParam()
 router.patch('/courses/:id/approve', ...managerOrAdmin, validateIdParam(), controller.approveCourse);
 // Từ chối khóa học kèm lý do (pending -> rejected) | Role: training_manager, admin
 router.patch('/courses/:id/reject', ...managerOrAdmin, validateIdParam(), validateBody(rejectCourseSchema), controller.rejectCourse);
+// Chuyển khóa học về bản nháp để sửa / rút yêu cầu duyệt (published/pending -> draft) | Role: chủ khóa (teacher), admin
+router.patch('/courses/:id/unpublish', ...teacherOrAdmin, validateIdParam(), controller.unpublishCourse);
+
 
 // ==========================================
 // 2. CHƯƠNG HỌC (CHAPTERS)

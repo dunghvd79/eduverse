@@ -3,7 +3,7 @@ import {
   ArrowLeft, BarChart3, CheckCircle2, ChevronLeft, ChevronRight, Copy, Pencil,
   RefreshCw, Search, Trash2, UserMinus, UserPlus, Users
 } from 'lucide-react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { PortalHeader, Button, Card, Table, Badge, StatCard, Progress } from '../portal/PortalUI';
 import ClassFormModal from './ClassFormModal';
 import ClassQuizzesTab from './ClassQuizzesTab';
@@ -12,6 +12,7 @@ import ClassGradebook from './ClassGradebook';
 import classService, { CLASS_STATUS, PROGRESS_STATUS, formatDate } from '../../services/classService';
 import { useAuthStore } from '../../stores/useAuthStore';
 import { toast } from '../common/Toast';
+import { confirmModal } from '../common/ConfirmModal';
 
 const initials = (name = '') => name.trim().split(/\s+/).slice(-2).map(part => part[0]).join('').toUpperCase();
 
@@ -32,7 +33,7 @@ const Pagination = ({ meta, onChange }) => (meta && meta.totalPages > 1 ? (
 
 const SearchBox = ({ value, onChange, placeholder }) => (
   <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 h-9 w-full md:w-64">
-    <Search size={15} className="text-slate-400" />
+    <Search size={15} className="text-slate-500" />
     <input value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} className="flex-1 min-w-0 text-sm outline-none" />
   </label>
 );
@@ -95,7 +96,16 @@ function MembersTab({ cls, canManageMembers, onChanged }) {
   };
 
   const removeMember = async (member) => {
-    if (!window.confirm(`Xóa "${member.fullName}" khỏi lớp? Học viên sẽ không còn xem được nội dung bài học của lớp này.`)) return;
+    const ok = await confirmModal({
+      title: 'Xóa học viên khỏi lớp?',
+      message: `Bạn có chắc chắn muốn xóa "${member.fullName}" khỏi lớp học này?`,
+      subtext: 'Học viên sẽ không còn xem được nội dung bài học, bài kiểm tra và bài tập của lớp.',
+      confirmText: 'Xóa học viên',
+      cancelText: 'Hủy bỏ',
+      type: 'danger'
+    });
+    if (!ok) return;
+
     try {
       await classService.removeMember(cls.id, member.studentId);
       toast.success('Đã xóa học viên khỏi lớp.');
@@ -227,7 +237,7 @@ function ProgressTab({ cls }) {
                 <div className="table-progress"><Progress value={item.progressPercentage} /><small>{item.progressPercentage}%</small></div>,
                 `${item.completedLessons}/${item.totalLessons}`,
                 <Badge tone={tone}>{label}</Badge>,
-                item.lastActiveAt ? new Date(item.lastActiveAt).toLocaleString('vi-VN') : <span className="text-slate-400">Chưa học</span>
+                item.lastActiveAt ? new Date(item.lastActiveAt).toLocaleString('vi-VN') : <span className="text-slate-500">Chưa học</span>
               ];
             })}
           />
@@ -244,11 +254,24 @@ function ProgressTab({ cls }) {
 export default function ClassManagePage({ basePath, initialTab = 'members' }) {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlTab = searchParams.get('tab');
   const role = useAuthStore(state => state.user?.role);
   const [cls, setCls] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState(initialTab);
+  const [tab, setTab] = useState(urlTab || initialTab);
   const [showEdit, setShowEdit] = useState(false);
+
+  useEffect(() => {
+    if (urlTab && ['members', 'progress', 'quizzes', 'assignments', 'gradebook'].includes(urlTab)) {
+      setTab(urlTab);
+    }
+  }, [urlTab]);
+
+  const handleTabChange = (newTab) => {
+    setTab(newTab);
+    setSearchParams({ tab: newTab });
+  };
 
   const load = async () => {
     try {
@@ -292,7 +315,16 @@ export default function ClassManagePage({ basePath, initialTab = 'members' }) {
   };
 
   const deleteClass = async () => {
-    if (!window.confirm(`Xóa lớp "${cls.name}"? Học viên sẽ không còn truy cập được lớp này.`)) return;
+    const ok = await confirmModal({
+      title: 'Xác nhận xóa lớp học?',
+      message: `Bạn có chắc chắn muốn xóa lớp "${cls.name}"?`,
+      subtext: 'Toàn bộ dữ liệu điểm danh, tiến độ học viên của lớp này sẽ bị xóa.',
+      confirmText: 'Xóa lớp học',
+      cancelText: 'Hủy bỏ',
+      type: 'danger'
+    });
+    if (!ok) return;
+
     try {
       await classService.remove(cls.id);
       toast.success('Đã xóa lớp học.');
@@ -305,7 +337,6 @@ export default function ClassManagePage({ basePath, initialTab = 'members' }) {
   return (
     <>
       <PortalHeader
-        eyebrow="CLASS DETAIL"
         title={cls.name}
         desc={`${cls.course?.title || ''} · Giảng viên: ${cls.teacher?.fullName || '—'} · ${formatDate(cls.startDate)} – ${formatDate(cls.endDate)}`}
         actions={
@@ -342,11 +373,11 @@ export default function ClassManagePage({ basePath, initialTab = 'members' }) {
       </Card>
 
       <div className="tabs-card flex-wrap">
-        <button className={`tab ${tab === 'members' ? 'active' : ''}`} onClick={() => setTab('members')}>Học viên</button>
-        <button className={`tab ${tab === 'progress' ? 'active' : ''}`} onClick={() => setTab('progress')}>Tiến độ học tập</button>
-        <button className={`tab ${tab === 'quizzes' ? 'active' : ''}`} onClick={() => setTab('quizzes')}>Bài kiểm tra</button>
-        <button className={`tab ${tab === 'assignments' ? 'active' : ''}`} onClick={() => setTab('assignments')}>Bài tập</button>
-        <button className={`tab ${tab === 'gradebook' ? 'active' : ''}`} onClick={() => setTab('gradebook')}>Bảng điểm</button>
+        <button className={`tab ${tab === 'members' ? 'active' : ''}`} onClick={() => handleTabChange('members')}>Học viên</button>
+        <button className={`tab ${tab === 'progress' ? 'active' : ''}`} onClick={() => handleTabChange('progress')}>Tiến độ học tập</button>
+        <button className={`tab ${tab === 'quizzes' ? 'active' : ''}`} onClick={() => handleTabChange('quizzes')}>Bài kiểm tra</button>
+        <button className={`tab ${tab === 'assignments' ? 'active' : ''}`} onClick={() => handleTabChange('assignments')}>Bài tập</button>
+        <button className={`tab ${tab === 'gradebook' ? 'active' : ''}`} onClick={() => handleTabChange('gradebook')}>Bảng điểm</button>
       </div>
 
       {tab === 'members' && <MembersTab cls={cls} canManageMembers={canManageMembers} onChanged={load} />}

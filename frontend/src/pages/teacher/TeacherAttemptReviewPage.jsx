@@ -22,7 +22,6 @@ export default function TeacherAttemptReviewPage() {
   return (
     <>
       <PortalHeader
-        eyebrow="ATTEMPT REVIEW"
         title={`${attempt.student?.fullName} — ${attempt.quizTitle}`}
         desc={`${attempt.student?.email} · ${attempt.className || ''}`}
         actions={<Button variant="secondary" onClick={() => navigate(`/teacher/quizzes/${attempt.quizId}?tab=results`)}><ArrowLeft size={16} /> Kết quả bài kiểm tra</Button>}

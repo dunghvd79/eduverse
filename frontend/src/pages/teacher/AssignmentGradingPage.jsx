@@ -253,7 +253,6 @@ export default function AssignmentGradingPage() {
   return (
     <>
       <PortalHeader
-        eyebrow="GRADING"
         title={info?.title || 'Chấm bài tập'}
         desc={info ? `${info.className} · Hạn nộp ${formatDateTime(info.deadline)}${info.allowLateSubmission ? ` · nhận bài muộn đến ${info.cutoffTime ? formatDateTime(info.cutoffTime) : 'không giới hạn'}` : ' · không nhận bài muộn'}` : ''}
         actions={
@@ -291,7 +290,7 @@ export default function AssignmentGradingPage() {
               <option value="grade:DESC">Điểm cao trước</option>
             </select>
             <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 h-9 w-full md:w-56">
-              <Search size={15} className="text-slate-400" />
+              <Search size={15} className="text-slate-500" />
               <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tìm học viên..." className="flex-1 min-w-0 text-sm outline-none" />
             </label>
           </div>

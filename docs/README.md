@@ -39,6 +39,7 @@
 - [API: Lớp học (Classes)](api/api-classes.md)
 - [API: Bài kiểm tra (Quizzes)](api/api-quizzes.md)
 - [API: Bài tập (Assignments)](api/api-assignments.md)
+- [API: Tổng quan (Dashboard)](api/api-dashboard.md)
 - [API: Upload & Đa phương tiện (Uploads)](api/api-uploads.md)
 
 ### 🎨 Giao diện

@@ -73,7 +73,7 @@ export default function CourseDetailPage() {
         {course.thumbnailUrl ? (
           <img src={course.thumbnailUrl} alt={course.title} className="w-full aspect-video object-cover rounded-2xl border border-slate-200" />
         ) : (
-          <div className="w-full aspect-video rounded-2xl bg-slate-100 flex items-center justify-center text-slate-400">
+          <div className="w-full aspect-video rounded-2xl bg-slate-100 flex items-center justify-center text-slate-500">
             EduVerse Course
           </div>
         )}
@@ -95,7 +95,7 @@ export default function CourseDetailPage() {
                     <li key={lesson.id} className="flex items-center gap-2">
                       <span className="text-primary">•</span>
                       <span>{lesson.title}</span>
-                      <span className="ml-auto text-xs text-slate-400">{lesson.lessonType}</span>
+                      <span className="ml-auto text-xs text-slate-500">{lesson.lessonType}</span>
                     </li>
                   ))}
                 </ul>

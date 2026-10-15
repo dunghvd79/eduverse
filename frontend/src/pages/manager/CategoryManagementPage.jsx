@@ -3,6 +3,7 @@ import { ArrowDown, ArrowUp, FolderTree, Plus, RefreshCw, Save, Trash2 } from 'l
 import { PortalHeader, Button, Card, SectionTitle, Badge, Field } from '../../components/portal/PortalUI';
 import categoryService from '../../services/categoryService';
 import { toast } from '../../components/common/Toast';
+import { confirmModal } from '../../components/common/ConfirmModal';
 
 const EMPTY_FORM = { name: '', description: '', isActive: true };
 
@@ -18,8 +19,9 @@ export default function CategoryManagementPage() {
   const load = async () => {
     try {
       setLoading(true);
-      const data = await categoryService.list({ includeHidden: true });
-      setCategories(data || []);
+      const res = await categoryService.list({ includeHidden: true });
+      const items = Array.isArray(res) ? res : (res?.data || []);
+      setCategories(items);
     } catch (error) {
       toast.error(error?.message || 'Không thể tải danh mục.');
     } finally {
@@ -97,7 +99,16 @@ export default function CategoryManagementPage() {
 
   const remove = async () => {
     if (!selected) return;
-    if (!window.confirm(`Xóa danh mục "${selected.name}"?`)) return;
+    const ok = await confirmModal({
+      title: 'Xác nhận xóa danh mục?',
+      message: `Bạn có chắc chắn muốn xóa danh mục "${selected.name}"?`,
+      subtext: 'Nếu danh mục đang chứa khóa học, hệ thống sẽ yêu cầu bạn chuyển khóa học sang danh mục khác trước.',
+      confirmText: 'Xóa danh mục',
+      cancelText: 'Hủy bỏ',
+      type: 'danger'
+    });
+    if (!ok) return;
+
     try {
       await categoryService.remove(selected.id);
       setCategories(prev => prev.filter(c => c.id !== selected.id));
@@ -112,7 +123,6 @@ export default function CategoryManagementPage() {
   return (
     <>
       <PortalHeader
-        eyebrow="CATALOG"
         title="Quản lý danh mục"
         desc="Tạo, chỉnh sửa, ẩn/hiện và sắp xếp danh mục khóa học."
         actions={

@@ -9,6 +9,7 @@ import QuestionEditorModal from '../../components/quiz/QuestionEditorModal';
 import QuizFormModal from '../../components/quiz/QuizFormModal';
 import quizService, { ATTEMPT_STATUS, QUESTION_TYPE, formatDateTime, formatScore } from '../../services/quizService';
 import { toast } from '../../components/common/Toast';
+import { confirmModal } from '../../components/common/ConfirmModal';
 
 const LETTERS = 'ABCDEF';
 
@@ -64,7 +65,16 @@ function QuestionsTab({ quiz, canEdit, onChanged }) {
   };
 
   const removeOne = async (question) => {
-    if (!window.confirm('Xóa câu hỏi này?')) return;
+    const ok = await confirmModal({
+      title: 'Xóa câu hỏi?',
+      message: 'Bạn có chắc chắn muốn xóa câu hỏi này khỏi bài kiểm tra?',
+      subtext: 'Thao tác này không thể hoàn tác.',
+      confirmText: 'Xóa câu hỏi',
+      cancelText: 'Hủy bỏ',
+      type: 'danger'
+    });
+    if (!ok) return;
+
     try {
       await quizService.deleteQuestion(question.id);
       toast.success('Đã xóa câu hỏi.');
@@ -75,7 +85,16 @@ function QuestionsTab({ quiz, canEdit, onChanged }) {
   };
 
   const removeSelected = async () => {
-    if (!window.confirm(`Xóa ${selected.size} câu hỏi đã chọn?`)) return;
+    const ok = await confirmModal({
+      title: 'Xóa các câu hỏi đã chọn?',
+      message: `Bạn có chắc chắn muốn xóa ${selected.size} câu hỏi đang chọn?`,
+      subtext: 'Các câu hỏi đã chọn sẽ bị xóa vĩnh viễn khỏi bài kiểm tra này.',
+      confirmText: 'Xóa câu hỏi đã chọn',
+      cancelText: 'Hủy bỏ',
+      type: 'danger'
+    });
+    if (!ok) return;
+
     try {
       await quizService.bulkDelete(quiz.id, [...selected]);
       toast.success(`Đã xóa ${selected.size} câu hỏi.`);
@@ -233,7 +252,7 @@ function ResultsTab({ quiz }) {
               <option value="studentName:ASC">Tên A → Z</option>
             </select>
             <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 h-9 w-full md:w-56">
-              <Search size={15} className="text-slate-400" />
+              <Search size={15} className="text-slate-500" />
               <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tìm học viên..." className="flex-1 min-w-0 text-sm outline-none" />
             </label>
           </div>
@@ -314,7 +333,16 @@ export default function QuizEditorPage() {
   };
 
   const deleteQuiz = async () => {
-    if (!window.confirm(`Xóa bài kiểm tra "${quiz.title}" cùng toàn bộ câu hỏi?`)) return;
+    const ok = await confirmModal({
+      title: 'Xác nhận xóa bài kiểm tra?',
+      message: `Bạn có chắc chắn muốn xóa bài kiểm tra "${quiz.title}"?`,
+      subtext: 'Toàn bộ câu hỏi, đáp án và lịch sử làm bài kiểm tra sẽ bị xóa hoàn toàn.',
+      confirmText: 'Xóa bài kiểm tra',
+      cancelText: 'Hủy bỏ',
+      type: 'danger'
+    });
+    if (!ok) return;
+
     try {
       await quizService.remove(quiz.id);
       toast.success('Đã xóa bài kiểm tra.');
@@ -327,7 +355,6 @@ export default function QuizEditorPage() {
   return (
     <>
       <PortalHeader
-        eyebrow="QUIZ EDITOR"
         title={quiz.title}
         desc={`${quiz.course?.title} › ${quiz.lessonTitle} · ${quiz.durationMinutes} phút · tối đa ${quiz.maxAttempts} lần · điểm đạt ${formatScore(quiz.passScore)}/10 · ${quiz.showAnswersAfterSubmit ? 'cho xem đáp án' : 'ẩn đáp án'}`}
         actions={
