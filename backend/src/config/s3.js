@@ -11,6 +11,8 @@ import { AppError } from '../utils/AppError.js';
  */
 let client = null;
 
+export const isS3Configured = () => Boolean(process.env.AWS_REGION && process.env.S3_BUCKET);
+
 export const getS3Config = () => {
   const region = process.env.AWS_REGION;
   const bucket = process.env.S3_BUCKET;
@@ -22,6 +24,7 @@ export const getS3Config = () => {
       'Service Unavailable'
     );
   }
+
 
   return {
     region,

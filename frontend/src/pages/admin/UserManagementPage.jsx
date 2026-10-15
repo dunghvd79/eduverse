@@ -225,7 +225,6 @@ export default function UserManagementPage() {
   return (
     <>
       <PortalHeader
-        eyebrow="QUẢN TRỊ TOÀN TRƯỜNG & RBAC"
         title="Quản lý Người Dùng"
         desc="Quản lý tài khoản, phân cấp vai trò hệ thống và giám sát quyền truy cập của cán bộ, giảng viên và sinh viên."
         actions={
@@ -313,7 +312,7 @@ export default function UserManagementPage() {
               <button
                 type="button"
                 onClick={() => setSearchTerm('')}
-                className="text-slate-400 hover:text-slate-600 p-0 border-0 bg-transparent cursor-pointer"
+                className="text-slate-500 hover:text-slate-600 p-0 border-0 bg-transparent cursor-pointer"
               >
                 <X size={14} />
               </button>
@@ -349,7 +348,7 @@ export default function UserManagementPage() {
             <tbody>
               {loading ? (
                 <tr>
-                  <td colSpan={7} className="text-center py-10 text-slate-400">
+                  <td colSpan={7} className="text-center py-10 text-slate-500">
                     <div className="flex items-center justify-center gap-2">
                       <RefreshCw size={18} className="animate-spin text-primary" />
                       <span>Đang tải danh sách người dùng...</span>
@@ -358,7 +357,7 @@ export default function UserManagementPage() {
                 </tr>
               ) : users.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="text-center py-12 text-slate-400">
+                  <td colSpan={7} className="text-center py-12 text-slate-500">
                     <Users size={32} className="mx-auto mb-2 opacity-40" />
                     <p className="m-0 font-medium">Không tìm thấy người dùng nào phù hợp</p>
                     <small>Hãy thử thay đổi từ khóa tìm kiếm hoặc bộ lọc vai trò.</small>
@@ -383,7 +382,7 @@ export default function UserManagementPage() {
                           <div>
                             <b className="text-slate-800 font-semibold">{u.fullName}</b>
                             {isSelf && (
-                              <span className="text-[10px] font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded ml-1.5">
+                              <span className="text-xs font-bold text-blue-600 bg-blue-50 px-1.5 py-0.5 rounded ml-1.5">
                                 Bạn
                               </span>
                             )}
@@ -400,14 +399,14 @@ export default function UserManagementPage() {
                           <div className="inline-flex flex-col">
                             <Badge tone="red">Đã khóa</Badge>
                             {u.blockReason && (
-                              <span className="text-[10px] text-red-500 max-w-[150px] truncate" title={u.blockReason}>
+                              <span className="text-xs text-red-500 max-w-[150px] truncate" title={u.blockReason}>
                                 {u.blockReason}
                               </span>
                             )}
                           </div>
                         )}
                       </td>
-                      <td className="text-slate-400 text-xs">
+                      <td className="text-slate-500 text-xs">
                         {u.createdAt ? new Date(u.createdAt).toLocaleDateString('vi-VN') : '—'}
                       </td>
                       <td className="text-right">

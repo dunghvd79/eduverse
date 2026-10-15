@@ -1,33 +1,49 @@
 # 🧭 Trạng Thái Tiến Độ Dự Án (Project State)
 
-> **Cập nhật lần cuối:** 13/10/2026  
+> **Cập nhật lần cuối:** 14/10/2026  
 > **Người cập nhật:** dunghvd79, Hoàng Ngọc Sơn & AI Assistant  
-> **Giai đoạn hiện tại:** Phase 1 — ✅ Hoàn thành Sprint 5 (Bài kiểm tra + Gemini AI, Bài tập, Bảng điểm & xuất Excel). Tiếp theo: dọn việc tồn, dashboard số liệu thật, chuẩn bị demo
+> **Giai đoạn hiện tại:** Phase 1 — ✅ Hoàn thành Sprint 6 (Bài tập & Bảng điểm), Tính năng Vòng đời khóa học (Unpublish to Draft), Custom Confirm Modal toàn hệ thống & Bộ điều phối Local Storage Fallback. Đã push remote `origin/feature-dung`.
 
 ---
 
-## 0. Chốt Phiên Làm Việc Gần Nhất (13/10/2026) — đọc mục này trước
+## 0. Chốt Phiên Làm Việc Gần Nhất (14/10/2026) — đọc mục này trước
 
-**Tình trạng Git:** nhánh `feature-dung` đã push, **10 commit chưa vào `main`** (Sprint 3 → Sprint 5, từ `2ce7fa9` đến `5a9ae2b`) — **chưa tạo Pull Request** (người dùng sẽ tự review rồi tạo sau). Thư mục làm việc sạch.
+**Tình trạng Git:** nhánh `feature-dung`, đã commit và push thành công lên GitHub remote (`origin/feature-dung`) với commit `5de9354` & `e4b60a8`.
 
-**Đã xong trong 2 ngày 12–13/10/2026:** Upload S3 + tài liệu bài học · Sprint 4 Lớp học & Ghi danh · Sprint 5 Bài kiểm tra + Gemini AI · Bài tập (nộp file S3, chấm, ZIP) · Bảng điểm + xuất Excel/CSV · tài liệu `grading-policy.md`, `git-workflow.md`.
+**Đã xong trong phiên 14/10/2026:**
+1. **Nâng cấp Giao diện Trang chủ & Chân trang (`HomePage.jsx`, `Footer.jsx`):**
+   - Section 4 thẻ công cụ: Thay thế toàn bộ thuật ngữ IT ngoại lai bằng tiếng Việt sư phạm chuẩn chỉ, căn chỉnh icon vector SVG và tiêu đề `h3` ngang hàng trên 1 dòng.
+   - Footer: Đổi màu nền sang dải gradient xanh EduVerse (`#0b4887` - `#0e5aa5` - `#093a6e`), huy hiệu logo nền trắng nổi bật, tăng tương phản các liên kết.
+2. **Cải tiến Quản lý Bài kiểm tra Giảng viên (`TeacherQuizzesPage.jsx`, `quizService.js`, `quizValidation.js`):**
+   - Backend: Bổ sung liên kết `Chapter` (`title`, `order_index`) vào danh sách Quiz. Hỗ trợ lọc theo `isPublished`.
+   - Frontend: Bổ sung bộ lọc Khóa học và Trạng thái xuất bản; hiển thị Breadcrumb Khóa học & Chương mục cho từng bài quiz trong bảng.
+3. **Vòng đời Khóa học & Quyền biên tập (Unpublish / Revert to Draft):**
+   - Mở quyền xóa mềm cho giảng viên với các khóa học ở trạng thái `draft`, `pending`, `rejected` (chỉ khóa khi `published`).
+   - Sửa lỗi ActionMenu 3-dots bị che/khuất ngoài khung thẻ khóa học (`overflow-hidden` -> hiển thị popup hướng lên `bottom-full`).
+   - Bổ sung API `PATCH /api/v1/courses/:id/unpublish` cho phép Giảng viên chuyển khóa học `published` hoặc `pending` về `draft` để chỉnh sửa học liệu, video, quiz.
+   - Bổ sung nút tác vụ "Tạm dừng để sửa" / "Rút yêu cầu duyệt" trên Card, Table và trang Soạn đề cương (`CourseCurriculumBuilderPage.jsx`).
+4. **Hệ thống Custom Confirm Modal cao cấp ([`ConfirmModal.jsx`](file:///e:/2026%20Year/K%C3%AC_1_N%C4%83m_4/Do_An_Lien_Nganh/eduverse/frontend/src/components/common/ConfirmModal.jsx)):**
+   - Xóa bỏ triệt để 100% các hộp thoại `window.confirm` xấu xí mặc định của trình duyệt trên toàn bộ ứng dụng.
+   - Xây dựng modal Promise-based với giao diện đẳng cấp, backdrop-blur, icon badge phân loại (`warning`, `danger`, `info`), hỗ trợ phím tắt `Enter`/`Esc`.
+   - Áp dụng trên toàn hệ thống: Xóa khóa học, xóa bài tập, xóa câu hỏi quiz, nộp bài kiểm tra, nộp lại bài tập, xóa danh mục, xóa học viên khỏi lớp.
+5. **Bộ điều phối lưu trữ tệp (Local Storage Fallback - [`storageService.js`](file:///e:/2026%20Year/K%C3%AC_1_N%C4%83m_4/Do_An_Lien_Nganh/eduverse/backend/src/services/storageService.js)):**
+   - Khắc phục triệt để lỗi 503 ("Chức năng lưu trữ tệp chưa được cấu hình thiếu AWS_REGION hoặc S3_BUCKET").
+   - Kiến trúc Hybrid thông minh: Tự động lưu trữ cục bộ vào `backend/uploads/` khi chạy local, và tự động dùng S3 khi có biến môi trường AWS.
+   - Hỗ trợ tải lên PUT stream trực tiếp, kiểm tra metadata, tải về bảo mật bằng chữ ký HMAC và phục vụ ảnh tĩnh qua `/uploads`.
+   - Cập nhật `.gitignore` bỏ qua `uploads/` và `backend/uploads/`.
+6. **Căn chỉnh Tỷ lệ Hiển thị Desktop Chuẩn W3C (`index.css`):**
+   - Bổ sung `@media (min-width: 1024px) { html { font-size: 90%; } }` giúp thu gọn tỷ lệ giao diện trên Laptop/Desktop về mức 90% cân đối, sắc nét, không vỡ layout/dropdown/tooltip/modal.
+   - Giữ nguyên 100% trên Mobile/Tablet để bảo toàn kích thước chạm ngón tay và khả năng đọc.
+7. **Sửa lỗi Tải Tài liệu Bài học (`materialService.js`, `LessonMaterialsPanel.jsx`):**
+   - Khắc phục lỗi `ReferenceError: material is not defined` trong hàm `getDownloadUrl` ở backend khi học sinh bấm tải tệp đính kèm.
+   - Nâng cấp cơ chế tải file frontend sang dùng thẻ `<a>` ẩn với thuộc tính `download`, tải file mượt mà trong nền không làm chuyển hướng trang.
+8. **Đồng bộ Trạng thái Giao Bài tập theo Lớp (`courseService.js`, `ClassroomPage.jsx`):**
+   - Backend: Bổ sung trường `isAssignmentScheduled` vào cấu trúc đề cương khi gọi kèm `classId`.
+   - Frontend: Hiển thị đúng thông báo *"Giảng viên chưa lên lịch / chưa giao bài tập này cho lớp học"* và nút disabled *"Chưa giao cho lớp"* khi bài tập chưa được lên lịch hạn nộp, ngăn ngừa click nhầm gây lỗi 404.
+
+
 
 **Migration đã chạy trên Neon dev** (ai dùng DB riêng phải tự chạy trong `backend/`): `db:migrate:categories`, `db:migrate:classes`, `db:migrate:quizzes`, `db:migrate:assignments`. Sau khi pull nhớ `npm install` (thư viện mới: `@aws-sdk/*`, `archiver`, `exceljs`).
-
-**Việc người dùng cần tự làm:**
-1. Review & tạo PR `feature-dung` → `main`; báo nhóm chạy `npm install` + migration (nếu DB riêng), mỗi người tự tạo key Gemini.
-2. **Dựng bucket AWS S3 thật** (CORS PUT/GET từ frontend, Public Read cho `public/*`, IAM `s3:PutObject/GetObject/DeleteObject/ListBucket`, điền 4 biến vào `backend/.env`) — bắt buộc để học viên nộp bài / tải tài liệu thật. Tất cả luồng S3 hiện mới test bằng S3 giả lập.
-3. Thử tay toàn bộ luồng trên trình duyệt: tạo khóa → đề cương + quiz + bài tập → duyệt → mở lớp → học viên nhập mã, học, làm quiz, nộp bài → GV chấm → xuất bảng điểm.
-4. Nhắn tuanmanh205: không merge nhánh `tuanmanh205-sprint3-course-api`; tạo nhánh mới từ `main`; commit đứng tên mình; xóa thư mục thừa `eduverse-feature-dung/` trên `feature-ngocson`.
-5. Chốt 2 nghiệp vụ còn treo: mở lại để sửa khóa đã `published`? Admin tự duyệt khóa của mình?
-
-**Việc kỹ thuật tiếp theo (đề xuất theo thứ tự):**
-1. Dọn tồn Sprint 3: trang Chi tiết duyệt chưa xem được nội dung bài; Trang chủ (`HomePage`) còn dữ liệu giả; nối upload avatar & ảnh bìa khóa học (backend sẵn sàng); API phát video `video-stream-url` + purpose `lesson_video`; menu GV còn link demo `Đề cương` (`/teacher/courses/1/curriculum`).
-2. Dashboard 4 role + trang Báo cáo của Quản lý dùng số liệu thật (đã có đủ dữ liệu lớp, quiz, bài tập, điểm).
-3. Thông báo in-app/email (giao bài, chấm điểm, yêu cầu nộp lại) — hiện chưa có module.
-4. Chuẩn bị bảo vệ: backlog bảo mật Auth (mục 3.0), Docker Compose, dữ liệu mẫu đẹp để demo, cân nhắc Gemini Paid tier / model Flash-Lite cho demo ổn định.
-
-**Script kiểm thử tạm** (nằm ngoài repo, trong thư mục scratchpad của phiên AI — không còn sau phiên): API 56 (tài liệu) + 73 (lớp) + 92 (quiz) + 68 (bài tập) + 25 (bảng điểm), E2E Edge 21 + 22 + 24 + 11 — đều đạt ở lần chạy cuối. Nếu cần kiểm thử lại, viết test chính thức vào `docs/testing/` / thư mục test của repo.
 
 ---
 

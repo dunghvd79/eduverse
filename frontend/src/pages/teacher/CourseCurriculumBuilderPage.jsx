@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { FileText, Plus, Save, Send, Trash2, Video, ClipboardCheck, FileQuestion, ChevronDown, Lock } from 'lucide-react';
+import { FileText, Plus, Save, Send, Trash2, Video, ClipboardCheck, FileQuestion, ChevronDown, Lock, RotateCcw } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { PortalHeader, Button, Card, Badge, Field } from '../../components/portal/PortalUI';
 import courseService from '../../services/courseService';
@@ -8,6 +8,8 @@ import QuizFormModal from '../../components/quiz/QuizFormModal';
 import AssignmentFormModal from '../../components/assignment/AssignmentFormModal';
 import assignmentService from '../../services/assignmentService';
 import { toast } from '../../components/common/Toast';
+import { confirmModal } from '../../components/common/ConfirmModal';
+
 
 const TYPE_LABEL = {
   theory: 'Lý thuyết',
@@ -180,8 +182,48 @@ export default function CourseCurriculumBuilderPage() {
     }
   };
 
+  const handleUnpublish = async () => {
+    const isPublished = course?.status === 'published';
+    const ok = await confirmModal({
+      title: isPublished ? 'Tạm dừng công khai khóa học?' : 'Rút yêu cầu phê duyệt?',
+      message: isPublished
+        ? `Chuyển khóa học "${course?.title}" về Bản nháp để chỉnh sửa?`
+        : `Bạn có muốn rút lại yêu cầu phê duyệt khóa học "${course?.title}" và chuyển về Bản nháp?`,
+      subtext: isPublished
+        ? 'Khóa học sẽ tạm thời ẩn khỏi trang chủ đối với học viên mới cho đến khi bạn hoàn tất chỉnh sửa và gửi duyệt lại.'
+        : 'Sau khi rút yêu cầu, bạn có thể tiếp tục bổ sung nội dung bài giảng, đề thi hoặc tài liệu.',
+      confirmText: isPublished ? 'Chuyển về nháp' : 'Rút yêu cầu',
+      cancelText: 'Giữ nguyên',
+      type: 'warning'
+    });
+
+    if (!ok) return;
+
+    try {
+      setSaving(true);
+      await courseService.unpublish(id);
+      toast.success(isPublished ? 'Đã chuyển về bản nháp. Bây giờ bạn có thể chỉnh sửa nội dung.' : 'Đã rút yêu cầu duyệt.');
+      await load();
+    } catch (error) {
+      toast.error(error?.message || 'Không thể chuyển khóa học về bản nháp.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
   const deleteLesson = async () => {
-    if (!selectedLesson || !window.confirm('Xóa bài học này?')) return;
+    if (!selectedLesson) return;
+
+    const ok = await confirmModal({
+      title: 'Xóa bài học?',
+      message: `Bạn có chắc chắn muốn xóa bài học "${selectedLesson.title}"?`,
+      subtext: 'Toàn bộ nội dung, tài liệu đính kèm và dữ liệu liên quan sẽ bị gỡ khỏi đề cương.',
+      confirmText: 'Xóa bài học',
+      cancelText: 'Hủy bỏ',
+      type: 'danger'
+    });
+
+    if (!ok) return;
 
     try {
       await courseService.deleteLesson(selectedLesson.id);
@@ -200,12 +242,16 @@ export default function CourseCurriculumBuilderPage() {
   return (
     <>
       <PortalHeader
-        eyebrow="CURRICULUM BUILDER"
         title={course?.title || 'Đề cương khóa học'}
         desc={`Trạng thái: ${STATUS_TEXT[course?.status] || course?.status || 'Bản nháp'} · ${course?.category?.name || 'Chưa chọn danh mục'} · ${chapters.length} chương`}
         actions={
           <>
             <Button variant="secondary" onClick={load}>Làm mới</Button>
+            {isLocked && (
+              <Button variant="secondary" onClick={handleUnpublish} disabled={saving}>
+                <RotateCcw size={16} /> {course?.status === 'published' ? 'Chuyển về nháp để sửa' : 'Rút yêu cầu duyệt'}
+              </Button>
+            )}
             {!isLocked && (
               <Button variant="secondary" onClick={saveLesson} disabled={!selectedLesson || saving || lessonLoading}>
                 <Save size={16} /> Lưu bài học
@@ -221,13 +267,24 @@ export default function CourseCurriculumBuilderPage() {
       />
 
       {isLocked && (
-        <div className="flex items-center gap-2 p-3 mb-4 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-sm">
-          <Lock size={16} className="flex-shrink-0" />
-          <span>
-            {course.status === 'pending'
-              ? 'Khóa học đang chờ Quản lý đào tạo duyệt nên tạm khóa chỉnh sửa. Nếu bị từ chối, bạn có thể sửa và gửi duyệt lại.'
-              : 'Khóa học đã được công khai nên nội dung đã khóa, chỉ xem được.'}
-          </span>
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-3.5 mb-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-sm">
+          <div className="flex items-center gap-2.5">
+            <Lock size={18} className="flex-shrink-0 text-amber-600" />
+            <span>
+              {course.status === 'pending'
+                ? 'Khóa học đang chờ Quản lý đào tạo duyệt nên tạm khóa chỉnh sửa. Bạn có thể rút lại yêu cầu để tiếp tục chỉnh sửa.'
+                : 'Khóa học đã được công khai nên nội dung đã khóa để bảo toàn dữ liệu học viên.'}
+            </span>
+          </div>
+          <button
+            type="button"
+            onClick={handleUnpublish}
+            disabled={saving}
+            className="inline-flex items-center gap-1.5 whitespace-nowrap rounded-lg bg-amber-600 px-3 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-amber-700 transition-colors cursor-pointer"
+          >
+            <RotateCcw size={13} />
+            {course.status === 'published' ? 'Chuyển về nháp để sửa' : 'Rút yêu cầu duyệt'}
+          </button>
         </div>
       )}
 
@@ -253,7 +310,7 @@ export default function CourseCurriculumBuilderPage() {
           {chapters.map((chapter, index) => (
             <div className="chapter" key={chapter.id}>
               <div className="flex items-start gap-2">
-                <ChevronDown size={16} className="mt-1 text-slate-400" />
+                <ChevronDown size={16} className="mt-1 text-slate-500" />
                 <div className="min-w-0">
                   <b>{index + 1}. {chapter.title}</b>
                   <small>{(chapter.lessons || []).length} bài học</small>

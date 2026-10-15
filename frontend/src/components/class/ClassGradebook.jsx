@@ -77,7 +77,7 @@ export default function ClassGradebook({ cls }) {
             ))}
           </div>
           <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 h-9 w-full md:w-56">
-            <Search size={15} className="text-slate-400" />
+            <Search size={15} className="text-slate-500" />
             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tìm học viên..." className="flex-1 min-w-0 text-sm outline-none" />
           </label>
         </div>
@@ -106,9 +106,9 @@ export default function ClassGradebook({ cls }) {
                       <b className="block whitespace-nowrap">{row.student.fullName}</b>
                       <small className="text-slate-500">{row.student.email}</small>
                     </td>
-                    <td className="whitespace-nowrap">{row.progressPercentage}%<small className="block text-slate-400">{row.completedLessons}/{row.totalLessons} bài</small></td>
+                    <td className="whitespace-nowrap">{row.progressPercentage}%<small className="block text-slate-500">{row.completedLessons}/{row.totalLessons} bài</small></td>
                     {row.quizScores.map(q => (
-                      <td key={q.quizId} className={q.attempted ? '' : 'text-slate-400'} title={q.attempted ? 'Điểm cao nhất' : 'Chưa làm'}>{q.attempted ? formatScore(q.score) : '0 *'}</td>
+                      <td key={q.quizId} className={q.attempted ? '' : 'text-slate-500'} title={q.attempted ? 'Điểm cao nhất' : 'Chưa làm'}>{q.attempted ? formatScore(q.score) : '0 *'}</td>
                     ))}
                     {book.quizzes.length > 0 && <td><b>{formatScore(row.quizAverage)}</b></td>}
                     {row.assignmentScores.map(a => {
@@ -116,7 +116,7 @@ export default function ClassGradebook({ cls }) {
                       return (
                         <td key={a.assignmentId}>
                           {formatScore(a.grade)}
-                          {badge && <span className={`block text-[10px] font-semibold ${badge[1] === 'red' ? 'text-red-600' : badge[1] === 'gray' ? 'text-slate-400' : 'text-amber-600'}`}>{badge[0]}</span>}
+                          {badge && <span className={`block text-xs font-semibold ${badge[1] === 'red' ? 'text-red-600' : badge[1] === 'gray' ? 'text-slate-500' : 'text-amber-600'}`}>{badge[0]}</span>}
                         </td>
                       );
                     })}

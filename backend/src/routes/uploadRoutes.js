@@ -31,4 +31,13 @@ router.delete('/lessons/:lessonId/materials/:materialId', ...teacherOrAdmin, val
 // Presigned GET URL tải tài liệu (30 phút) | Role: như danh sách tài liệu
 router.get('/lessons/:lessonId/materials/:materialId/download-url', authenticateToken, validateIdParam('lessonId', 'materialId'), controller.getDownloadUrl);
 
+// ==========================================
+// 3. LOCAL STORAGE FALLBACK ENDPOINTS
+// ==========================================
+// Nhận file tải lên bằng method PUT (tương thích hoàn toàn với luồng S3 của client)
+router.put('/uploads/local-put', controller.handleLocalPut);
+// Tải tệp bảo mật có chữ ký HMAC
+router.get('/uploads/local-download', controller.handleLocalDownload);
+
 export default router;
+

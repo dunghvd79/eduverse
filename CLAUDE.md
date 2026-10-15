@@ -20,6 +20,8 @@
 - Dev server thường đã chạy sẵn ở :5000/:5173, kiểm tra trước khi khởi động thêm.
 - DB dev là **Neon dùng chung**: migration/seed/script test chạy thẳng lên dữ liệu thật của nhóm. Hỏi trước khi chạy migration mới hoặc xóa dữ liệu; tài khoản test đặt dạng `sec-test-*@example.com` và tự dọn sau khi chạy.
 - Chưa có test framework. Script test tạm đừng để trong scratchpad (sẽ mất): đặt trong `backend/src/scripts/` hoặc `docs/testing/`.
+- Tài khoản seed (mật khẩu `EduVerse@2026`): `admin@`, `manager@`, `teacher.an@` (có lớp), `teacher.binh@` (trống), `student.dung@eduverse.com` — dùng để test thủ công/chụp màn hình, chỉ đọc thì không cần dọn.
+- Kiểm tra UI: Python Playwright đã cài (skill `webapp-testing`); `npx vite build --outDir <thư mục tạm>` để kiểm tra build mà không đè `dist/`.
 
 ## Kiến trúc backend (`backend/src/`)
 `routes → controllers → services → models`, validate bằng Joi trong `validations/`.
@@ -28,12 +30,19 @@
 - Lỗi nghiệp vụ: `throw new AppError(message, statusCode, error?)` (message trước, status sau) (`utils/AppError.js`); response luôn qua `sendSuccess`/`sendError` (`utils/response.js`) theo `docs/api/api-conventions.md`.
 - Thông báo lỗi/thành công cho người dùng viết tiếng Việt.
 
+## Frontend (`frontend/src/`)
+- Trang gọi API bằng `useEffect` + `useState` + `toast` (chưa dùng TanStack Query dù đã cài); service tự bóc envelope: `(await api.get(url)).data`.
+- UI portal: `components/portal/PortalUI.jsx` (PortalHeader, Card, StatCard, Badge, Table, Progress, LoadError…) + class CSS `.portal-*` trong `index.css`. Formatter: `formatScore`/`formatDateTime` (quizService), `formatDate`/`CLASS_STATUS` (classService) — dùng lại, đừng viết mới.
+- `tailwind.config.js` chỉ có breakpoint `md`/`lg`/`xl` (không có `sm`, `2xl`). Màu chữ phụ tối thiểu `slate-500`, chữ tối thiểu 12px.
+
 ## Bẫy đã gặp — kiểm tra mỗi khi viết API mới
 1. **Express 5:** `req.query` là getter chỉ đọc — không gán `req.query = ...`; dùng `validateQuery` (đã xử lý bằng `defineProperty`).
 2. **Lộ dữ liệu theo trạng thái/vai trò:** khóa `draft`/`pending` không được lộ nội dung qua API chương/bài; không trả `videoUrl`, đáp án quiz, file người khác cho học viên chưa ghi danh hoặc không có quyền.
 3. Khóa `pending`/`published` bị khóa chỉnh sửa; danh sách "của tôi" phải lọc theo chủ sở hữu (`mine=true`).
 4. Reorder (chương/bài/câu hỏi) phải nhận đủ phần tử, không thiếu không thừa.
 5. Gemini hay trả 503: luôn đi qua `aiService` (có retry + model dự phòng), không gọi API trực tiếp.
+6. **Không chép lại quy tắc nghiệp vụ:** điểm tổng kết dùng `computeGradebook`; "cần chấm" `needsGrading`, hạn nộp `windowOf` (assignmentService); lịch mở đề `availabilityOf`, hết giờ `isExpired` (quizAttemptService). Cần thì `export`, đừng viết lại.
+7. Cột `DECIMAL` (`score`, `grade`, `pass_score`) và `COUNT` từ Postgres trả về **chuỗi**: luôn `Number()` trước khi so sánh/tính.
 
 ## Tài liệu (Docs-as-Code)
 - Thêm/sửa endpoint ⇒ cập nhật `docs/api/api-<module>.md` cùng commit. Đổi schema ⇒ `docs/database/schema.md` + migration mới trong `backend/src/scripts/migrations/` + script `db:migrate:*`.

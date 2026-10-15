@@ -1,15 +1,11 @@
-import crypto from 'crypto';
-import { DeleteObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { Op } from 'sequelize';
 import models from '../models/index.js';
-import { getS3Client, getS3Config } from '../config/s3.js';
 import { AppError } from '../utils/AppError.js';
 import { assertCourseEditable } from './courseService.js';
 import { canViewAsStaff } from './quizService.js';
 import { findClassOrFail, canManageClass, isActiveMember } from './classService.js';
 import { createSignedPutUrl, getFileExtension, isMimeAllowed, sanitizeFileName, UPLOAD_URL_EXPIRES_IN } from './uploadService.js';
-import { headObject } from './materialService.js';
+import { checkObjectMetadata, deleteStorageObject, createDownloadGetUrl } from './storageService.js';
 
 const {
   sequelize, Assignment, ClassAssignment, AssignmentSubmission, Lesson, Chapter, Course,
@@ -273,7 +269,7 @@ const findClassAssignmentContext = async (cls, assignmentId) => {
  * Trạng thái cửa sổ nộp bài:
  * not_scheduled (chưa giao) | not_open (chưa mở) | on_time | late (được nộp muộn) | closed
  */
-const windowOf = (classAssignment, now = new Date()) => {
+export const windowOf = (classAssignment, now = new Date()) => {
   if (!classAssignment) return 'not_scheduled';
   const open = classAssignment.open_time ? new Date(classAssignment.open_time) : null;
   const deadline = new Date(classAssignment.deadline);
@@ -335,17 +331,14 @@ const toNumber = (value) => (value === null || value === undefined ? null : Numb
 /**
  * Bài cần chấm: chưa có điểm, hoặc nộp lại sau lần chấm gần nhất
  */
-const needsGrading = (submission) =>
+export const needsGrading = (submission) =>
   ['submitted', 'late_submitted'].includes(submission.status)
   && (submission.grade === null || (submission.graded_at && new Date(submission.submitted_at) > new Date(submission.graded_at)));
 
 const signDownloadUrl = async (key, fileName) => {
   try {
-    const { bucket } = getS3Config();
-    const disposition = `attachment; filename="${sanitizeFileName(fileName)}"; filename*=UTF-8''${encodeURIComponent(fileName)}`;
-    return await getSignedUrl(getS3Client(), new GetObjectCommand({ Bucket: bucket, Key: key, ResponseContentDisposition: disposition }), { expiresIn: DOWNLOAD_URL_EXPIRES_IN });
+    return await createDownloadGetUrl(key, fileName);
   } catch {
-    // Chưa cấu hình S3 -> vẫn trả thông tin bài nộp, chỉ thiếu link tải
     return null;
   }
 };
@@ -581,7 +574,6 @@ export const createSubmissionUploadUrl = async (classId, assignmentId, user, { f
  * POST /classes/:classId/assignments/:assignmentId/submissions - xác nhận nộp / nộp lại
  */
 export const confirmSubmission = async (classId, assignmentId, user, { fileKey, fileName, fileSize, studentNote }) => {
-  const { bucket } = getS3Config();
   let oldKey = null;
 
   const result = await sequelize.transaction(async (transaction) => {
@@ -604,7 +596,7 @@ export const confirmSubmission = async (classId, assignmentId, user, { fileKey, 
       throw new AppError('Tệp này đã được nộp trước đó', 409, 'Conflict');
     }
 
-    const head = await headObject(bucket, fileKey);
+    const head = await checkObjectMetadata(fileKey);
     if (!head) {
       throw new AppError('Tệp chưa được tải lên máy chủ lưu trữ', 400, 'Bad Request');
     }
@@ -645,10 +637,9 @@ export const confirmSubmission = async (classId, assignmentId, user, { fileKey, 
     };
   });
 
-  // Xóa tệp cũ sau khi đã lưu bản mới; lỗi chỉ ghi log (tệp mồ côi được Lifecycle Rule dọn)
+  // Xóa tệp cũ sau khi đã lưu bản mới; lỗi chỉ ghi log
   if (oldKey && oldKey !== fileKey) {
-    getS3Client().send(new DeleteObjectCommand({ Bucket: bucket, Key: oldKey }))
-      .catch((error) => console.error(`⚠️ Không xóa được tệp bài nộp cũ "${oldKey}":`, error.name, error.message));
+    await deleteStorageObject(oldKey);
   }
   return result;
 };

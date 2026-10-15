@@ -97,7 +97,7 @@ export default function AIQuizGeneratorPage() {
 
   return (
     <>
-      <PortalHeader eyebrow="AI ASSISTANT" title="Sinh câu hỏi bằng Gemini AI" desc="Dán nội dung bài giảng, AI soạn câu hỏi kèm đáp án và giải thích. Bạn xem lại, chỉnh sửa rồi mới lưu vào đề." />
+      <PortalHeader title="Sinh câu hỏi bằng Gemini AI" desc="Dán nội dung bài giảng, AI soạn câu hỏi kèm đáp án và giải thích. Bạn xem lại, chỉnh sửa rồi mới lưu vào đề." />
 
       <div className="ai-layout">
         <Card>
