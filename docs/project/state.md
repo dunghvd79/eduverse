@@ -94,6 +94,7 @@
    - [ ] **Admin tự gửi duyệt và tự duyệt được khóa học của chính mình** (`approveCourse`/`rejectCourse` không chặn người duyệt là chủ khóa). Nhóm tạm giữ nguyên (09/10/2026); nếu cần kiểm tra chéo thì chặn trường hợp người duyệt = `owner_id`.
    - [ ] Luồng "mở lại để chỉnh sửa" khóa đã `published` (phiên bản mới → duyệt lại) — chưa có, cần chốt nghiệp vụ.
    - [x] Trang **Chi tiết duyệt** (`/manager/approvals/:id/review`) đã xem được nội dung từng bài và tài liệu đính kèm (14/10/2026).
+   - [x] Admin có trang **Quản lý khóa học** (`/admin/courses`): xem mọi khóa, lọc theo trạng thái, tìm kiếm, xóa mềm khóa không dùng (15/10/2026).
    - [x] Trang chủ (`HomePage`) đã nối API thật: nút danh mục, khóa học nổi bật và 5 thẻ môn học (14/10/2026).
    - [x] Tài liệu đính kèm bài học (`CourseMaterial`) + Presigned upload S3 (12/10/2026).
    - [ ] **Cấu hình bucket AWS S3 thật** (bucket, CORS cho PUT/GET từ frontend, policy Public Read cho `public/*`, IAM `s3:PutObject/GetObject/DeleteObject/ListBucket`) rồi test upload thật trên trình duyệt.
