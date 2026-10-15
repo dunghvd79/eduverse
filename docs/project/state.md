@@ -93,7 +93,7 @@
    - [x] **Danh mục khóa học (Categories)** (đã chốt 09/10/2026): bảng `categories` (bảng thứ 19) + `courses.category_id`, 5 endpoint `/api/v1/categories`, trang `/manager/categories` nối API thật (thêm/sửa/ẩn-hiện/sắp xếp/xóa), lọc Catalog theo danh mục, giảng viên chọn danh mục khi tạo/sửa khóa. Migration `npm run db:migrate:categories` **đã chạy trên Neon dev**.
    - [ ] **Admin tự gửi duyệt và tự duyệt được khóa học của chính mình** (`approveCourse`/`rejectCourse` không chặn người duyệt là chủ khóa). Nhóm tạm giữ nguyên (09/10/2026); nếu cần kiểm tra chéo thì chặn trường hợp người duyệt = `owner_id`.
    - [ ] Luồng "mở lại để chỉnh sửa" khóa đã `published` (phiên bản mới → duyệt lại) — chưa có, cần chốt nghiệp vụ.
-   - [ ] Trang **Chi tiết duyệt** (`/manager/approvals/:id/review`) mới chỉ hiện tiêu đề bài, Quản lý chưa xem được nội dung bài để duyệt.
+   - [x] Trang **Chi tiết duyệt** (`/manager/approvals/:id/review`) đã xem được nội dung từng bài và tài liệu đính kèm (14/10/2026).
    - [x] Trang chủ (`HomePage`) đã nối API thật: nút danh mục, khóa học nổi bật và 5 thẻ môn học (14/10/2026).
    - [x] Tài liệu đính kèm bài học (`CourseMaterial`) + Presigned upload S3 (12/10/2026).
    - [ ] **Cấu hình bucket AWS S3 thật** (bucket, CORS cho PUT/GET từ frontend, policy Public Read cho `public/*`, IAM `s3:PutObject/GetObject/DeleteObject/ListBucket`) rồi test upload thật trên trình duyệt.
@@ -102,7 +102,7 @@
    - [ ] Dọn tệp S3 khi xóa bài học/chương, dọn avatar/thumbnail cũ.
 2. **Sprint 4: Lớp học & Thành viên** — ✅ xong (12/10/2026). Còn lại:
    - [ ] `GET /classes/:id/grades/export-excel` — làm cùng Sprint 5 khi có điểm Quiz/Assignment.
-   - [ ] Dashboard Học viên/Giảng viên vẫn dùng số liệu giả; menu Giảng viên còn link demo `Đề cương` (`/teacher/courses/1/curriculum`) và `Sổ điểm` (`/teacher/classes/1/gradebook`).
+   - [ ] Dashboard Học viên/Giảng viên vẫn dùng số liệu giả. (Đã bỏ link demo `Đề cương` và `Chi tiết duyệt` trên menu — 14/10/2026.)
    - [ ] Quản lý chọn giảng viên khi mở lớp chỉ từ danh sách chủ các khóa đã published (API `/users` chỉ dành cho Admin).
 3. **Sprint 5: Bài kiểm tra** — ✅ xong (12/10/2026). Còn lại:
    - [x] Đã test Gemini thật (12/10/2026): sinh đúng 3 loại câu hỏi, đề tiếng Anh B1 ra dạng điền chỗ trống bằng tiếng Anh. **Key nằm trong `backend/.env` từng máy — mỗi thành viên tự tạo key ở aistudio.google.com/apikey, không commit, không dán vào nhóm chat.**
