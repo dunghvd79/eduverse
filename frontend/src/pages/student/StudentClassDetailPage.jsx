@@ -82,7 +82,6 @@ export default function StudentClassDetailPage() {
   return (
     <>
       <PortalHeader
-        eyebrow="CLASSROOM"
         title={cls.name}
         desc={`${cls.course.title} · Giảng viên: ${cls.teacher?.fullName || '—'} · ${cls.totalStudents} học viên · ${formatDate(cls.startDate)} – ${formatDate(cls.endDate)}`}
         actions={
@@ -151,12 +150,12 @@ export default function StudentClassDetailPage() {
                       {lesson.isCompleted
                         ? <CheckCircle2 size={18} className="text-emerald-600 flex-shrink-0" aria-label="Đã hoàn thành" />
                         : <Circle size={18} className="text-slate-300 flex-shrink-0" aria-label="Chưa hoàn thành" />}
-                      <Icon size={15} className="text-slate-400 flex-shrink-0" />
+                      <Icon size={15} className="text-slate-500 flex-shrink-0" />
                       <span className="flex-1 min-w-0 truncate text-sm">{lesson.title}</span>
                     </Link>
                   );
                 })}
-                {(chapter.lessons || []).length === 0 && <p className="text-sm text-slate-400 px-3">Chương chưa có bài học.</p>}
+                {(chapter.lessons || []).length === 0 && <p className="text-sm text-slate-500 px-3">Chương chưa có bài học.</p>}
               </div>
             </div>
           ))}

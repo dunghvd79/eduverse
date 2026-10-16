@@ -1,3 +1,4 @@
+import path from 'path';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
@@ -10,6 +11,7 @@ import courseRoutes from './routes/courseRoutes.js';
 import categoryRoutes from './routes/categoryRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
 import classRoutes from './routes/classRoutes.js';
+import dashboardRoutes from './routes/dashboardRoutes.js';
 import quizRoutes from './routes/quizRoutes.js';
 import assignmentRoutes from './routes/assignmentRoutes.js';
 import { errorHandler } from './middlewares/errorMiddleware.js';
@@ -18,8 +20,12 @@ import { AppError } from './utils/AppError.js';
 
 const app = express();
 
-// Security HTTP headers
-app.use(helmet());
+// Security HTTP headers (cho phép load ảnh từ origin khác)
+app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
+
+// Phục vụ tệp tĩnh tải lên (avatar, thumbnails) khi chạy chế độ Local Storage
+app.use('/uploads', express.static(path.resolve(process.cwd(), 'uploads')));
+
 
 // CORS configuration
 const allowedOrigins = [
@@ -69,6 +75,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/categories', categoryRoutes);
 app.use('/api/v1/classes', classRoutes);
+app.use('/api/v1/dashboard', dashboardRoutes);
 app.use('/api/v1', courseRoutes);
 app.use('/api/v1', uploadRoutes);
 app.use('/api/v1', quizRoutes);

@@ -29,12 +29,16 @@ logs/
 # Testing
 coverage/
 
-# Temporary
+# Temporary & Local uploads
 tmp/
 temp/
+uploads/
+backend/uploads/
+
 
 # Docker
 docker-compose.override.yml
 
 # Local agent & personal notes
 context-local.md
+.claude/

@@ -1,6 +1,11 @@
+import fs from 'fs';
+import path from 'path';
 import * as uploadService from '../services/uploadService.js';
 import * as materialService from '../services/materialService.js';
+import { resolveLocalFilePath, verifyDownloadSignature } from '../services/storageService.js';
 import { sendSuccess } from '../utils/response.js';
+import { AppError } from '../utils/AppError.js';
+
 
 export const createPresignedUrl = async (req, res, next) => {
   try {
@@ -56,11 +61,64 @@ export const getDownloadUrl = async (req, res, next) => {
   }
 };
 
+export const handleLocalPut = async (req, res, next) => {
+  try {
+    const fileKey = req.query.key;
+    if (!fileKey) {
+      throw new AppError('Thiếu tham số key tải lên', 400, 'Bad Request');
+    }
+
+    const fullPath = resolveLocalFilePath(fileKey);
+    const dir = path.dirname(fullPath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+
+    const writeStream = fs.createWriteStream(fullPath);
+    req.pipe(writeStream);
+
+    writeStream.on('finish', () => {
+      res.status(200).send('OK');
+    });
+
+    writeStream.on('error', (err) => {
+      next(err);
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleLocalDownload = async (req, res, next) => {
+  try {
+    const { key, filename, sig } = req.query;
+    if (!key) {
+      throw new AppError('Thiếu thông tin tệp tải về', 400, 'Bad Request');
+    }
+
+    if (!verifyDownloadSignature(key, sig)) {
+      throw new AppError('Liên kết tải tệp không hợp lệ hoặc đã hết hạn', 403, 'Forbidden');
+    }
+
+    const fullPath = resolveLocalFilePath(key);
+    if (!fs.existsSync(fullPath)) {
+      throw new AppError('Tệp không tồn tại trên hệ thống lưu trữ', 404, 'Not Found');
+    }
+
+    return res.download(fullPath, filename || path.basename(fullPath));
+  } catch (error) {
+    next(error);
+  }
+};
+
 export default {
   createPresignedUrl,
   getMaterials,
   createMaterial,
   updateMaterial,
   deleteMaterial,
-  getDownloadUrl
+  getDownloadUrl,
+  handleLocalPut,
+  handleLocalDownload
 };
+

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { Eye, EyeOff } from 'lucide-react';
 import { toast } from '../../components/common/Toast';
@@ -9,6 +9,7 @@ import { useAuthStore } from '../../stores/useAuthStore';
 
 export default function LoginPage() {
   const nav = useNavigate();
+  const location = useLocation();
   const setAuth = useAuthStore((state) => state.setAuth);
   const [showPassword, setShowPassword] = useState(false);
   const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm({
@@ -32,20 +33,25 @@ export default function LoginPage() {
       toast.success(`Đăng nhập thành công! Chào mừng ${user.fullName}`);
 
       // Điều hướng thông minh theo vai trò người dùng (Role-based Navigation)
-      switch (user.role) {
-        case 'admin':
-          nav('/admin/dashboard');
-          break;
-        case 'training_manager':
-          nav('/manager/dashboard');
-          break;
-        case 'teacher':
-          nav('/teacher/dashboard');
-          break;
-        case 'student':
-        default:
-          nav('/student/dashboard');
-          break;
+      if (user.role === 'student') {
+        // Học viên: Quay lại trang trước đó nếu có (VD: khóa học đang xem dở) hoặc về Trang chủ
+        const fromPath = location.state?.from?.pathname || location.state?.from || '/';
+        nav(fromPath, { replace: true });
+      } else {
+        switch (user.role) {
+          case 'admin':
+            nav('/admin/dashboard', { replace: true });
+            break;
+          case 'training_manager':
+            nav('/manager/dashboard', { replace: true });
+            break;
+          case 'teacher':
+            nav('/teacher/dashboard', { replace: true });
+            break;
+          default:
+            nav('/', { replace: true });
+            break;
+        }
       }
     } catch (err) {
       console.error('Login error:', err);
@@ -90,7 +96,7 @@ export default function LoginPage() {
           <button
             type="button"
             onClick={() => setShowPassword((prev) => !prev)}
-            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 transition p-1 focus:outline-none"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-600 transition p-1 focus:outline-none"
             title={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
             aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
           >

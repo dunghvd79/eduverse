@@ -102,7 +102,6 @@ export default function CourseReviewDetailPage() {
   return (
     <>
       <PortalHeader
-        eyebrow="COURSE REVIEW"
         title={`Duyệt khóa học: ${course.title}`}
         desc={`${course.owner?.fullName || 'Chưa xác định'} · ${course.category?.name || 'Chưa chọn danh mục'} · ${course.totalLessons || 0} bài học`}
         actions={
@@ -206,7 +205,7 @@ export default function CourseReviewDetailPage() {
 
         <aside>
           <Card>
-            <SectionTitle title="Checklist" />
+            <SectionTitle title="Danh sách kiểm tra" />
             {[
               ['Mục tiêu khóa học rõ ràng', !!course.description],
               ['Có đề cương', (curriculum?.chapters || []).length > 0],

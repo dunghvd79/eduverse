@@ -1,17 +1,15 @@
 import crypto from 'crypto';
 import path from 'path';
-import { PutObjectCommand } from '@aws-sdk/client-s3';
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import models from '../models/index.js';
-import { getS3Client, getS3Config } from '../config/s3.js';
 import { AppError } from '../utils/AppError.js';
 import { assertCourseEditable } from './courseService.js';
 import { assertCanManageLesson } from './lessonService.js';
+import { createUploadPutUrl, getPublicFileUrl, UPLOAD_URL_EXPIRES_IN } from './storageService.js';
 
 const { Course } = models;
 
 const MB = 1024 * 1024;
-export const UPLOAD_URL_EXPIRES_IN = 15 * 60;
+export { UPLOAD_URL_EXPIRES_IN };
 
 // MIME hợp lệ theo phần mở rộng. Phần tử đầu là MIME chuẩn frontend nên gửi.
 // zip/rar có nhiều MIME vì mỗi hệ điều hành/trình duyệt báo khác nhau.
@@ -107,14 +105,7 @@ const resolveObjectKey = async (purpose, { contextId, fileName }, currentUser) =
   return `${prefix}${crypto.randomUUID()}_${sanitizeFileName(fileName)}`;
 };
 
-/**
- * Ký Presigned PUT URL. Content-Type và Content-Length được ký cùng URL nên client không đổi được loại/kích thước tệp.
- */
-export const createSignedPutUrl = async ({ key, contentType, fileSize }) => {
-  const { bucket } = getS3Config();
-  const command = new PutObjectCommand({ Bucket: bucket, Key: key, ContentType: contentType, ContentLength: fileSize });
-  return getSignedUrl(getS3Client(), command, { expiresIn: UPLOAD_URL_EXPIRES_IN });
-};
+export { createUploadPutUrl as createSignedPutUrl };
 
 /**
  * MIME hợp lệ cho đuôi tệp: đuôi có trong bảng phải khớp; đuôi lạ (GV tự cho phép) chỉ nhận application/octet-stream
@@ -141,16 +132,13 @@ export const createPresignedUrl = async (data, currentUser) => {
     throw new AppError(`Dung lượng tệp vượt quá giới hạn cho phép (tối đa ${rule.maxSize / MB}MB)`, 400, 'Bad Request');
   }
 
-  // Kiểm tra cấu hình S3 trước khi truy vấn CSDL
-  const { publicBaseUrl } = getS3Config();
   const fileKey = await resolveObjectKey(purpose, data, currentUser);
-
-  const uploadUrl = await createSignedPutUrl({ key: fileKey, contentType, fileSize });
+  const uploadUrl = await createUploadPutUrl({ key: fileKey, contentType, fileSize });
 
   return {
     uploadUrl,
     fileKey,
-    publicUrl: rule.isPublic ? `${publicBaseUrl}/${fileKey}` : null,
+    publicUrl: rule.isPublic ? getPublicFileUrl(fileKey) : null,
     isPublic: rule.isPublic,
     expiresInSeconds: UPLOAD_URL_EXPIRES_IN
   };

@@ -58,7 +58,7 @@ const courseContent = (model, courseId, where = {}) => model.findAll({
  * Tính bảng điểm cả lớp (chỉ học viên đang học).
  * studentId: chỉ tính cho 1 học viên (trang Điểm số của học viên).
  */
-const computeGradebook = async (cls, { studentId = null } = {}) => {
+export const computeGradebook = async (cls, { studentId = null } = {}) => {
   const enrollments = await Enrollment.findAll({
     where: { class_id: cls.id, status: 'active', ...(studentId ? { student_id: studentId } : {}) },
     include: [{ model: User, as: 'student', attributes: ['id', 'full_name', 'email'] }],

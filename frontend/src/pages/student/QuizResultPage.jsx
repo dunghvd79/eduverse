@@ -42,7 +42,6 @@ export default function QuizResultPage() {
   return (
     <>
       <PortalHeader
-        eyebrow="QUIZ RESULT"
         title={attempt.quizTitle}
         desc={`${attempt.className || ''} · Lần làm thứ ${attempt.attemptNumber}`}
         actions={
@@ -69,7 +68,7 @@ export default function QuizResultPage() {
                 <Badge tone={tone}>{label}</Badge>,
                 <span className="text-xs">{formatDateTime(item.submittedAt)}</span>,
                 item.attemptId === attempt.attemptId || item.status === 'in_progress'
-                  ? (item.attemptId === attempt.attemptId ? <small className="text-slate-400">Đang xem</small> : null)
+                  ? (item.attemptId === attempt.attemptId ? <small className="text-slate-500">Đang xem</small> : null)
                   : <Button variant="ghost" onClick={() => navigate(`/student/quizzes/${id}/result/${item.attemptId}`)}>Xem</Button>
               ];
             })}
