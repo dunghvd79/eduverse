@@ -3,6 +3,7 @@ import { RefreshCw, Trash2 } from 'lucide-react';
 import { PortalHeader, Button, Card, Table, Badge } from '../../components/portal/PortalUI';
 import courseService from '../../services/courseService';
 import { toast } from '../../components/common/Toast';
+import { confirmModal } from '../../components/common/ConfirmModal';
 
 const PAGE_SIZE = 20;
 
@@ -65,10 +66,17 @@ export default function AdminCoursesPage() {
   };
 
   const remove = async (course) => {
-    const warning = course.status === 'published'
-      ? '\n\nKhóa học này đang công khai. Nếu đã có lớp học dùng khóa này, các lớp đó có thể không còn hiển thị trong danh sách lớp.'
-      : '';
-    if (!window.confirm(`Xóa khóa học "${course.title}"?${warning}`)) return;
+    const ok = await confirmModal({
+      title: 'Xác nhận xóa khóa học?',
+      message: `Bạn có chắc chắn muốn xóa khóa học "${course.title}"?`,
+      subtext: course.status === 'published'
+        ? 'Khóa học này đang công khai. Nếu đã có lớp học dùng khóa này, các lớp đó có thể không còn hiển thị trong danh sách lớp.'
+        : 'Khóa học sẽ bị ẩn khỏi hệ thống (xóa mềm).',
+      confirmText: 'Xóa khóa học',
+      cancelText: 'Hủy bỏ',
+      type: 'danger'
+    });
+    if (!ok) return;
 
     try {
       setDeletingId(course.id);
