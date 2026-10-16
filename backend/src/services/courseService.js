@@ -4,7 +4,7 @@ import { AppError } from '../utils/AppError.js';
 import { generateUniqueSlug } from '../utils/slugify.js';
 import { assertCategoryAssignable } from './categoryService.js';
 
-const { Course, Category, Chapter, Lesson, LessonProgress, User, Quiz, Assignment } = models;
+const { Course, Category, Chapter, Lesson, LessonProgress, User, Quiz, Assignment, ClassAssignment } = models;
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -302,16 +302,25 @@ export const getCourseCurriculum = async (courseId, { classId = null, currentUse
 
   // Map progress nếu có classId và studentId
   const progressMap = {};
-  if (classId && currentUser && currentUser.role === 'student') {
-    const progressList = await LessonProgress.findAll({
-      where: {
-        class_id: classId,
-        student_id: currentUser.id
-      }
+  const scheduledAssignments = new Set();
+  if (classId) {
+    if (currentUser && currentUser.role === 'student') {
+      const progressList = await LessonProgress.findAll({
+        where: {
+          class_id: classId,
+          student_id: currentUser.id
+        }
+      });
+      progressList.forEach(p => {
+        progressMap[p.lesson_id] = p.is_completed;
+      });
+    }
+
+    const caList = await ClassAssignment.findAll({
+      where: { class_id: classId },
+      attributes: ['assignment_id']
     });
-    progressList.forEach(p => {
-      progressMap[p.lesson_id] = p.is_completed;
-    });
+    caList.forEach(ca => scheduledAssignments.add(ca.assignment_id));
   }
 
   const plain = course.toJSON();
@@ -326,6 +335,7 @@ export const getCourseCurriculum = async (courseId, { classId = null, currentUse
       orderIndex: lesson.order_index,
       quizId: lesson.quiz?.id || null,
       assignmentId: lesson.assignment?.id || null,
+      isAssignmentScheduled: classId && lesson.assignment?.id ? scheduledAssignments.has(lesson.assignment.id) : undefined,
       isCompleted: classId ? !!progressMap[lesson.id] : undefined
     }))
   }));
@@ -449,8 +459,10 @@ export const deleteCourse = async (courseId, currentUser) => {
   if (!isOwner && !isAdmin) {
     throw new AppError('Bạn không có quyền xóa khóa học này', 403, 'Forbidden');
   }
-  // Giảng viên không được xóa khóa đang chờ duyệt/đã công khai; Admin vẫn xóa được để kiểm duyệt
-  if (!isAdmin) assertCourseEditable(course);
+  // Giảng viên không được xóa khóa đã công khai; Admin vẫn xóa được để kiểm duyệt
+  if (!isAdmin && course.status === 'published') {
+    throw new AppError('Khóa học đã được công khai không thể xóa. Vui lòng liên hệ Quản lý đào tạo.', 409, 'Conflict');
+  }
 
   await course.destroy();
   return true;
@@ -559,6 +571,37 @@ export const rejectCourse = async (courseId, managerId, reason) => {
   };
 };
 
+/**
+ * 10. Chuyển khóa học về bản nháp (published / pending -> draft)
+ * Cho phép giảng viên rút lại yêu cầu duyệt hoặc tạm dừng công khai để chỉnh sửa bổ sung nội dung
+ */
+export const unpublishCourse = async (courseId, currentUser) => {
+  const course = await Course.findByPk(courseId);
+  if (!course) {
+    throw new AppError('Không tìm thấy khóa học', 404, 'Not Found');
+  }
+
+  const isOwner = course.owner_id === currentUser.id;
+  const isPrivileged = ['admin', 'training_manager'].includes(currentUser.role);
+  if (!isOwner && !isPrivileged) {
+    throw new AppError('Bạn không có quyền chuyển khóa học này về bản nháp', 403, 'Forbidden');
+  }
+
+  if (course.status === 'draft') {
+    throw new AppError('Khóa học hiện đã ở trạng thái bản nháp', 400, 'Bad Request');
+  }
+
+  course.status = 'draft';
+  await course.save();
+
+  return {
+    id: course.id,
+    title: course.title,
+    status: course.status,
+    updatedAt: course.updated_at
+  };
+};
+
 export default {
   getCourses,
   getCourseByIdOrSlug,
@@ -568,5 +611,7 @@ export default {
   deleteCourse,
   publishRequest,
   approveCourse,
-  rejectCourse
+  rejectCourse,
+  unpublishCourse
 };
+

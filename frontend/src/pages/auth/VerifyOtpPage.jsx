@@ -151,7 +151,7 @@ export default function VerifyOtpPage() {
           type="button" 
           onClick={resend} 
           disabled={left > 0 || isResending} 
-          className="text-body-md text-primary font-medium hover:underline disabled:text-slate-400 disabled:no-underline"
+          className="text-body-md text-primary font-medium hover:underline disabled:text-slate-500 disabled:no-underline"
         >
           {isResending ? 'Đang gửi lại...' : left > 0 ? `Gửi lại mã sau ${left}s` : 'Chưa nhận được mã? Gửi lại'}
         </button>

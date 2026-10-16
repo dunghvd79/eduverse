@@ -140,7 +140,7 @@ export default function QuestionEditorModal({ question = null, title, onSave, on
                   className="flex-1 min-w-0 rounded border border-slate-200 px-2 h-9 text-sm bg-white"
                 />
                 {form.questionType !== 'true_false' && form.choices.length > 2 && (
-                  <button type="button" onClick={() => removeChoice(index)} className="p-1 text-slate-400 hover:text-red-600" aria-label={`Xóa lựa chọn ${LETTERS[index]}`}>
+                  <button type="button" onClick={() => removeChoice(index)} className="p-1 text-slate-500 hover:text-red-600" aria-label={`Xóa lựa chọn ${LETTERS[index]}`}>
                     <Trash2 size={15} />
                   </button>
                 )}

@@ -4,6 +4,7 @@ import { Button } from '../portal/PortalUI';
 import materialService, { MATERIAL_EXTENSIONS, MATERIAL_MAX_SIZE } from '../../services/materialService';
 import { getFileExtension } from '../../services/uploadService';
 import { toast } from '../common/Toast';
+import { confirmModal } from '../common/ConfirmModal';
 
 const formatSize = (bytes) => {
   if (bytes >= 1024 * 1024) return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
@@ -107,7 +108,15 @@ export default function LessonMaterialsPanel({ lessonId, editable = false }) {
   };
 
   const remove = async (material) => {
-    if (!window.confirm(`Xóa tài liệu "${material.title}"?`)) return;
+    const ok = await confirmModal({
+      title: 'Xóa tài liệu đính kèm?',
+      message: `Bạn có chắc chắn muốn xóa tài liệu "${material.title}"?`,
+      subtext: 'Tài liệu này sẽ không còn xuất hiện trong bài học đối với học viên.',
+      confirmText: 'Xóa tài liệu',
+      cancelText: 'Hủy bỏ',
+      type: 'danger'
+    });
+    if (!ok) return;
 
     try {
       await materialService.remove(lessonId, material.id);
@@ -121,7 +130,14 @@ export default function LessonMaterialsPanel({ lessonId, editable = false }) {
   const download = async (material) => {
     try {
       const { downloadUrl } = await materialService.getDownloadUrl(lessonId, material.id);
-      window.location.assign(downloadUrl);
+      const link = document.createElement('a');
+      link.href = downloadUrl;
+      link.setAttribute('download', material.fileName || material.title || '');
+      link.target = '_blank';
+      link.rel = 'noopener noreferrer';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
     } catch (err) {
       toast.error(err?.message || 'Không thể tải tài liệu.');
     }
@@ -140,7 +156,7 @@ export default function LessonMaterialsPanel({ lessonId, editable = false }) {
 
       {materials.map(material => (
         <div key={material.id} className="flex items-center gap-3 rounded-lg border border-slate-200 p-3">
-          <FileText size={18} className="flex-shrink-0 text-slate-400" />
+          <FileText size={18} className="flex-shrink-0 text-slate-500" />
 
           {editingId === material.id ? (
             <>

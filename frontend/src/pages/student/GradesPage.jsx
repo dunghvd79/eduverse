@@ -50,7 +50,7 @@ function ClassGrades({ cls, data }) {
                 return (
                   <div key={quiz.id} className="flex justify-between gap-3 border-b border-slate-100 py-1.5 text-sm">
                     <span className="truncate">{quiz.title}</span>
-                    <b className={score.attempted ? '' : 'text-slate-400'}>{score.attempted ? formatScore(score.score) : 'Chưa làm (0)'}</b>
+                    <b className={score.attempted ? '' : 'text-slate-500'}>{score.attempted ? formatScore(score.score) : 'Chưa làm (0)'}</b>
                   </div>
                 );
               })}
@@ -103,13 +103,13 @@ export default function GradesPage() {
 
   return (
     <>
-      <PortalHeader eyebrow="ACADEMIC RECORD" title="Điểm số" desc="Điểm tổng kết từng lớp: Bài kiểm tra 40% · Bài tập 50% · Tiến độ học 10% (thang 10)." />
+      <PortalHeader title="Điểm số" desc="Điểm tổng kết từng lớp: Bài kiểm tra 40% · Bài tập 50% · Tiến độ học 10% (thang 10)." />
       {!items ? (
         <div className="p-10 text-center text-slate-500">Đang tính điểm...</div>
       ) : items.length === 0 ? (
         <Card>
           <div className="p-8 text-center">
-            <BarChart3 className="mx-auto mb-3 text-slate-400" size={32} />
+            <BarChart3 className="mx-auto mb-3 text-slate-500" size={32} />
             <p className="text-slate-500">Bạn chưa tham gia lớp học nào.</p>
           </div>
         </Card>

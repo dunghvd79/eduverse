@@ -26,7 +26,8 @@ export const queryQuizzesSchema = Joi.object({
   limit: limitSchema(10),
   lessonId: uuid('lessonId').optional(),
   courseId: uuid('courseId').optional(),
-  search: Joi.string().trim().max(100).allow('').optional()
+  search: Joi.string().trim().max(100).allow('').optional(),
+  isPublished: Joi.boolean().optional()
 });
 
 export const classContextQuerySchema = Joi.object({

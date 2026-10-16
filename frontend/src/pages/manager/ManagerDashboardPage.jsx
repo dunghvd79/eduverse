@@ -1,148 +1,96 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, ClipboardCheck, FolderTree, GraduationCap, RefreshCw } from 'lucide-react';
-import { PortalHeader, Button, StatCard, Progress, Card, SectionTitle, Table, Badge } from '../../components/portal/PortalUI';
-import courseService from '../../services/courseService';
-import classService, { CLASS_STATUS, formatDate } from '../../services/classService';
-import categoryService from '../../services/categoryService';
+import { BookOpen, ClipboardCheck, Users, GraduationCap, CheckCircle2 } from 'lucide-react';
+import { PortalHeader, Button, StatCard, Progress, Card, SectionTitle, Badge, LoadError } from '../../components/portal/PortalUI';
 import { toast } from '../../components/common/Toast';
+import dashboardService from '../../services/dashboardService';
+import { CLASS_STATUS } from '../../services/classService';
+import { formatDateTime } from '../../services/quizService';
 
-const EMPTY_STATS = { pending: 0, published: 0, categories: 0, classes: { active: 0, paused: 0, closed: 0 } };
+const teacherName = (course) => course.teacher?.fullName || 'Không rõ giảng viên';
 
 export default function ManagerDashboardPage() {
   const navigate = useNavigate();
-  const [stats, setStats] = useState(EMPTY_STATS);
-  const [pendingCourses, setPendingCourses] = useState([]);
-  const [recentClasses, setRecentClasses] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState(null);
+  const [error, setError] = useState(null);
 
-  const load = async () => {
+  const load = useCallback(async () => {
+    setError(null);
     try {
-      setLoading(true);
-      const [pending, published, active, paused, closed, recent, categories] = await Promise.all([
-        courseService.list({ status: 'pending', limit: 5 }),
-        courseService.list({ status: 'published', limit: 1 }),
-        classService.list({ status: 'active', limit: 1 }),
-        classService.list({ status: 'paused', limit: 1 }),
-        classService.list({ status: 'closed', limit: 1 }),
-        classService.list({ limit: 5 }),
-        categoryService.list({ includeHidden: true })
-      ]);
-      setStats({
-        pending: pending.meta?.totalItems ?? 0,
-        published: published.meta?.totalItems ?? 0,
-        categories: (categories || []).length,
-        classes: {
-          active: active.meta?.totalItems ?? 0,
-          paused: paused.meta?.totalItems ?? 0,
-          closed: closed.meta?.totalItems ?? 0
-        }
-      });
-      setPendingCourses(pending.items || []);
-      setRecentClasses(recent.items || []);
-    } catch (error) {
-      toast.error(error?.message || 'Không thể tải số liệu tổng quan.');
-    } finally {
-      setLoading(false);
+      setData(await dashboardService.manager());
+    } catch (err) {
+      const message = err?.message || 'Không thể tải tổng quan đào tạo.';
+      setError(message);
+      toast.error(message);
     }
-  };
-
-  useEffect(() => {
-    load();
   }, []);
 
-  const totalClasses = stats.classes.active + stats.classes.paused + stats.classes.closed;
-  const activePercent = totalClasses ? Math.round((stats.classes.active / totalClasses) * 100) : 0;
-  const show = (value) => (loading ? '…' : value);
+  useEffect(() => { load(); }, [load]);
 
-  return (
-    <>
-      <PortalHeader
-        eyebrow="TRAINING MANAGEMENT"
-        title="Tổng quan đào tạo"
-        desc="Giám sát chất lượng nội dung và hoạt động học tập toàn hệ thống."
-        actions={
-          <Button variant="secondary" onClick={load} disabled={loading}>
-            <RefreshCw size={16} /> Làm mới
-          </Button>
-        }
-      />
+  const header = <PortalHeader title="Tổng quan đào tạo" desc="Giám sát chất lượng nội dung và hoạt động học tập toàn hệ thống." />;
 
-      <div className="stats-grid">
-        <StatCard icon={ClipboardCheck} label="Khóa chờ duyệt" value={show(stats.pending)} />
-        <StatCard icon={BookOpen} label="Khóa đã công khai" value={show(stats.published)} />
-        <StatCard icon={GraduationCap} label="Lớp đang hoạt động" value={show(stats.classes.active)} />
-        <StatCard icon={FolderTree} label="Danh mục khóa học" value={show(stats.categories)} />
-      </div>
+  if (error && !data) {
+    return <>{header}<LoadError message={error} onRetry={load} /></>;
+  }
+  if (!data) return <>{header}<div className="p-10 text-center text-slate-500">Đang tải tổng quan...</div></>;
 
-      <div className="dashboard-grid">
-        <Card>
-          <SectionTitle
-            title="Khóa học cần duyệt"
-            action={<Button variant="ghost" onClick={() => navigate('/manager/approvals')}>Xem hàng đợi</Button>}
-          />
-          {loading ? (
-            <div className="p-6 text-center text-slate-500">Đang tải...</div>
-          ) : pendingCourses.length === 0 ? (
-            <div className="p-6 text-center text-slate-500">Không có khóa nào đang chờ duyệt.</div>
-          ) : (
-            pendingCourses.map(course => (
-              <div
-                className="approval-item cursor-pointer"
-                key={course.id}
-                onClick={() => navigate(`/manager/approvals/${course.id}/review`)}
-              >
-                <div className="approval-cover">EDU</div>
-                <div>
-                  <b>{course.title}</b>
-                  <small>
-                    GV {course.owner?.fullName || '—'} · cập nhật {course.updatedAt ? new Date(course.updatedAt).toLocaleString('vi-VN') : '—'}
-                  </small>
-                </div>
-                <Badge tone="orange">Chờ duyệt</Badge>
-              </div>
-            ))
-          )}
-        </Card>
+  const { stats, pendingQueue, classesByStatus, recentlyApproved } = data;
+  return <>
+    {header}
+    <div className="stats-grid">
+      <StatCard icon={ClipboardCheck} label="Khóa chờ duyệt" value={stats.pendingCourses} />
+      <StatCard icon={BookOpen} label="Khóa đã xuất bản" value={stats.publishedCourses} />
+      <StatCard icon={GraduationCap} label="Lớp đang hoạt động" value={stats.activeClasses} />
+      <StatCard icon={Users} label="Học viên đang học" value={stats.activeStudents} />
+    </div>
 
-        <Card>
-          <SectionTitle
-            title="Lớp học"
-            action={<Button variant="ghost" onClick={() => navigate('/manager/classes')}>Xem tất cả</Button>}
-          />
-          <div className="big-number">{show(totalClasses)}</div>
-          <Progress value={activePercent} />
-          <div className="mini-stats">
-            <span><b>{show(stats.classes.active)}</b><small>Đang hoạt động</small></span>
-            <span><b>{show(stats.classes.paused)}</b><small>Tạm dừng</small></span>
-            <span><b>{show(stats.classes.closed)}</b><small>Đã kết thúc</small></span>
-          </div>
-        </Card>
-      </div>
-
+    <div className="dashboard-grid">
       <Card>
-        <SectionTitle title="Lớp học mới nhất" />
-        {loading ? (
-          <div className="p-6 text-center text-slate-500">Đang tải...</div>
-        ) : recentClasses.length === 0 ? (
-          <div className="p-6 text-center text-slate-500">Chưa có lớp học nào.</div>
-        ) : (
-          <Table
-            headers={['Lớp', 'Khóa học', 'Giảng viên', 'Học viên', 'Khai giảng', 'Trạng thái']}
-            rows={recentClasses.map(cls => {
-              const [label, tone] = CLASS_STATUS[cls.status] || [cls.status, 'gray'];
-              return [
-                <b>{cls.name}</b>,
-                cls.course?.title || '—',
-                cls.teacher?.fullName || '—',
-                cls.totalStudents ?? 0,
-                formatDate(cls.startDate),
-                <Badge tone={tone}>{label}</Badge>
-              ];
-            })}
-          />
-        )}
+        <SectionTitle title="Khóa học cần duyệt" action={<Button variant="ghost" onClick={() => navigate('/manager/approvals')}>Xem hàng đợi</Button>} />
+        {pendingQueue.items.length === 0 ? (
+          <p className="text-sm text-slate-500">Không có khóa học nào đang chờ duyệt.</p>
+        ) : <>
+          {pendingQueue.items.map((course) => (
+            <div className="approval-item cursor-pointer" key={course.id} onClick={() => navigate(`/manager/approvals/${course.id}/review`)}>
+              {course.thumbnailUrl
+                ? <img src={course.thumbnailUrl} alt={course.title} className="approval-cover object-cover" />
+                : <div className="approval-cover"><BookOpen size={18} /></div>}
+              <div>
+                <b>{course.title}</b>
+                <small>{teacherName(course)}{course.category ? ` · ${course.category}` : ''} · gửi {formatDateTime(course.submittedAt)}</small>
+              </div>
+              <Badge tone="orange">Chờ duyệt</Badge>
+            </div>
+          ))}
+          {pendingQueue.total > pendingQueue.items.length && <p className="text-xs text-slate-500 mt-3">Còn {pendingQueue.total - pendingQueue.items.length} khóa khác trong hàng đợi.</p>}
+        </>}
       </Card>
-    </>
-  );
+      <Card>
+        <SectionTitle title="Lớp học theo trạng thái" action={<Button variant="ghost" onClick={() => navigate('/manager/classes')}>Xem lớp học</Button>} />
+        <div className="big-number">{classesByStatus.total}</div>
+        {Object.entries(CLASS_STATUS).map(([status, [label]]) => (
+          <div className="role-bar" key={status}>
+            <div><b>{label}</b><span>{classesByStatus[status]}</span></div>
+            <Progress value={classesByStatus.total ? (classesByStatus[status] / classesByStatus.total) * 100 : 0} />
+          </div>
+        ))}
+      </Card>
+    </div>
+
+    <Card>
+      <SectionTitle title="Khóa học vừa được duyệt" />
+      {recentlyApproved.length === 0 ? (
+        <p className="text-sm text-slate-500">Chưa có khóa học nào được duyệt.</p>
+      ) : (
+        <div className="activity-list">
+          {recentlyApproved.map((course) => (
+            <div className="activity" key={course.id}>
+              <div className="activity-icon"><CheckCircle2 /></div>
+              <div><b>{course.title}</b><small>{teacherName(course)} · duyệt lúc {formatDateTime(course.approvedAt)}</small></div>
+            </div>
+          ))}
+        </div>
+      )}
+    </Card>
+  </>;
 }

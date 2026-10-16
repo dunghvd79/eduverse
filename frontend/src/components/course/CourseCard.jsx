@@ -37,12 +37,12 @@ export default function CourseCard({ course }) {
           loading="lazy"
         />
         {badge && (
-          <span className={`absolute top-2.5 left-2.5 text-[11px] font-bold px-2 py-0.5 rounded uppercase tracking-wider ${badgeClass}`}>
+          <span className={`absolute top-2.5 left-2.5 text-xs font-bold px-2 py-0.5 rounded uppercase tracking-wider ${badgeClass}`}>
             {badge}
           </span>
         )}
         {lessonCount && (
-          <span className="absolute bottom-2.5 right-2.5 bg-slate-900/80 text-white text-[11px] font-medium px-2 py-0.5 rounded backdrop-blur-xs">
+          <span className="absolute bottom-2.5 right-2.5 bg-slate-900/80 text-white text-xs font-medium px-2 py-0.5 rounded backdrop-blur-xs">
             {lessonCount}
           </span>
         )}
@@ -51,9 +51,14 @@ export default function CourseCard({ course }) {
       {/* Card Content */}
       <div className="p-4 flex-1 flex flex-col justify-between">
         <div>
-          <div className="flex items-center gap-1 text-amber-500 text-xs font-bold mb-1.5">
-            <span>★ {rating}</span>
-            <span className="text-slate-400 font-normal">({reviewCount} đánh giá)</span>
+          <div className="flex items-center gap-1.5 text-xs mb-1.5 flex-wrap">
+            <span className="text-amber-500 font-bold">★ {rating}</span>
+            <span className="text-slate-400">({reviewCount})</span>
+            {course?.studentCount && (
+              <span className="text-slate-500 text-[11px] font-medium ml-auto">
+                {course.studentCount}
+              </span>
+            )}
           </div>
 
           <Link to={`/courses/${slug || id}`} className="block">
@@ -62,24 +67,35 @@ export default function CourseCard({ course }) {
             </h3>
           </Link>
 
-          <p className="text-xs text-slate-500 mt-1 line-clamp-1">
-            Giảng viên: {instructor}
-          </p>
+          {course?.formatTag && (
+            <div className="mt-2">
+              <span className="inline-block text-[11px] font-medium text-slate-600 bg-slate-100 px-2 py-0.5 rounded">
+                {course.formatTag}
+              </span>
+            </div>
+          )}
         </div>
 
         {/* Price & CTA */}
-        <div className="pt-4 mt-3 border-t border-slate-100 flex items-center justify-between">
+        <div className="pt-3 mt-3 border-t border-slate-100 flex items-center justify-between">
           <div>
-            <div className="text-lg font-bold text-primary tabular-number">{price}</div>
+            <div className="flex items-center gap-2">
+              <span className="text-base font-extrabold text-primary tabular-number">{price}</span>
+              {course?.discount && (
+                <span className="text-[10px] font-extrabold px-1.5 py-0.5 rounded bg-red-100 text-red-600">
+                  {course.discount}
+                </span>
+              )}
+            </div>
             {originalPrice && (
-              <div className="text-xs text-slate-400 line-through tabular-number">{originalPrice}</div>
+              <div className="text-xs text-slate-400 line-through tabular-number mt-0.5">{originalPrice}</div>
             )}
           </div>
           <Link
             to={`/courses/${slug || id}`}
             className="px-3 py-1.5 bg-blue-50 text-primary hover:bg-primary hover:text-white rounded-lg text-xs font-semibold transition-colors"
           >
-            Xem chi tiết
+            Chi tiết
           </Link>
         </div>
       </div>

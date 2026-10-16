@@ -64,7 +64,6 @@ export default function MyCoursesPage() {
   return (
     <>
       <PortalHeader
-        eyebrow="MY LEARNING"
         title="Khóa học của tôi"
         desc="Các lớp học bạn đã tham gia và tiến độ hiện tại."
         actions={
@@ -82,7 +81,7 @@ export default function MyCoursesPage() {
           ))}
         </div>
         <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 h-9 w-full md:w-64">
-          <Search size={15} className="text-slate-400" />
+          <Search size={15} className="text-slate-500" />
           <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tìm khóa học..." className="flex-1 min-w-0 text-sm outline-none" />
         </label>
       </div>
@@ -92,7 +91,7 @@ export default function MyCoursesPage() {
       ) : visible.length === 0 ? (
         <Card>
           <div className="p-8 text-center">
-            <BookOpen className="mx-auto mb-3 text-slate-400" size={32} />
+            <BookOpen className="mx-auto mb-3 text-slate-500" size={32} />
             {classes.length === 0 ? (
               <>
                 <p className="text-slate-600 font-semibold">Bạn chưa tham gia lớp học nào.</p>

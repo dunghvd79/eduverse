@@ -69,13 +69,13 @@ export default function StudentAssignmentsPage() {
 
   return (
     <>
-      <PortalHeader eyebrow="ASSIGNMENTS" title="Bài tập" desc={groups ? `${todo} bài tập đang chờ bạn nộp.` : 'Bài tập nộp file của các lớp bạn đang học.'} />
+      <PortalHeader title="Bài tập" desc={groups ? `${todo} bài tập đang chờ bạn nộp.` : 'Bài tập nộp file của các lớp bạn đang học.'} />
       {!groups ? (
         <div className="p-10 text-center text-slate-500">Đang tải bài tập...</div>
       ) : groups.length === 0 ? (
         <Card>
           <div className="p-8 text-center">
-            <FileText className="mx-auto mb-3 text-slate-400" size={32} />
+            <FileText className="mx-auto mb-3 text-slate-500" size={32} />
             <p className="text-slate-500">Bạn chưa tham gia lớp học nào.</p>
           </div>
         </Card>
