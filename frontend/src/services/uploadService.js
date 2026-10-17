@@ -25,6 +25,18 @@ const MIME_BY_EXTENSION = {
 export const getFileExtension = (fileName = '') =>
   fileName.includes('.') ? fileName.split('.').pop().toLowerCase() : '';
 
+const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp'];
+
+/**
+ * Kiểm tra ảnh (ảnh đại diện, ảnh bìa khóa học) trước khi upload.
+ * Trả về câu báo lỗi, hoặc null nếu hợp lệ. Giới hạn khớp backend: avatar 2MB, ảnh bìa 5MB.
+ */
+export const checkImageFile = (file, maxMb) => {
+  if (!IMAGE_EXTENSIONS.includes(getFileExtension(file.name))) return 'Chỉ nhận ảnh JPG, PNG hoặc WEBP.';
+  if (file.size > maxMb * 1024 * 1024) return `Ảnh không được vượt quá ${maxMb}MB.`;
+  return null;
+};
+
 /**
  * MIME gửi lên khi xin URL và khi PUT (phải trùng nhau). Đuôi lạ -> application/octet-stream (backend chấp nhận)
  */

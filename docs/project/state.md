@@ -115,11 +115,12 @@
    - [x] Tài liệu đính kèm bài học (`CourseMaterial`) + Presigned upload S3 (12/10/2026).
    - [ ] **Cấu hình bucket AWS S3 thật** (bucket, CORS cho PUT/GET từ frontend, policy Public Read cho `public/*`, IAM `s3:PutObject/GetObject/DeleteObject/ListBucket`) rồi test upload thật trên trình duyệt.
    - [ ] `GET /lessons/:lessonId/video-stream-url` + mở purpose `lesson_video` (cần cho phép `videoUrl` nhận S3 key).
-   - [ ] Nối upload avatar (trang Hồ sơ) và ảnh bìa khóa học vào presigned-url (backend đã sẵn sàng).
+   - [x] Nối upload avatar (trang Hồ sơ, nút "Tải ảnh từ máy") và ảnh bìa khóa học (form tạo/sửa khóa học của Giảng viên) vào presigned-url (17/10/2026). Chưa dọn tệp ảnh cũ khi đổi ảnh.
    - [ ] Dọn tệp S3 khi xóa bài học/chương, dọn avatar/thumbnail cũ.
 2. **Sprint 4: Lớp học & Thành viên** — ✅ xong (12/10/2026). Còn lại:
    - [ ] `GET /classes/:id/grades/export-excel` — làm cùng Sprint 5 khi có điểm Quiz/Assignment.
    - [x] Dashboard 4 vai trò dùng số liệu thật qua `GET /dashboard/{student,teacher,manager,admin}` (Dũng, 14/10/2026). Đã bỏ link demo `Đề cương` và `Chi tiết duyệt` trên menu (15/10/2026).
+   - [x] Trang **Báo cáo** của Quản lý (`/manager/reports`) dùng số liệu thật, tính từ `GET /classes` + `GET /classes/:id/gradebook`: điểm TB, tiến độ, phân bố xếp loại, xếp hạng giảng viên theo điểm TB, xuất CSV. Đã bỏ chỉ số "giữ chân" và "điểm hài lòng" vì hệ thống chưa có dữ liệu (17/10/2026).
    - [ ] Quản lý chọn giảng viên khi mở lớp chỉ từ danh sách chủ các khóa đã published (API `/users` chỉ dành cho Admin).
 3. **Sprint 5: Bài kiểm tra** — ✅ xong (12/10/2026). Còn lại:
    - [x] Đã test Gemini thật (12/10/2026): sinh đúng 3 loại câu hỏi, đề tiếng Anh B1 ra dạng điền chỗ trống bằng tiếng Anh. **Key nằm trong `backend/.env` từng máy — mỗi thành viên tự tạo key ở aistudio.google.com/apikey, không commit, không dán vào nhóm chat.**

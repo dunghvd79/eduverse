@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   User, 
   Mail, 
@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { PortalHeader, Button, Card, SectionTitle, Badge } from '../../components/portal/PortalUI';
 import { userService } from '../../services/userService';
+import { uploadService, checkImageFile } from '../../services/uploadService';
 import { useAuthStore } from '../../stores/useAuthStore';
 
 const AVATAR_PRESETS = [
@@ -50,6 +51,8 @@ export default function ProfilePage() {
   const [profileError, setProfileError] = useState('');
   const [profileSuccess, setProfileSuccess] = useState('');
   const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
+  const avatarInputRef = useRef(null);
 
   // Password Form State
   const [passwordData, setPasswordData] = useState({
@@ -131,6 +134,35 @@ export default function ProfilePage() {
       setProfileError(err?.message || 'Không thể cập nhật hồ sơ cá nhân.');
     } finally {
       setIsSavingProfile(false);
+    }
+  };
+
+  // Chọn ảnh từ máy: upload (avatar tối đa 2MB) rồi lưu ngay URL vào hồ sơ
+  const handleAvatarFile = async (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = ''; // cho phép chọn lại đúng tệp vừa chọn
+    if (!file) return;
+    setProfileError('');
+    setProfileSuccess('');
+
+    const invalid = checkImageFile(file, 2);
+    if (invalid) {
+      setProfileError(invalid);
+      return;
+    }
+
+    try {
+      setUploadingAvatar(true);
+      const { publicUrl } = await uploadService.uploadFile(file, 'avatar');
+      const updated = await userService.updateMe({ avatarUrl: publicUrl });
+      setProfileData((prev) => ({ ...prev, avatarUrl: updated?.avatarUrl || publicUrl }));
+      updateUserInStore(updated);
+      setProfileSuccess('Đã cập nhật ảnh đại diện.');
+      setTimeout(() => setProfileSuccess(''), 5000);
+    } catch (err) {
+      setProfileError(err?.message || 'Không thể tải ảnh đại diện lên.');
+    } finally {
+      setUploadingAvatar(false);
     }
   };
 
@@ -254,6 +286,21 @@ export default function ProfilePage() {
                 <Calendar size={13} /> Tham gia: {formattedDate}
               </p>
             </div>
+          </div>
+
+          {/* Upload ảnh từ máy */}
+          <div className="flex flex-wrap items-center gap-3 mb-4">
+            <input
+              ref={avatarInputRef}
+              type="file"
+              accept="image/png,image/jpeg,image/webp"
+              className="hidden"
+              onChange={handleAvatarFile}
+            />
+            <Button type="button" variant="secondary" onClick={() => avatarInputRef.current?.click()} disabled={uploadingAvatar}>
+              <Camera size={16} /> {uploadingAvatar ? 'Đang tải ảnh lên...' : 'Tải ảnh từ máy'}
+            </Button>
+            <span className="text-xs text-slate-500">JPG, PNG hoặc WEBP, tối đa 2MB.</span>
           </div>
 
           {/* Quick Preset Avatars */}
