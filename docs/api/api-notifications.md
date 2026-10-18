@@ -95,7 +95,7 @@ Tạo bảng bằng migration idempotent: `npm run db:migrate:notifications` (tr
 | HTTP Code | Error | Message | Nguyên nhân |
 |:---:|---|---|---|
 | `400` | `Bad Request` | Tham số truy vấn không hợp lệ | `page`/`limit`/`unreadOnly` sai kiểu hoặc vượt giới hạn |
-| `400` | `Bad Request` | Mã định danh "id" không hợp lệ | `:id` không phải UUID |
+| `400` | `Bad Request` | Tham số đường dẫn không hợp lệ | `:id` không phải UUID (chi tiết trong `errors`: `Mã định danh "id" không hợp lệ (phải là UUID)`) |
 | `401` | `Unauthorized` | Phiên làm việc không hợp lệ | Thiếu hoặc hết hạn Access Token |
 | `404` | `Not Found` | Không tìm thấy thông báo | Không tồn tại hoặc thuộc người khác |
 | `500` | `Internal Server Error` | | Chưa chạy migration tạo bảng `notifications` |
