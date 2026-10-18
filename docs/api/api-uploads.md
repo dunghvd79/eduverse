@@ -445,5 +445,6 @@ Hệ thống phân định rõ ràng 4 mục đích sử dụng tệp với các
 - **Xác nhận tài liệu (`POST /materials`)** kiểm tra thêm: `fileKey` phải nằm đúng thư mục `private/materials/{courseId}/{lessonId}/` của bài học; `fileType` khớp đuôi `fileName`; `fileSize` khớp kích thước thật trên S3 (`HeadObject`); một `fileKey` chỉ được gắn một lần (`409`).
 - **Xóa tài liệu:** xóa bản ghi trước, sau đó xóa tệp S3; nếu xóa S3 lỗi thì chỉ ghi log (tệp mồ côi được Lifecycle Rule dọn).
 - **Lỗi bổ sung:** `503 Service Unavailable` khi server chưa cấu hình `AWS_REGION`/`S3_BUCKET`; `502 Bad Gateway` khi S3 từ chối truy cập (credentials sai hoặc IAM thiếu quyền).
-- **Chưa làm:** dọn tệp S3 khi xóa bài học/chương (bản ghi `course_materials` bị xóa theo CASCADE nhưng tệp còn lại), dọn avatar/thumbnail cũ.
+- **Đã làm (18/10/2026):** đổi hoặc gỡ avatar (`PATCH /users/me`) / ảnh bìa (`PATCH /courses/:id`) thì tệp cũ do chính người đó tải lên bị xóa. Chỉ xóa key đúng tiền tố `public/avatars/<userId>_` hoặc `public/thumbnails/<courseId>_`; avatar preset hoặc ảnh ngoài được bỏ qua; lỗi dọn chỉ ghi log.
+- **Chưa làm:** dọn tệp S3 khi xóa bài học/chương (bản ghi `course_materials` bị xóa theo CASCADE nhưng tệp còn lại).
 - **Frontend** phải gửi `contentType` theo bảng MIME chuẩn theo đuôi tệp (`services/uploadService.js`), không dùng `file.type` của trình duyệt.

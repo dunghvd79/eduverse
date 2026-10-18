@@ -4,6 +4,7 @@ import { AppError } from '../utils/AppError.js';
 import { generateUniqueSlug } from '../utils/slugify.js';
 import { assertCategoryAssignable } from './categoryService.js';
 import { notifyUsers, notifyManagers } from './notificationService.js';
+import { deleteReplacedPublicFile } from './storageService.js';
 
 const { Course, Category, Chapter, Lesson, LessonProgress, User, Quiz, Assignment, ClassAssignment } = models;
 
@@ -424,6 +425,7 @@ export const updateCourse = async (courseId, data, currentUser) => {
   if (data.description !== undefined) {
     course.description = data.description ? data.description.trim() : null;
   }
+  const previousThumbnailUrl = course.thumbnail_url;
   if (data.thumbnailUrl !== undefined) {
     course.thumbnail_url = data.thumbnailUrl || null;
   }
@@ -432,6 +434,10 @@ export const updateCourse = async (courseId, data, currentUser) => {
   }
 
   await course.save();
+  // Đổi hoặc gỡ ảnh bìa -> dọn tệp ảnh bìa cũ của chính khóa học này (lỗi dọn chỉ ghi log)
+  if (data.thumbnailUrl !== undefined) {
+    await deleteReplacedPublicFile(previousThumbnailUrl, course.thumbnail_url, `public/thumbnails/${course.id}_`);
+  }
 
   return {
     id: course.id,

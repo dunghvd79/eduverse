@@ -3,6 +3,7 @@ import crypto from 'crypto';
 import { Op } from 'sequelize';
 import { User, UserToken, Course, ClassModel } from '../models/index.js';
 import { AppError } from '../utils/AppError.js';
+import { deleteReplacedPublicFile } from './storageService.js';
 
 /**
  * Format user entity to camelCase DTO for API response
@@ -53,7 +54,12 @@ export const updateMe = async (userId, updateData) => {
   if (updateData.bio !== undefined) fieldsToUpdate.bio = updateData.bio || null;
   if (updateData.avatarUrl !== undefined) fieldsToUpdate.avatar_url = updateData.avatarUrl || null;
 
+  const previousAvatarUrl = user.avatar_url;
   await user.update(fieldsToUpdate);
+  // Đổi hoặc gỡ avatar -> dọn tệp avatar cũ do chính người dùng này đã tải lên (lỗi dọn chỉ ghi log)
+  if (updateData.avatarUrl !== undefined) {
+    await deleteReplacedPublicFile(previousAvatarUrl, user.avatar_url, `public/avatars/${user.id}_`);
+  }
   return formatUser(user);
 };
 
