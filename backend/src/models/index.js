@@ -19,6 +19,7 @@ import Assignment from './Assignment.js';
 import ClassAssignment from './ClassAssignment.js';
 import AssignmentSubmission from './AssignmentSubmission.js';
 import LessonProgress from './LessonProgress.js';
+import Notification from './Notification.js';
 
 // ==========================================
 // 🔗 THIẾT LẬP CÁC MỐI QUAN HỆ (ASSOCIATIONS)
@@ -132,11 +133,16 @@ LessonProgress.belongsTo(User, { foreignKey: 'student_id' });
 Lesson.hasMany(LessonProgress, { foreignKey: 'lesson_id', onDelete: 'CASCADE' });
 LessonProgress.belongsTo(Lesson, { foreignKey: 'lesson_id' });
 
+// 15. Notifications (thông báo trong ứng dụng, xóa theo khi xóa người dùng)
+User.hasMany(Notification, { foreignKey: 'user_id', onDelete: 'CASCADE' });
+Notification.belongsTo(User, { foreignKey: 'user_id' });
+
 // ==========================================
 // 📦 EXPORTS
 // ==========================================
 export {
   sequelize,
+  Notification,
   User,
   UserToken,
   Course,
@@ -160,6 +166,7 @@ export {
 
 export default {
   sequelize,
+  Notification,
   User,
   UserToken,
   Course,

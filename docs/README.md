@@ -40,6 +40,7 @@
 - [API: Bài kiểm tra (Quizzes)](api/api-quizzes.md)
 - [API: Bài tập (Assignments)](api/api-assignments.md)
 - [API: Tổng quan (Dashboard)](api/api-dashboard.md)
+- [API: Thông báo (Notifications)](api/api-notifications.md)
 - [API: Upload & Đa phương tiện (Uploads)](api/api-uploads.md)
 
 ### 🎨 Giao diện
