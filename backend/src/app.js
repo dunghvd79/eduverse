@@ -21,6 +21,13 @@ import { AppError } from './utils/AppError.js';
 
 const app = express();
 
+// Chạy sau reverse proxy (nginx trong Docker Compose): đặt TRUST_PROXY=1 (số lớp proxy) để req.ip là IP thật của người dùng
+// cho rate limiter. Mặc định tắt khi chạy trực tiếp (npm run dev).
+const trustProxyHops = Number(process.env.TRUST_PROXY);
+if (Number.isInteger(trustProxyHops) && trustProxyHops > 0) {
+  app.set('trust proxy', trustProxyHops);
+}
+
 // Security HTTP headers (cho phép load ảnh từ origin khác)
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 
@@ -32,7 +39,9 @@ app.use('/uploads', express.static(path.resolve(process.cwd(), 'uploads')));
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:5174',
-  'http://127.0.0.1:5173'
+  'http://127.0.0.1:5173',
+  // Origin bổ sung khi triển khai (Docker Compose, máy chủ demo...): CLIENT_URL, nhiều giá trị cách nhau bằng dấu phẩy
+  ...(process.env.CLIENT_URL || '').split(',').map((origin) => origin.trim().replace(/\/+$/, '')).filter(Boolean)
 ];
 
 app.use(cors({
