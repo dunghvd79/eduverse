@@ -136,7 +136,8 @@
 6. **Phase 3: Triển khai & Demo** — Docker Compose (22/10/2026), hướng dẫn ở `docs/architecture/deployment.md`:
    - [x] `docker-compose.yml` (frontend Nginx + backend + PostgreSQL 16), `backend/Dockerfile`, `frontend/Dockerfile`, `.env.example`; backend tự tạo bảng + nạp dữ liệu mẫu khi CSDL trống (`backend/src/scripts/dockerStart.js`).
    - [x] **Chạy thử trên máy có Docker Desktop** (Windows): build và khởi động không lỗi, 22/10/2026. Image dùng bản Debian (`node:22-slim`, `nginx:1.27`) vì `node:20-alpine` báo `exec format error` trên máy test.
-   - [ ] Redis + BullMQ (Phase 2), HTTPS/cloud, CI/CD, sao lưu CSDL.
+   - [x] **Kiểm thử tự động** (24/10/2026), hướng dẫn ở `docs/testing/automated-tests.md`: 35 unit test cho công thức điểm tổng kết (`npm test` trong `backend/`, không cần CSDL) và 38 kiểm tra API chỉ-đọc chạy vào hệ thống đang bật (`npm run test:e2e`). Để test được, hàm tính điểm đã tách khỏi `gradebookService.js` sang `backend/src/utils/grading.js` (kết quả tính điểm không đổi: so sánh 500.000 mẫu ngẫu nhiên giữa mã cũ và mã mới, 0 chênh lệch).
+   - [ ] Redis + BullMQ (Phase 2), HTTPS/cloud, CI/CD (chạy test tự động trên GitHub Actions), sao lưu CSDL.
 
 ## 4. Ghi Chú Kỹ Thuật Quan Trọng
 - **Migration CSDL:** không chạy `sequelize.sync({ alter: true })` trên DB chung để thêm bảng/cột mới; viết script idempotent trong `backend/src/scripts/migrations/` (mẫu: `20261009-add-categories.js`) và thêm lệnh vào `package.json`. Mỗi thành viên cần chạy `npm run db:migrate:categories` nếu dùng DB riêng.

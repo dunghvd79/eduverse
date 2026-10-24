@@ -55,6 +55,12 @@
 - [Luồng làm bài kiểm tra](sequences/seq-quiz.md)
 - [Luồng nộp bài tập](sequences/seq-submit.md)
 
+### 🧪 Kiểm thử
+- [Kiểm thử tự động (unit test + API)](testing/automated-tests.md)
+- [Kiểm thử thủ công: Sprint 3](testing/manual-test-sprint3.md)
+- [Kiểm thử thủ công: Dashboard](testing/manual-test-dashboard-ui.md)
+- [Kiểm thử thủ công: Thông báo, Upload ảnh, Báo cáo](testing/manual-test-notifications-uploads.md)
+
 ### 📅 Quản lý Dự án
 - [Kế hoạch dự án](project/project-plan.md)
 - [Quy ước tài liệu & cấu trúc](project/docs-conventions.md)
