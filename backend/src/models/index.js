@@ -20,6 +20,7 @@ import ClassAssignment from './ClassAssignment.js';
 import AssignmentSubmission from './AssignmentSubmission.js';
 import LessonProgress from './LessonProgress.js';
 import Notification from './Notification.js';
+import LessonDiscussion from './LessonDiscussion.js';
 
 // ==========================================
 // 🔗 THIẾT LẬP CÁC MỐI QUAN HỆ (ASSOCIATIONS)
@@ -137,12 +138,26 @@ LessonProgress.belongsTo(Lesson, { foreignKey: 'lesson_id' });
 User.hasMany(Notification, { foreignKey: 'user_id', onDelete: 'CASCADE' });
 Notification.belongsTo(User, { foreignKey: 'user_id' });
 
+// 16. LessonDiscussion (thảo luận / hỏi đáp trong bài học: theo lớp + bài học, một cấp trả lời)
+ClassModel.hasMany(LessonDiscussion, { foreignKey: 'class_id', onDelete: 'CASCADE' });
+LessonDiscussion.belongsTo(ClassModel, { foreignKey: 'class_id' });
+
+Lesson.hasMany(LessonDiscussion, { foreignKey: 'lesson_id', onDelete: 'CASCADE' });
+LessonDiscussion.belongsTo(Lesson, { foreignKey: 'lesson_id', as: 'lesson' });
+
+User.hasMany(LessonDiscussion, { foreignKey: 'author_id', onDelete: 'CASCADE' });
+LessonDiscussion.belongsTo(User, { foreignKey: 'author_id', as: 'author' });
+
+LessonDiscussion.hasMany(LessonDiscussion, { foreignKey: 'parent_id', as: 'replies', onDelete: 'CASCADE' });
+LessonDiscussion.belongsTo(LessonDiscussion, { foreignKey: 'parent_id', as: 'parent' });
+
 // ==========================================
 // 📦 EXPORTS
 // ==========================================
 export {
   sequelize,
   Notification,
+  LessonDiscussion,
   User,
   UserToken,
   Course,
@@ -167,6 +182,7 @@ export {
 export default {
   sequelize,
   Notification,
+  LessonDiscussion,
   User,
   UserToken,
   Course,

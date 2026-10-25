@@ -1,5 +1,5 @@
 /**
- * Kiểm thử API đầu-cuối (chỉ ĐỌC, không sửa dữ liệu) chạy vào hệ thống đang hoạt động — docs/testing/automated-tests.md.
+ * Kiểm thử API đầu-cuối chạy vào hệ thống đang hoạt động (hầu hết chỉ ĐỌC; riêng nhóm Thảo luận có ghi nhưng tự xóa ngay) — docs/testing/automated-tests.md.
  *
  * Cần hệ thống đang chạy với dữ liệu mẫu (docker compose up -d) rồi chạy:  npm run test:e2e
  * Biến môi trường tùy chọn:
@@ -8,7 +8,7 @@
  *
  * Không đặt đuôi .test.js cho file này để `npm test` (unit test) không chạy nhầm khi hệ thống chưa bật.
  */
-import { describe, it, before } from 'node:test';
+import { describe, it, before, after } from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
 import { inflateRawSync } from 'node:zlib';
@@ -390,5 +390,137 @@ describe('Bảng điểm lớp — công thức tính điểm trên dữ liệu 
     assert.match(response.headers.get('content-disposition') || '', /\.xlsx/i);
     const buffer = Buffer.from(await response.arrayBuffer());
     assert.deepEqual(sheetNamesOfXlsx(buffer), ['Bảng điểm', 'Thống kê lớp', 'Tiến độ học', 'Quy tắc tính điểm']);
+  });
+});
+
+describe('Thảo luận / hỏi đáp trong bài học (api-discussions.md)', () => {
+  // Chỉ giảng viên mẫu GHI dữ liệu và bài đăng được xóa ngay sau khi thử, nên không để lại thông báo hay bài đăng nào:
+  // giảng viên đăng câu hỏi và tự trả lời thì không phát sinh thông báo (chỉ học viên hỏi hoặc người khác trả lời mới báo).
+  let ctx = null;
+  let questionId = null;
+  let replyId = null;
+
+  const listUrl = () => `/classes/${ctx.classId}/lessons/${ctx.lessonId}/discussions`;
+  const asTeacher = (extra = {}) => ({ token: sessions.teacher.token, ...extra });
+  const asStudent = (extra = {}) => ({ token: sessions.student.token, ...extra });
+  const needCtx = (t) => (ctx ? true : (t.skip('Chưa có lớp do giảng viên mẫu phụ trách mà học viên mẫu đang học, có bài học và đang hoạt động'), false));
+
+  before(async () => {
+    const studentClasses = expectOk(await request('/classes/my-classes', asStudent()));
+    const list = Array.isArray(studentClasses) ? studentClasses : studentClasses.items;
+    const cls = list.find((c) => c.status === 'active' && c.teacher?.id === sessions.teacher.user.id);
+    if (!cls) return;
+    const outline = expectOk(await request(`/courses/${cls.course.id}/curriculum`, asTeacher()));
+    const lesson = (outline.chapters || []).flatMap((chapter) => chapter.lessons || [])[0];
+    if (lesson) ctx = { classId: cls.id, lessonId: lesson.id };
+  });
+
+  after(async () => {
+    // Dọn dẹp nếu một bước ở giữa bị lỗi trước khi bài đăng được xóa
+    if (ctx && questionId) await request(`/discussions/${questionId}`, asTeacher({ method: 'DELETE' }));
+  });
+
+  it('không đăng nhập → 401', async (t) => {
+    if (!needCtx(t)) return;
+    expectFail(await request(listUrl()), 401);
+  });
+
+  it('mã lớp hoặc mã bài học không phải UUID → 400', async () => {
+    expectFail(await request(`/classes/abc/lessons/${randomUUID()}/discussions`, asStudent()), 400);
+    expectFail(await request(`/classes/${randomUUID()}/lessons/abc/discussions`, asStudent()), 400);
+  });
+
+  it('bài học không thuộc khóa học của lớp → 404', async (t) => {
+    if (!needCtx(t)) return;
+    expectFail(await request(`/classes/${ctx.classId}/lessons/${randomUUID()}/discussions`, asStudent()), 404);
+  });
+
+  it('học viên của lớp xem được khu thảo luận và được phép đăng (lớp đang hoạt động)', async (t) => {
+    if (!needCtx(t)) return;
+    const data = expectOk(await request(listUrl(), asStudent()));
+    assert.ok(Array.isArray(data.items));
+    assert.equal(data.canPost, true);
+    assert.equal(data.meta.page, 1);
+  });
+
+  it('Quản lý đào tạo xem được nhưng không đăng được (canPost = false, đăng bài → 403)', async (t) => {
+    if (!needCtx(t)) return;
+    const data = expectOk(await request(listUrl(), { token: sessions.manager.token }));
+    assert.equal(data.canPost, false);
+    expectFail(await request(listUrl(), { token: sessions.manager.token, method: 'POST', body: { content: 'Thử' } }), 403);
+  });
+
+  it('nội dung rỗng hoặc dài quá 2000 ký tự → 400', async (t) => {
+    if (!needCtx(t)) return;
+    expectFail(await request(listUrl(), asTeacher({ method: 'POST', body: { content: '   ' } })), 400);
+    expectFail(await request(listUrl(), asTeacher({ method: 'POST', body: { content: 'a'.repeat(2001) } })), 400);
+    expectFail(await request(listUrl(), asTeacher({ method: 'POST', body: {} })), 400);
+  });
+
+  it('giảng viên đăng câu hỏi → 201, nội dung được cắt khoảng trắng, có đủ quyền trên bài của mình', async (t) => {
+    if (!needCtx(t)) return;
+    const data = expectOk(await request(listUrl(), asTeacher({ method: 'POST', body: { content: `  [e2e] Câu hỏi thử nghiệm ${randomUUID().slice(0, 8)}  ` } })), 201);
+    questionId = data.id;
+    assert.ok(data.content.startsWith('[e2e] Câu hỏi thử nghiệm') && !data.content.endsWith(' '));
+    assert.equal(data.author.role, 'teacher');
+    assert.deepEqual([data.isResolved, data.canEdit, data.canDelete, data.canResolve], [false, true, true, true]);
+    assert.deepEqual(data.replies, []);
+  });
+
+  it('giảng viên trả lời câu hỏi → 201; trả lời một câu trả lời → 400', async (t) => {
+    if (!needCtx(t) || !questionId) return t.skip('Bước đăng câu hỏi chưa thành công');
+    const reply = expectOk(await request(`/discussions/${questionId}/replies`, asTeacher({ method: 'POST', body: { content: '[e2e] Câu trả lời thử nghiệm' } })), 201);
+    replyId = reply.id;
+    assert.equal(reply.content, '[e2e] Câu trả lời thử nghiệm');
+    expectFail(await request(`/discussions/${replyId}/replies`, asTeacher({ method: 'POST', body: { content: 'Lồng nhau' } })), 400);
+  });
+
+  it('học viên thấy bài đó nhưng không sửa, xóa hay đánh dấu hộ được (403)', async (t) => {
+    if (!needCtx(t) || !questionId) return t.skip('Bước đăng câu hỏi chưa thành công');
+    const data = expectOk(await request(listUrl(), asStudent()));
+    const item = data.items.find((i) => i.id === questionId);
+    assert.ok(item, 'học viên không thấy câu hỏi vừa đăng');
+    assert.equal(item.replies.length, 1);
+    assert.deepEqual([item.canEdit, item.canDelete, item.canResolve], [false, false, false]);
+
+    expectFail(await request(`/discussions/${questionId}`, asStudent({ method: 'PATCH', body: { content: 'Sửa trộm' } })), 403);
+    expectFail(await request(`/discussions/${questionId}`, asStudent({ method: 'DELETE' })), 403);
+    expectFail(await request(`/discussions/${questionId}/resolve`, asStudent({ method: 'PATCH', body: { isResolved: true } })), 403);
+  });
+
+  it('tác giả sửa bài → có editedAt; đánh dấu đã giải đáp; không đánh dấu được một câu trả lời', async (t) => {
+    if (!needCtx(t) || !questionId) return t.skip('Bước đăng câu hỏi chưa thành công');
+    const edited = expectOk(await request(`/discussions/${questionId}`, asTeacher({ method: 'PATCH', body: { content: '[e2e] Đã sửa' } })));
+    assert.equal(edited.content, '[e2e] Đã sửa');
+    assert.ok(edited.editedAt);
+
+    const resolved = expectOk(await request(`/discussions/${questionId}/resolve`, asTeacher({ method: 'PATCH', body: { isResolved: true } })));
+    assert.equal(resolved.isResolved, true);
+    expectFail(await request(`/discussions/${replyId}/resolve`, asTeacher({ method: 'PATCH', body: { isResolved: true } })), 400);
+    expectFail(await request(`/discussions/${questionId}/resolve`, asTeacher({ method: 'PATCH', body: { isResolved: 'có' } })), 400);
+  });
+
+  it('tổng quan thảo luận của lớp: giảng viên thấy câu hỏi (kèm số trả lời), học viên bị chặn (403)', async (t) => {
+    if (!needCtx(t) || !questionId) return t.skip('Bước đăng câu hỏi chưa thành công');
+    const data = expectOk(await request(`/classes/${ctx.classId}/discussions?status=resolved&limit=50`, asTeacher()));
+    const item = data.items.find((i) => i.id === questionId);
+    assert.ok(item, 'tổng quan không có câu hỏi vừa được đánh dấu đã giải đáp');
+    assert.equal(item.replyCount, 1);
+    assert.equal(item.lesson.id, ctx.lessonId);
+    assert.equal(typeof data.summary.total, 'number');
+    assert.equal(data.summary.total, data.summary.open + data.summary.resolved);
+    expectFail(await request(`/classes/${ctx.classId}/discussions`, asStudent()), 403);
+    expectFail(await request(`/classes/${ctx.classId}/discussions?status=khac`, asTeacher()), 400);
+  });
+
+  it('xóa câu hỏi → xóa luôn câu trả lời; bài đã xóa không còn xuất hiện và thao tác tiếp theo → 404', async (t) => {
+    if (!needCtx(t) || !questionId) return t.skip('Bước đăng câu hỏi chưa thành công');
+    const result = expectOk(await request(`/discussions/${questionId}`, asTeacher({ method: 'DELETE' })));
+    assert.equal(result.deleted, 2);
+    const data = expectOk(await request(listUrl(), asStudent()));
+    assert.equal(data.items.some((i) => i.id === questionId), false);
+    expectFail(await request(`/discussions/${questionId}`, asTeacher({ method: 'PATCH', body: { content: 'x' } })), 404);
+    expectFail(await request(`/discussions/${replyId}`, asTeacher({ method: 'DELETE' })), 404);
+    questionId = null;
   });
 });

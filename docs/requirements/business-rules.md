@@ -67,6 +67,22 @@
 
 ---
 
+## 5b. Thảo luận / Hỏi đáp trong bài học
+
+| # | Quy tắc | Chi tiết |
+|---|---|---|
+| BR-070 | Thảo luận thuộc về **một lớp + một bài học** | Hai lớp học cùng khóa học có khu thảo luận riêng. Chỉ học viên đang học (`active`) trong lớp, giảng viên phụ trách lớp, Quản lý đào tạo và Admin được xem |
+| BR-071 | **Học viên và giảng viên phụ trách** được đăng câu hỏi và trả lời | Quản lý đào tạo và Admin chỉ xem và kiểm duyệt (xóa), không đăng bài |
+| BR-072 | Chỉ **một cấp trả lời** | Câu trả lời gắn vào câu hỏi gốc, không trả lời lồng nhau |
+| BR-073 | Nội dung là **văn bản thuần** 1–2000 ký tự | Không hỗ trợ HTML, Markdown, đính kèm tệp/ảnh ở Phase 2 |
+| BR-074 | **Tác giả** được sửa bài của mình | Bài đã sửa hiện "(đã chỉnh sửa)". Không ai sửa hộ bài của người khác |
+| BR-075 | **Tác giả, giảng viên phụ trách, Quản lý, Admin** được xóa | Xóa mềm; xóa câu hỏi gốc thì xóa luôn các câu trả lời |
+| BR-076 | **Người đặt câu hỏi, giảng viên phụ trách, Quản lý, Admin** được đánh dấu "đã giải đáp" | Chỉ áp dụng cho câu hỏi gốc, bỏ đánh dấu được |
+| BR-077 | Lớp **tạm dừng hoặc đã kết thúc** thì thảo luận **chỉ đọc** | Học viên không đăng, sửa, trả lời; giảng viên, Quản lý, Admin vẫn xóa được để kiểm duyệt |
+| BR-078 | Học viên đặt câu hỏi → báo **giảng viên phụ trách**; có người trả lời → báo **người đặt câu hỏi** | Thông báo trong ứng dụng; không báo cho cả lớp |
+
+---
+
 ## 6. Tính năng AI
 
 | # | Quy tắc | Chi tiết |

@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { Button, Badge, Card, Progress } from '../../components/portal/PortalUI';
 import courseService from '../../services/courseService';
 import LessonMaterialsPanel from '../../components/course/LessonMaterialsPanel';
+import LessonDiscussion from '../../components/discussion/LessonDiscussion';
 import { toast } from '../../components/common/Toast';
 
 export default function ClassroomPage() {
@@ -223,6 +224,12 @@ export default function ClassroomPage() {
           <Card>
             <LessonMaterialsPanel lessonId={lessonId} />
           </Card>
+
+          {classId && (
+            <Card>
+              <LessonDiscussion key={`${classId}:${lessonId}`} classId={classId} lessonId={lessonId} />
+            </Card>
+          )}
         </section>
       </div>
     </>

@@ -69,6 +69,8 @@
 | `course_pending` | Giảng viên gửi khóa học chờ duyệt (`POST /courses/:id/publish-request`) | Mọi Quản lý đào tạo đang hoạt động | `/manager/approvals/:courseId/review` |
 | `course_approved` | Quản lý phê duyệt khóa học | Chủ khóa học | `/teacher/courses` |
 | `course_rejected` | Quản lý từ chối khóa học, kèm lý do | Chủ khóa học | `/teacher/courses/:courseId/curriculum` |
+| `discussion_question` | Học viên đặt câu hỏi mới trong bài học (`POST /classes/:classId/lessons/:lessonId/discussions`); giảng viên tự đăng thì không báo | Giảng viên phụ trách lớp | `/teacher/classes/:classId?tab=discussions` |
+| `discussion_reply` | Có người trả lời câu hỏi (`POST /discussions/:id/replies`), trừ khi chính người hỏi trả lời | Người đặt câu hỏi | Học viên: `/student/courses/:courseId/learn/:lessonId?classId=:classId`; giảng viên: `/teacher/classes/:classId?tab=discussions` |
 
 ---
 

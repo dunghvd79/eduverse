@@ -11,9 +11,9 @@
 | Lớp | Thư mục | Cần hệ thống chạy? | Lệnh | Kiểm tra gì |
 |---|---|---|---|---|
 | **Unit test** | `backend/tests/unit/*.test.js` | Không (không cần CSDL, mạng) | `npm test` | Công thức tính điểm tổng kết, xếp loại, các trường hợp ngoại lệ E1–E3 của [`grading-policy.md`](../requirements/grading-policy.md) |
-| **Kiểm thử API đầu-cuối** | `backend/tests/e2e/api.e2e.js` | **Có** (backend + CSDL có dữ liệu mẫu) | `npm run test:e2e` | Gọi API thật: đăng nhập 4 vai trò, phân quyền, phân trang, thông báo, bảng điểm lớp |
+| **Kiểm thử API đầu-cuối** | `backend/tests/e2e/api.e2e.js` | **Có** (backend + CSDL có dữ liệu mẫu) | `npm run test:e2e` | Gọi API thật: đăng nhập 4 vai trò, phân quyền, phân trang, thông báo, bảng điểm lớp, thảo luận trong bài học |
 
-Cả hai lớp đều **chỉ đọc**: không tạo, sửa hay xóa dữ liệu nên chạy lại bao nhiêu lần cũng không làm bẩn CSDL.
+Unit test không đụng dữ liệu. Kiểm thử API **chỉ đọc**, trừ nhóm *Thảo luận* có ghi vài bài thử rồi **tự xóa ngay** (và chỉ do giảng viên mẫu đăng nên không sinh thông báo), nên chạy lại bao nhiêu lần cũng không làm bẩn CSDL.
 
 ---
 
@@ -26,7 +26,7 @@ cd backend
 npm test
 ```
 
-Kết quả mong đợi: `# pass 61`, `# fail 0`.
+Kết quả mong đợi: `# pass 89`, `# fail 0`.
 
 ### 2.2. Kiểm thử API đầu-cuối
 
@@ -61,7 +61,7 @@ Nếu hệ thống chưa bật, test dừng ngay với thông báo `Không kết
 
 ## 3. Nội Dung Kiểm Thử
 
-### 3.1. Unit test (61 test)
+### 3.1. Unit test (89 test)
 
 #### Công thức điểm — `tests/unit/grading.test.js` (35 test)
 
@@ -84,7 +84,15 @@ Số liệu của hai sheet "Thống kê lớp" và "Tiến độ học" trong f
 - Từng bài tập: đếm theo từng trạng thái (đã chấm, chờ chấm, nộp lại chờ chấm lại, yêu cầu nộp lại, chưa nộp), tỷ lệ nộp, điểm trung bình chỉ tính bài thật sự có điểm.
 - Lớp chưa có học viên không gây chia cho 0; lớp không có Quiz hoặc Bài tập thì bỏ bảng tương ứng; mọi dòng có đúng số ô bằng số cột tiêu đề.
 
-### 3.2. Kiểm thử API — `tests/e2e/api.e2e.js` (39 kiểm tra)
+#### Quy tắc Thảo luận — `tests/unit/discussionRules.test.js` (28 test)
+
+Quy tắc quyền và chuẩn hóa nội dung của module Thảo luận / Hỏi đáp ([`api-discussions.md`](../api/api-discussions.md), BR-070 → BR-078) nằm trong hàm thuần `backend/src/utils/discussionRules.js`, kiểm tra không cần CSDL:
+- Nội dung hợp lệ là 1 đến 2000 ký tự sau khi bỏ khoảng trắng hai đầu.
+- Học viên đang học và giảng viên phụ trách xem và ghi được; giảng viên lớp khác, học viên ngoài lớp không xem được; Quản lý và Admin xem và kiểm duyệt nhưng không đăng bài.
+- Tác giả sửa bài của mình; giảng viên phụ trách, Quản lý, Admin xóa và đánh dấu "đã giải đáp" được; câu trả lời không đánh dấu được.
+- Lớp `paused` hoặc `closed` là chỉ đọc với học viên, riêng giảng viên, Quản lý, Admin vẫn xóa và đánh dấu để kiểm duyệt.
+
+### 3.2. Kiểm thử API — `tests/e2e/api.e2e.js` (51 kiểm tra)
 
 | Nhóm | Ví dụ kiểm tra |
 |---|---|
@@ -96,8 +104,9 @@ Số liệu của hai sheet "Thống kê lớp" và "Tiến độ học" trong f
 | Dashboard | Cả 4 dashboard trả `stats` |
 | Thông báo | Cần đăng nhập; số chưa đọc là số nguyên không âm; `limit=51` bị chặn; đánh dấu thông báo không phải của mình `404` |
 | Bảng điểm lớp | Với từng lớp của giảng viên mẫu: tỷ trọng cộng lại bằng 1, điểm trong `[0, 10]`, xếp loại khớp ngưỡng, **điểm tổng kết của từng học viên khớp công thức tính lại từ điểm thành phần**, thống kê tổng hợp khớp; học viên xem bảng điểm cả lớp `403`; Quản lý thấy cùng kết quả với giảng viên; xuất CSV trả tệp đính kèm; xuất `.xlsx` mở được và có đủ 4 sheet (Bảng điểm, Thống kê lớp, Tiến độ học, Quy tắc tính điểm) |
+| Thảo luận | Cần đăng nhập; mã sai định dạng `400`; bài học khác khóa `404`; học viên xem được và `canPost = true`; Quản lý xem được nhưng đăng bài `403`; nội dung rỗng hoặc quá 2000 ký tự `400`; giảng viên đăng, trả lời, sửa, đánh dấu, xóa (xóa câu hỏi xóa luôn câu trả lời); học viên sửa/xóa/đánh dấu hộ `403`; tổng quan lớp cho giảng viên, học viên `403` |
 
-Nếu giảng viên mẫu chưa có lớp nào, các kiểm tra bảng điểm được **bỏ qua** (hiện `skipped`), không báo lỗi.
+Nếu giảng viên mẫu chưa có lớp nào, các kiểm tra bảng điểm được **bỏ qua** (hiện `skipped`), không báo lỗi. Tương tự, nhóm Thảo luận bỏ qua khi chưa có lớp đang hoạt động do giảng viên mẫu phụ trách mà học viên mẫu đang học.
 
 ---
 

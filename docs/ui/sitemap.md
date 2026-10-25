@@ -99,7 +99,7 @@ Layout: `StudentLayout` (Sidebar điều hướng bên trái + Header thông tin
 | `/student/my-courses` | **Khóa học của tôi** | Danh sách các khóa học đã ghi danh kèm thanh tiến độ hoàn thành (%). |
 | `/student/classes/join` | **Tham gia lớp học** | Modal / Màn hình nhập mã lớp (`class_code`) gồm 6-8 ký tự để tự ghi danh vào lớp học. |
 | `/student/classes/:id` | **Thông tin lớp học** | Lịch học, thông báo từ giảng viên, tài liệu chung của lớp, danh sách bạn học. |
-| `/student/courses/:courseId/learn/:lessonId` | **Không gian Học tập (Classroom)** | Giao diện học tập tập trung: Phát video bài giảng / nội dung bài viết Markdown, tài liệu đính kèm S3, nút *Đánh dấu hoàn thành* để cập nhật tiến độ, thanh điều hướng bài trước/tiếp theo. |
+| `/student/courses/:courseId/learn/:lessonId` | **Không gian Học tập (Classroom)** | Giao diện học tập tập trung: Phát video bài giảng / nội dung bài viết Markdown, tài liệu đính kèm S3, nút *Đánh dấu hoàn thành* để cập nhật tiến độ, thanh điều hướng bài trước/tiếp theo. Cuối bài học có khu **Thảo luận / Hỏi đáp** của lớp (khi vào bài kèm `classId`). |
 | `/student/quizzes/:id/take` | **Làm bài Kiểm tra** | Giao diện làm bài tập trắc nghiệm toàn màn hình: Đồng hồ đếm ngược (Timer), danh sách câu hỏi 1/N, lưu nháp đáp án tạm, nộp bài thủ công hoặc tự động nộp khi hết giờ. |
 | `/student/quizzes/:id/result/:attemptId` | **Kết quả Kiểm tra** | Xem điểm số bài quiz, trạng thái đạt/chưa đạt, danh sách đáp án đúng/sai kèm giải thích chi tiết. |
 | `/student/assignments/:id` | **Chi tiết Bài tập & Nộp bài** | Hạn nộp (Deadline), yêu cầu bài tập, khu vực kéo thả upload file bài làm qua S3 Presigned URL, trạng thái bài nộp (Đã nộp/Chưa nộp/Trễ hạn), xem điểm và nhận xét của giảng viên. |
@@ -119,7 +119,7 @@ Layout: `TeacherLayout` (Sidebar công cụ giảng dạy chuyên sâu + Quản 
 | `/teacher/courses/create` | **Khởi tạo Khóa học** | Nhập tiêu đề, mô tả, chọn danh mục, tải ảnh bìa (thumbnail S3), cấu hình giá/miễn phí. |
 | `/teacher/courses/:id/curriculum` | **Soạn thảo Đề cương & Bài học** | Cấu trúc 3 cấp (Khóa học $\rightarrow$ Chương $\rightarrow$ Bài học): Thêm/Sửa/Xóa chương học, kéo thả sắp xếp bài học, trình soạn thảo nội dung (Rich-text/Markdown), tải lên video và tài liệu đính kèm. Nút *Gửi duyệt khóa học* (`submit for approval`). |
 | `/teacher/classes` | **Quản lý Lớp học** | Danh sách lớp học giảng viên phụ trách, tạo lớp mới, cấp mã `class_code`, mời học viên bằng email. |
-| `/teacher/classes/:id` | **Chi tiết Lớp học & Thành viên** | Quản lý danh sách học viên trong lớp, theo dõi % tiến độ học tập từng học viên, xóa học viên khỏi lớp. |
+| `/teacher/classes/:id` | **Chi tiết Lớp học & Thành viên** | Quản lý danh sách học viên trong lớp, theo dõi % tiến độ học tập từng học viên, xóa học viên khỏi lớp. Tab **Thảo luận** (`?tab=discussions`): danh sách câu hỏi của cả lớp (lọc chưa/đã giải đáp, theo bài học), trả lời, đánh dấu đã giải đáp, xóa. |
 | `/teacher/quizzes` | **Quản lý Bài kiểm tra** | Danh sách đề thi trắc nghiệm, thời lượng làm bài, số lượt thử tối đa, điểm đạt yêu cầu. |
 | `/teacher/quizzes/create` | **Tạo Đề kiểm tra** | Soạn thảo câu hỏi trắc nghiệm (Single/Multiple Choice, True/False), đảo câu hỏi, cấu hình đáp án đúng và điểm từng câu. |
 | `/teacher/quizzes/ai-generator` | **AI Tạo Câu hỏi Tự động** | Tích hợp **Google Gemini API**: Chọn bài học $\rightarrow$ AI đọc nội dung và tự sinh bộ câu hỏi trắc nghiệm kèm đáp án $\rightarrow$ Giảng viên xem trước, tinh chỉnh rồi lưu vào ngân hàng đề thi. |

@@ -108,3 +108,11 @@ export const aiLimiter = createLimiter({
   keyGenerator: userKeyGenerator('ai'),
   message: 'Vượt quá giới hạn gọi AI (tối đa 10 lần/phút). Vui lòng thử lại sau ít phút.'
 });
+
+// 10. Thảo luận / hỏi đáp: Max 10 bài đăng hoặc trả lời mỗi phút mỗi người dùng - chống spam (docs/api/api-discussions.md)
+export const discussionLimiter = createLimiter({
+  windowMs: 60 * 1000,
+  max: 10,
+  keyGenerator: userKeyGenerator('discussion'),
+  message: 'Bạn thao tác quá nhanh (tối đa 10 bài mỗi phút). Vui lòng thử lại sau ít phút.'
+});

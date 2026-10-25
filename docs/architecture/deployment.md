@@ -54,7 +54,7 @@ docker compose up -d --build
 docker compose logs -f backend
 ```
 
-Lần đầu mất vài phút: tải image, build, rồi backend tạo 19 bảng và nạp dữ liệu mẫu (khoảng 1 phút). Khi `docker compose ps` báo `backend` là `healthy` thì mở **http://localhost:8080**.
+Lần đầu mất vài phút: tải image, build, rồi backend tạo 20 bảng và nạp dữ liệu mẫu (khoảng 1 phút). Khi `docker compose ps` báo `backend` là `healthy` thì mở **http://localhost:8080**.
 
 Tạo chuỗi ngẫu nhiên cho `JWT_SECRET` / `REFRESH_TOKEN_SECRET` (chạy 2 lần, mỗi khóa một giá trị khác nhau):
 

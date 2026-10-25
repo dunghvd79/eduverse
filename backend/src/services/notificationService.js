@@ -142,6 +142,45 @@ export const notifySubmissionResult = async (submissions, kind, reason = null) =
   }
 };
 
+/**
+ * Học viên đặt câu hỏi mới -> báo giảng viên phụ trách lớp (docs/api/api-discussions.md mục 3).
+ */
+export const notifyDiscussionQuestion = async (cls, lesson, author, content) => {
+  try {
+    return await notifyUsers([cls.teacher_id], {
+      type: 'discussion_question',
+      title: `Câu hỏi mới: ${lesson.title}`,
+      message: `${author.full_name} hỏi trong lớp "${cls.name}": "${clip(String(content).replace(/\s+/g, ' ').trim(), 120)}"`,
+      link: `/teacher/classes/${cls.id}?tab=discussions`
+    });
+  } catch (error) {
+    console.warn('⚠️ Không tạo được thông báo câu hỏi:', error.message);
+    return 0;
+  }
+};
+
+/**
+ * Có người trả lời câu hỏi -> báo người đặt câu hỏi (trừ khi chính họ trả lời).
+ * `recipient` là User (cần id, role); `courseId` dùng cho đường dẫn của học viên.
+ */
+export const notifyDiscussionReply = async (cls, lesson, courseId, replier, recipient, content) => {
+  try {
+    if (!recipient || recipient.id === replier.id) return 0;
+    const link = recipient.role === 'student'
+      ? `/student/courses/${courseId}/learn/${lesson.id}?classId=${cls.id}`
+      : `/teacher/classes/${cls.id}?tab=discussions`;
+    return await notifyUsers([recipient.id], {
+      type: 'discussion_reply',
+      title: `Có trả lời mới: ${lesson.title}`,
+      message: `${replier.full_name} đã trả lời câu hỏi của bạn trong lớp "${cls.name}": "${clip(String(content).replace(/\s+/g, ' ').trim(), 120)}"`,
+      link
+    });
+  } catch (error) {
+    console.warn('⚠️ Không tạo được thông báo trả lời:', error.message);
+    return 0;
+  }
+};
+
 // ==========================================
 // 2. API CHO NGƯỜI DÙNG (GET/PATCH /notifications)
 // ==========================================
@@ -214,6 +253,8 @@ export default {
   notifyManagers,
   notifyAssignmentScheduled,
   notifySubmissionResult,
+  notifyDiscussionQuestion,
+  notifyDiscussionReply,
   getNotifications,
   getUnreadCount,
   markAsRead,

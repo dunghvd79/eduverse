@@ -20,6 +20,7 @@ erDiagram
     users ||--o{ quiz_attempts : "thực hiện làm bài"
     users ||--o{ assignment_submissions : "nộp bài tập"
     users ||--o{ lesson_progress : "ghi nhận tiến độ"
+    users ||--o{ lesson_discussions : "đăng câu hỏi / trả lời"
 
     %% Course Structure
     courses ||--o{ chapters : "chứa các chương"
@@ -34,6 +35,7 @@ erDiagram
     classes ||--o{ class_quizzes : "cấu hình mở thi"
     classes ||--o{ class_assignments : "cấu hình hạn nộp"
     classes ||--o{ lesson_progress : "theo dõi tiến độ lớp"
+    classes ||--o{ lesson_discussions : "khu thảo luận của lớp"
 
     %% Quiz & Questions
     quizzes ||--o{ class_quizzes : "được gán vào lớp"
@@ -50,6 +52,8 @@ erDiagram
 
     %% Progress
     lessons ||--o{ lesson_progress : "được hoàn thành trong"
+    lessons ||--o{ lesson_discussions : "được thảo luận"
+    lesson_discussions ||--o{ lesson_discussions : "câu trả lời (parent_id)"
 
     %% ================= ENTITY DEFINITIONS =================
     users {
@@ -260,6 +264,18 @@ erDiagram
         boolean is_completed "Đã hoàn thành hay chưa"
         timestamptz completed_at "Thời điểm đánh dấu hoàn thành"
     }
+
+    lesson_discussions {
+        uuid id PK "Khóa chính"
+        uuid class_id FK "Thảo luận trong lớp nào"
+        uuid lesson_id FK "Dưới bài học nào"
+        uuid author_id FK "Người đăng"
+        uuid parent_id FK "Câu hỏi gốc (NULL nếu chính nó là câu hỏi gốc)"
+        text content "Nội dung văn bản thuần"
+        boolean is_resolved "Đã giải đáp (câu hỏi gốc)"
+        timestamptz edited_at "Lần sửa gần nhất"
+        timestamptz deleted_at "Xóa mềm"
+    }
 ```
 
 ---
@@ -282,4 +298,5 @@ erDiagram
 | `quiz_attempt_answers`| `uq_attempt_answers_unique`| `UNIQUE(attempt_id, question_id)` | Chống trùng lặp câu trả lời cho cùng 1 câu hỏi trong 1 lần thi |
 | `assignment_submissions`| `uq_assignment_submissions` | `UNIQUE(class_assignment_id, student_id)` | Mỗi học viên có 1 bản nộp chính thức cho mỗi bài tập |
 | `lesson_progress` | `uq_lesson_progress_unique` | `UNIQUE(class_id, student_id, lesson_id)` | Mỗi bài học chỉ có 1 trạng thái hoàn thành duy nhất cho học viên trong lớp |
+| `lesson_discussions` | `idx_lesson_discussions_thread` | `INDEX(class_id, lesson_id, parent_id, created_at)` | Không phải UNIQUE: một người đăng được nhiều bài; index phục vụ tải khu thảo luận của một bài học trong lớp |
 
