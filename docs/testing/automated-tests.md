@@ -26,7 +26,7 @@ cd backend
 npm test
 ```
 
-Kết quả mong đợi: `# pass 35`, `# fail 0`.
+Kết quả mong đợi: `# pass 61`, `# fail 0`.
 
 ### 2.2. Kiểm thử API đầu-cuối
 
@@ -61,7 +61,9 @@ Nếu hệ thống chưa bật, test dừng ngay với thông báo `Không kết
 
 ## 3. Nội Dung Kiểm Thử
 
-### 3.1. Unit test — `tests/unit/grading.test.js` (35 test)
+### 3.1. Unit test (61 test)
+
+#### Công thức điểm — `tests/unit/grading.test.js` (35 test)
 
 Logic tính điểm nằm ở `backend/src/utils/grading.js` (hàm thuần, không import Sequelize). `gradebookService.js` dùng lại các hàm này nên **test kiểm đúng đoạn mã đang chạy thật**, không phải bản sao.
 
@@ -72,7 +74,17 @@ Logic tính điểm nằm ở `backend/src/utils/grading.js` (hàm thuần, khô
 - Chỉ làm tròn ở kết quả cuối (không làm tròn hai lần).
 - Kiểm thử theo tính chất với dữ liệu ngẫu nhiên cố định (cùng hạt giống nên chạy lại ra cùng kết quả): điểm luôn trong `[0, 10]`, xếp loại khớp ngưỡng, tăng điểm thành phần không bao giờ làm giảm điểm tổng kết.
 
-### 3.2. Kiểm thử API — `tests/e2e/api.e2e.js` (38 kiểm tra)
+#### Thống kê lớp cho file Excel — `tests/unit/gradebookStats.test.js` (26 test)
+
+Số liệu của hai sheet "Thống kê lớp" và "Tiến độ học" trong file `.xlsx` xuất bảng điểm do hàm thuần `backend/src/utils/gradebookStats.js` tính từ bảng điểm, nên kiểm thử được mà không cần CSDL hay thư viện Excel.
+
+- Tổng quan: điểm trung bình / cao nhất / thấp nhất / trung vị (số lượng chẵn và lẻ), số học viên đạt (từ 5 điểm) và tỷ lệ đạt, tiến độ trung bình, số bài tập chờ chấm.
+- Phân bố xếp loại và phân bố tiến độ học: mỗi học viên rơi vào đúng một mức, kiểm tra cả các điểm biên 50 / 80 / 100, tỷ lệ cộng lại xấp xỉ 100%.
+- Từng bài kiểm tra: số người đã làm / chưa làm, điểm trung bình cả lớp (người chưa làm tính 0) khác điểm trung bình người đã làm, cao nhất / thấp nhất; điểm 0 nhưng đã làm vẫn tính là đã làm.
+- Từng bài tập: đếm theo từng trạng thái (đã chấm, chờ chấm, nộp lại chờ chấm lại, yêu cầu nộp lại, chưa nộp), tỷ lệ nộp, điểm trung bình chỉ tính bài thật sự có điểm.
+- Lớp chưa có học viên không gây chia cho 0; lớp không có Quiz hoặc Bài tập thì bỏ bảng tương ứng; mọi dòng có đúng số ô bằng số cột tiêu đề.
+
+### 3.2. Kiểm thử API — `tests/e2e/api.e2e.js` (39 kiểm tra)
 
 | Nhóm | Ví dụ kiểm tra |
 |---|---|
@@ -83,7 +95,7 @@ Logic tính điểm nằm ở `backend/src/utils/grading.js` (hàm thuần, khô
 | Khóa học công khai | Phân trang đúng; khách và học viên **chỉ thấy khóa `published`** kể cả khi cố lọc `status=draft`; `limit` sai `400`; slug lạ `404` |
 | Dashboard | Cả 4 dashboard trả `stats` |
 | Thông báo | Cần đăng nhập; số chưa đọc là số nguyên không âm; `limit=51` bị chặn; đánh dấu thông báo không phải của mình `404` |
-| Bảng điểm lớp | Với từng lớp của giảng viên mẫu: tỷ trọng cộng lại bằng 1, điểm trong `[0, 10]`, xếp loại khớp ngưỡng, **điểm tổng kết của từng học viên khớp công thức tính lại từ điểm thành phần**, thống kê tổng hợp khớp; học viên xem bảng điểm cả lớp `403`; Quản lý thấy cùng kết quả với giảng viên; xuất CSV trả tệp đính kèm |
+| Bảng điểm lớp | Với từng lớp của giảng viên mẫu: tỷ trọng cộng lại bằng 1, điểm trong `[0, 10]`, xếp loại khớp ngưỡng, **điểm tổng kết của từng học viên khớp công thức tính lại từ điểm thành phần**, thống kê tổng hợp khớp; học viên xem bảng điểm cả lớp `403`; Quản lý thấy cùng kết quả với giảng viên; xuất CSV trả tệp đính kèm; xuất `.xlsx` mở được và có đủ 4 sheet (Bảng điểm, Thống kê lớp, Tiến độ học, Quy tắc tính điểm) |
 
 Nếu giảng viên mẫu chưa có lớp nào, các kiểm tra bảng điểm được **bỏ qua** (hiện `skipped`), không báo lỗi.
 

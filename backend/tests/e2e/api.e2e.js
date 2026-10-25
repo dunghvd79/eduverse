@@ -11,6 +11,7 @@
 import { describe, it, before } from 'node:test';
 import assert from 'node:assert/strict';
 import { randomUUID } from 'node:crypto';
+import { inflateRawSync } from 'node:zlib';
 import { rankingOf, round2, finalScoreOf } from '../../src/utils/grading.js';
 
 const BASE_URL = (process.env.E2E_BASE_URL || 'http://localhost:8080').replace(/\/+$/, '');
@@ -64,6 +65,34 @@ const expectFail = (res, status) => {
 const cookieValue = (res, name) => {
   const line = res.headers.getSetCookie().find((c) => c.startsWith(`${name}=`));
   return line ? { line, value: line.split(';')[0].slice(name.length + 1) } : null;
+};
+
+/**
+ * Đọc tên các sheet trong tệp .xlsx (thực chất là ZIP): tìm "End of central directory", duyệt danh sách tệp,
+ * giải nén xl/workbook.xml. Không cần thư viện ngoài.
+ */
+const sheetNamesOfXlsx = (buffer) => {
+  let end = buffer.length - 22;
+  while (end >= 0 && buffer.readUInt32LE(end) !== 0x06054b50) end -= 1;
+  assert.ok(end >= 0, 'không phải tệp ZIP/xlsx');
+  let offset = buffer.readUInt32LE(end + 16);
+  for (let i = 0, count = buffer.readUInt16LE(end + 10); i < count; i += 1) {
+    const method = buffer.readUInt16LE(offset + 10);
+    const compressedSize = buffer.readUInt32LE(offset + 20);
+    const nameLength = buffer.readUInt16LE(offset + 28);
+    const extraLength = buffer.readUInt16LE(offset + 30);
+    const commentLength = buffer.readUInt16LE(offset + 32);
+    const localOffset = buffer.readUInt32LE(offset + 42);
+    const name = buffer.toString('utf8', offset + 46, offset + 46 + nameLength);
+    if (name === 'xl/workbook.xml') {
+      const start = localOffset + 30 + buffer.readUInt16LE(localOffset + 26) + buffer.readUInt16LE(localOffset + 28);
+      const data = buffer.subarray(start, start + compressedSize);
+      const xml = (method === 0 ? data : inflateRawSync(data)).toString('utf8');
+      return [...xml.matchAll(/<sheet\b[^>]*\bname="([^"]*)"/g)].map((m) => m[1].replace(/&amp;/g, '&'));
+    }
+    offset += 46 + nameLength + extraLength + commentLength;
+  }
+  return assert.fail('không thấy xl/workbook.xml trong tệp xlsx');
 };
 
 const sessions = {};
@@ -349,5 +378,17 @@ describe('Bảng điểm lớp — công thức tính điểm trên dữ liệu 
     assert.match(res.headers.get('content-type') || '', /csv/i);
     assert.match(res.headers.get('content-disposition') || '', /attachment/i);
     assert.ok(res.text.length > 0);
+  });
+
+  it('xuất bảng điểm Excel (.xlsx) có đủ 4 sheet: bảng điểm, thống kê lớp, tiến độ học, quy tắc', async (t) => {
+    if (classIds.length === 0) return t.skip('Giảng viên mẫu chưa có lớp nào');
+    const response = await fetch(`${API}/classes/${classIds[0]}/grades/export-excel?format=xlsx`, {
+      headers: { Authorization: `Bearer ${sessions.teacher.token}` }
+    });
+    assert.equal(response.status, 200);
+    assert.match(response.headers.get('content-type') || '', /spreadsheetml/i);
+    assert.match(response.headers.get('content-disposition') || '', /\.xlsx/i);
+    const buffer = Buffer.from(await response.arrayBuffer());
+    assert.deepEqual(sheetNamesOfXlsx(buffer), ['Bảng điểm', 'Thống kê lớp', 'Tiến độ học', 'Quy tắc tính điểm']);
   });
 });

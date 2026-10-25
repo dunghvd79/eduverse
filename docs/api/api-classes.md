@@ -1,4 +1,4 @@
-﻿# 🏫 Đặc Tả API: Module Lớp Học & Ghi Danh — api-classes.md
+# 🏫 Đặc Tả API: Module Lớp Học & Ghi Danh — api-classes.md
 
 > **Tài liệu tham chiếu:** [`api-conventions.md`](api-conventions.md), [`schema.md`](../database/schema.md), [`actor-student.md`](../use-cases/actor-student.md#uc-class-001), [`actor-teacher.md`](../use-cases/actor-teacher.md)  
 > **Base Path:** `/api/v1/classes`  
@@ -639,6 +639,7 @@
   9. `Điểm TB Assignments`: Trung bình cộng điểm bài tập tự luận.
   10. `Điểm Tổng kết (GPA - Thang 10)`: = 0.4 × Điểm TB Quizzes + 0.5 × Điểm TB Assignments + 0.1 × (Tiến độ % / 10) — xem [`grading-policy.md`](../requirements/grading-policy.md).
   11. `Xếp loại`: Giỏi (≥ 8) / Khá (≥ 6.5) / Trung bình (≥ 5) / Chưa đạt (< 5).
+* **Các sheet của file `.xlsx`** (file `.csv` chỉ có bảng điểm ở trên): `Bảng điểm` (các cột trên), `Thống kê lớp` (tổng quan: điểm trung bình/cao nhất/thấp nhất/trung vị, tỷ lệ đạt; phân bố xếp loại; từng bài kiểm tra: số người làm, điểm trung bình/cao nhất/thấp nhất; từng bài tập: số đã nộp/đã chấm/chờ chấm, điểm trung bình; phân bố tiến độ học), `Tiến độ học` (mỗi học viên: số bài học đã hoàn thành, %, trạng thái Hoàn thành/Đang học/Chưa bắt đầu — `UC-PROGRESS-003`), `Quy tắc tính điểm`.
 * **Quy tắc tính điểm (đã chốt 12/10/2026):** mỗi Quiz lấy điểm cao nhất; Quiz chưa làm / bài tập chưa nộp tính 0 điểm. Chi tiết và các trường hợp đặc biệt: [`grading-policy.md`](../requirements/grading-policy.md).
 
 #### Các lỗi thường gặp:
@@ -686,5 +687,5 @@
 - `POST /classes/:id/members`: chỉ thêm được tài khoản `student` đang hoạt động (`400` nếu là role khác hoặc bị khóa); lớp `closed` không thêm được học viên (`400`).
 - `GET /classes/:id/progress`: `meta` phân trang nằm **trong** `data` (thống nhất với các API danh sách khác), không nằm cạnh `data` như ví dụ ở mục 2.12.
 - `GET /courses/:id/curriculum?classId=` (api-courses.md) trả thêm `totalLessons`, `completedLessons`, `progressPercentage` cho trình học.
-- **Xuất bảng điểm:** file `.xlsx` có 2 sheet ("Bảng điểm" + "Quy tắc tính điểm"), dòng tiêu đề ghi công thức với tỷ trọng thực tế, thêm cột **Ghi chú** ("Chưa chấm: ..."). Cột "Mã học viên" là UUID tài khoản (hệ thống chưa có MSSV). File `.csv` có BOM UTF-8 để Excel mở đúng tiếng Việt. Tên file `Bang_Diem_Lop_<MaLop>_<YYYYMMDD>`. Header `Content-Disposition` được expose qua CORS.
+- **Xuất bảng điểm:** file `.xlsx` có 4 sheet ("Bảng điểm", "Thống kê lớp", "Tiến độ học", "Quy tắc tính điểm"; hai sheet thống kê/tiến độ thêm ngày 24/10/2026 từ `utils/gradebookStats.js`), dòng tiêu đề ghi công thức với tỷ trọng thực tế, thêm cột **Ghi chú** ("Chưa chấm: ..."). Cột "Mã học viên" là UUID tài khoản (hệ thống chưa có MSSV). File `.csv` có BOM UTF-8 để Excel mở đúng tiếng Việt. Tên file `Bang_Diem_Lop_<MaLop>_<YYYYMMDD>`. Header `Content-Disposition` được expose qua CORS.
 - **CSDL:** partial unique index `uq_classes_code_active` và `uq_enrollments_active` được tạo bằng migration `npm run db:migrate:classes` (thay các UNIQUE toàn bảng do `sync({ alter: true })` tạo trùng lặp trước đây).
