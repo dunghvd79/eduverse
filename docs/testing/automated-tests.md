@@ -26,7 +26,7 @@ cd backend
 npm test
 ```
 
-Kết quả mong đợi: `# pass 89`, `# fail 0`.
+Kết quả mong đợi: `# pass 152`, `# fail 0`.
 
 ### 2.2. Kiểm thử API đầu-cuối
 
@@ -61,7 +61,7 @@ Nếu hệ thống chưa bật, test dừng ngay với thông báo `Không kết
 
 ## 3. Nội Dung Kiểm Thử
 
-### 3.1. Unit test (89 test)
+### 3.1. Unit test (152 test)
 
 #### Công thức điểm — `tests/unit/grading.test.js` (35 test)
 
@@ -91,6 +91,15 @@ Quy tắc quyền và chuẩn hóa nội dung của module Thảo luận / Hỏi
 - Học viên đang học và giảng viên phụ trách xem và ghi được; giảng viên lớp khác, học viên ngoài lớp không xem được; Quản lý và Admin xem và kiểm duyệt nhưng không đăng bài.
 - Tác giả sửa bài của mình; giảng viên phụ trách, Quản lý, Admin xóa và đánh dấu "đã giải đáp" được; câu trả lời không đánh dấu được.
 - Lớp `paused` hoặc `closed` là chỉ đọc với học viên, riêng giảng viên, Quản lý, Admin vẫn xóa và đánh dấu để kiểm duyệt.
+
+#### Cấu hình và nội dung email — `tests/unit/mailConfig.test.js` (23 test), `tests/unit/emailTemplates.test.js` (14 test)
+
+- Chọn chế độ gửi theo biến môi trường (4 tổ hợp `REDIS_URL` × `SMTP_HOST`; chuỗi rỗng do docker compose truyền vào coi như chưa cấu hình); tùy chọn SMTP (cổng 465 TLS, 587 STARTTLS, bỏ khoảng trắng trong mật khẩu ứng dụng Gmail, không gửi `auth` khi thiếu user/pass); người gửi `MAIL_FROM`; đọc `REDIS_URL` (mật khẩu, db, `rediss://`, từ chối giao thức khác).
+- Nội dung email OTP và đặt lại mật khẩu: tiêu đề có mã, link ghép từ `CLIENT_URL` (bỏ `/` cuối, lấy giá trị đầu khi có nhiều, mã hóa token), tên người dùng và link bị escape để không chèn được HTML.
+
+#### Dịch vụ gửi email — `tests/unit/emailService.test.js` (26 test)
+
+Chạy với bản giả của `bullmq`, `ioredis` và `nodemailer` (không cần Redis hay SMTP thật): đúng 4 chế độ; job vào hàng đợi `email` với 5 lần thử lại, chờ tăng dần, xóa job khi xong; Queue và Worker dùng chung một client `ioredis`; Redis lỗi, chưa sẵn sàng, treo quá 3 giây, thiếu thư viện hoặc `REDIS_URL` sai thì chuyển sang gửi trực tiếp (không thêm job khi Redis chưa sẵn sàng để tránh gửi trùng); lỗi Redis/worker lặp lại chỉ ghi log một lần mỗi 60 giây; worker gửi SMTP và ném lỗi để BullMQ thử lại; đóng worker/hàng đợi/transporter an toàn; mọi hàm gửi không bao giờ ném lỗi, kể cả khi đầu vào sai. Phần chưa test tự động: nối Redis và SMTP thật (kiểm tay theo `deployment.md` mục 4.1).
 
 ### 3.2. Kiểm thử API — `tests/e2e/api.e2e.js` (51 kiểm tra)
 

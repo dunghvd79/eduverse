@@ -149,4 +149,4 @@ Tạo bảng bằng migration idempotent: `npm run db:migrate:discussions` (tron
 
 - ✅ Đã triển khai (26/10/2026): 7 endpoint, bảng `lesson_discussions`, 2 loại thông báo (mục 3), khu Thảo luận cuối bài học (học viên) và tab "Thảo luận" của lớp (giảng viên, Quản lý, Admin).
 - 🧪 Kiểm thử: 28 unit test quy tắc quyền (`discussionRules.test.js`), 12 kiểm tra API trong `api.e2e.js`.
-- Không làm ở Phase 2: real-time (BR-062), đính kèm tệp/ảnh, bình chọn hữu ích, mention `@`, tìm kiếm toàn văn, email thông báo (làm riêng ở mục email BullMQ).
+- Không làm ở Phase 2: real-time (BR-062), đính kèm tệp/ảnh, bình chọn hữu ích, mention `@`, tìm kiếm toàn văn, email thông báo (hạ tầng email BullMQ đã có, nhưng mới dùng cho OTP và đặt lại mật khẩu).

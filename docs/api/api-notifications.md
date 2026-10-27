@@ -108,4 +108,5 @@ Tạo bảng bằng migration idempotent: `npm run db:migrate:notifications` (tr
 
 - ✅ 4 endpoint, bảng `notifications`, 6 loại sự kiện ở mục 3.
 - ✅ Chuông thông báo ở giao diện (18/10/2026): hỏi `unread-count` mỗi 30 giây, danh sách thả xuống, bấm vào thông báo để đánh dấu đã đọc và chuyển tới `link`, nút "Đánh dấu tất cả đã đọc".
-- ⏳ Chưa làm: email (cần Nodemailer + BullMQ), Socket.IO push, thông báo đề kiểm tra mới/đề được chấm, xóa/dọn thông báo cũ.
+- ✅ Email OTP kích hoạt và link đặt lại mật khẩu gửi qua BullMQ + Nodemailer (27/10/2026, xem `deployment.md` mục 4.1).
+- ⏳ Chưa làm: email cho các thông báo trong chuông, Socket.IO push, thông báo đề kiểm tra mới/đề được chấm, xóa/dọn thông báo cũ.

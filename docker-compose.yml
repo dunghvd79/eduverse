@@ -2,7 +2,7 @@
 # Hướng dẫn đầy đủ: docs/architecture/deployment.md
 #
 # Cần có file .env cùng thư mục (sao chép từ .env.example).
-# Chưa có Redis vì backend chưa dùng (rate limiter đang lưu in-memory); thêm service redis khi làm BullMQ (Phase 2).
+# Redis chạy kèm để làm hàng đợi gửi email (BullMQ). Muốn gửi email thật thì điền SMTP_* trong .env (xem docs/architecture/deployment.md).
 
 name: eduverse
 
@@ -22,11 +22,26 @@ services:
       timeout: 5s
       retries: 10
 
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    # appendonly: giữ email đang chờ gửi qua lần khởi động lại
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis-data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   backend:
     build: ./backend
     restart: unless-stopped
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     environment:
       NODE_ENV: ${NODE_ENV:-development}
@@ -49,6 +64,15 @@ services:
       S3_BUCKET: ${S3_BUCKET:-}
       AWS_ACCESS_KEY_ID: ${AWS_ACCESS_KEY_ID:-}
       AWS_SECRET_ACCESS_KEY: ${AWS_SECRET_ACCESS_KEY:-}
+      # Hàng đợi email (BullMQ) dùng service redis ở trên
+      REDIS_URL: redis://redis:6379
+      # Tùy chọn: để trống SMTP_HOST thì OTP/link đặt lại mật khẩu được in ra log backend
+      SMTP_HOST: ${SMTP_HOST:-}
+      SMTP_PORT: ${SMTP_PORT:-}
+      SMTP_SECURE: ${SMTP_SECURE:-}
+      SMTP_USER: ${SMTP_USER:-}
+      SMTP_PASS: ${SMTP_PASS:-}
+      MAIL_FROM: ${MAIL_FROM:-}
     volumes:
       - uploads-data:/app/uploads
     healthcheck:
@@ -70,4 +94,5 @@ services:
 
 volumes:
   postgres-data:
+  redis-data:
   uploads-data:

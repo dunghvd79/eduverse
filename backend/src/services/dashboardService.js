@@ -5,6 +5,7 @@ import { computeGradebook } from './gradebookService.js';
 import { windowOf, needsGrading } from './assignmentService.js';
 import { FINISHED, isExpired, availabilityOf } from './quizAttemptService.js';
 import { countQuestions } from './quizService.js';
+import { emailHealthStatus } from '../utils/mailConfig.js';
 
 const {
   sequelize, User, Course, Category, ClassModel, Enrollment, Lesson, Chapter, LessonProgress,
@@ -517,8 +518,8 @@ const getSystemStatus = async () => {
       { key: 'storage', status: storageConfigured ? 'configured' : 'local_storage' },
       { key: 'ai', status: process.env.GEMINI_API_KEY ? 'configured' : 'not_configured' },
 
-      // Chưa cài Nodemailer: OTP/link đặt lại mật khẩu in ra console backend. Đổi khi có SMTP.
-      { key: 'email', status: 'dev_console' }
+      // 'configured' khi có SMTP_HOST, ngược lại OTP/link đặt lại mật khẩu được in ra console backend
+      { key: 'email', status: emailHealthStatus(process.env) }
     ]
   };
 };
