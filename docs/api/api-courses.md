@@ -1,4 +1,4 @@
-﻿# 📚 Đặc Tả API: Module Khóa Học, Đề Cương & Tiến Độ Học Tập — api-courses.md
+# 📚 Đặc Tả API: Module Khóa Học, Đề Cương & Tiến Độ Học Tập — api-courses.md
 
 > **Tài liệu tham chiếu:** [`api-conventions.md`](api-conventions.md), [`schema.md`](../database/schema.md), [`actor-teacher.md`](../use-cases/actor-teacher.md), [`actor-manager.md`](../use-cases/actor-manager.md), [`actor-student.md`](../use-cases/actor-student.md)  
 > **Base Path:** `/api/v1/courses`, `/api/v1/chapters`, `/api/v1/lessons`, `/api/v1/classes/:classId/lessons`  
@@ -20,6 +20,7 @@
 | `POST` | `/api/v1/courses/:id/publish-request` | `[Roles: teacher, admin]` | Giảng viên (chủ khóa) hoặc Admin gửi yêu cầu phê duyệt khóa học (`draft`/`rejected` $\rightarrow$ `pending`) |
 | `PATCH` | `/api/v1/courses/:id/approve` | `[Roles: training_manager, admin]` | Quản lý đào tạo phê duyệt khóa học (`pending` $\rightarrow$ `published`) |
 | `PATCH` | `/api/v1/courses/:id/reject` | `[Roles: training_manager, admin]` | Quản lý đào tạo từ chối duyệt kèm lý do lưu vào CSDL (`pending` $\rightarrow$ `rejected`) |
+| `PATCH` | `/api/v1/courses/:id/unpublish` | `[Roles: teacher, admin]` | Chủ khóa học (hoặc Admin) đưa khóa `pending`/`published`/`rejected` về `draft` để chỉnh sửa lại (*bổ sung 14/10/2026*) |
 
 ### 1.2. Phân hệ Chương học (Chapters)
 | Method | Endpoint | Quyền hạn | Mô tả chức năng |
@@ -844,6 +845,41 @@
   "timestamp": "2026-09-24T11:04:00.000Z"
 }
 ```
+
+---
+
+### 2.22. Đưa khóa học về bản nháp để chỉnh sửa (Unpublish / Revert to Draft) — *bổ sung 14/10/2026*
+
+#### `PATCH /api/v1/courses/:id/unpublish`
+* **Mô tả chức năng:** Chuyển khóa học đang `pending`, `published` hoặc `rejected` về `draft` để Giảng viên chỉnh sửa lại học liệu, video, quiz (khóa `pending`/`published` đang bị khóa sửa, xem mục 4.3). Dùng cho nút "Tạm dừng để sửa" (khóa đã xuất bản) và "Rút yêu cầu duyệt" (khóa đang chờ duyệt). Sau khi sửa xong, khóa phải gửi duyệt lại bằng `POST /courses/:id/publish-request`.
+* **Quyền hạn:** `[Roles: teacher, admin]` ở tầng route; trong nghiệp vụ chỉ **chủ khóa học** hoặc Admin / Quản lý đào tạo được chuyển (tài khoản Quản lý đào tạo hiện chưa qua được tầng route).
+* **Headers:** `Authorization: Bearer <access_token>`
+* **Path Parameters:** `id` *(UUID)*: ID khóa học.
+
+#### Response Thành Công (`200 OK`):
+```json
+{
+  "success": true,
+  "statusCode": 200,
+  "message": "Đã chuyển khóa học về trạng thái bản nháp.",
+  "data": {
+    "id": "c1f7a2d4-3a21-4f9e-8c3b-7f1a2b3c4d5e",
+    "title": "Lập trình Web Fullstack",
+    "status": "draft",
+    "updatedAt": "2026-10-14T09:30:00.000Z"
+  },
+  "timestamp": "2026-10-14T09:30:00.000Z"
+}
+```
+
+#### Các lỗi thường gặp:
+| HTTP Code | Error | Message | Nguyên nhân |
+|:---:|---|---|---|
+| `400` | `Bad Request` | Mã định danh (ID) không hợp lệ | `:id` sai định dạng UUID |
+| `400` | `Bad Request` | Khóa học hiện đã ở trạng thái bản nháp | Khóa học đã là `draft` |
+| `401` | `Unauthorized` | Chưa đăng nhập | Access Token thiếu hoặc hết hạn |
+| `403` | `Forbidden` | Bạn không có quyền chuyển khóa học này về bản nháp | Không phải chủ khóa học (và không phải Admin) |
+| `404` | `Not Found` | Không tìm thấy khóa học | ID không tồn tại hoặc khóa đã bị xóa mềm |
 
 ---
 

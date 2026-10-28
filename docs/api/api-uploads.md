@@ -27,6 +27,12 @@
 |:---:|---|:---:|---|
 | `GET` | `/api/v1/lessons/:lessonId/video-stream-url` | `[Authenticated]` | Sinh link xem video bài giảng (Presigned GET URL với video S3 hoặc URL nhúng YouTube/Vimeo) |
 
+### 1.4. Phân hệ Lưu trữ cục bộ dự phòng (Local Storage Fallback) — *bổ sung 14/10/2026*
+| Method | Endpoint | Quyền hạn | Mô tả chức năng |
+|:---:|---|:---:|---|
+| `PUT` | `/api/v1/uploads/local-put?key=<fileKey>` | `[Chỉ dev/demo — chưa xác thực]` | Nhận nội dung tệp thay cho S3 Presigned PUT URL, ghi vào `backend/uploads/<fileKey>` |
+| `GET` | `/api/v1/uploads/local-download?key=&filename=&sig=` | `[Chữ ký HMAC]` | Tải tệp riêng tư thay cho S3 Presigned GET URL |
+
 ---
 
 ## 2. Ràng Buộc Kỹ Thuật Theo Mục Đích Tải Tệp (`UploadPurpose`)
@@ -448,3 +454,14 @@ Hệ thống phân định rõ ràng 4 mục đích sử dụng tệp với các
 - **Đã làm (18/10/2026):** đổi hoặc gỡ avatar (`PATCH /users/me`) / ảnh bìa (`PATCH /courses/:id`) thì tệp cũ do chính người đó tải lên bị xóa. Chỉ xóa key đúng tiền tố `public/avatars/<userId>_` hoặc `public/thumbnails/<courseId>_`; avatar preset hoặc ảnh ngoài được bỏ qua; lỗi dọn chỉ ghi log.
 - **Chưa làm:** dọn tệp S3 khi xóa bài học/chương (bản ghi `course_materials` bị xóa theo CASCADE nhưng tệp còn lại).
 - **Frontend** phải gửi `contentType` theo bảng MIME chuẩn theo đuôi tệp (`services/uploadService.js`), không dùng `file.type` của trình duyệt.
+
+---
+
+## 6. Chế độ Lưu trữ Cục bộ (Local Storage Fallback) — *bổ sung 14/10/2026*
+
+Khi **thiếu** `AWS_REGION` hoặc `S3_BUCKET`, `services/storageService.js` tự chuyển sang lưu tệp trong thư mục `backend/uploads/` (Docker Compose: volume `uploads-data`) thay vì trả `503`. Các API ở mục 2–3 giữ nguyên hợp đồng: client vẫn gọi `POST /uploads/presigned-url` rồi `PUT uploadUrl`, chỉ khác là `uploadUrl` trỏ về backend.
+
+- **Tải lên:** `uploadUrl = {BACKEND_URL}/api/v1/uploads/local-put?key=<fileKey>`; backend ghi stream vào `uploads/<fileKey>` rồi trả `200 OK`. `key` được chuẩn hóa để chặn `../` (directory traversal).
+- **Ảnh công khai** (`avatar`, `course_thumbnail`): phục vụ tĩnh tại `/uploads/<fileKey>`; `publicUrl` trỏ về địa chỉ này.
+- **Tệp riêng tư** (tài liệu bài học, bài nộp): `download-url` trả `/api/v1/uploads/local-download?key=…&filename=…&sig=<HMAC-SHA256 của key>`; sai chữ ký → `403`, tệp không tồn tại → `404`.
+- **Giới hạn đã biết:** `local-put` chưa yêu cầu đăng nhập hay chữ ký, và chữ ký tải về chỉ phụ thuộc `key` (không có thời hạn) → chỉ dùng cho dev/demo; môi trường thật dùng S3. Thư mục `backend/uploads/` không được commit (`.gitignore`).

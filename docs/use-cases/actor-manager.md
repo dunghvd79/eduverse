@@ -83,12 +83,12 @@ flowchart LR
 
 - **Tác nhân:** Quản lý Đào tạo (Primary), Giảng viên biên soạn (Secondary - nhận kết quả)
 - **Mục đích:** Thẩm định chất lượng chương trình học, tính hợp lệ của video/tài liệu bài giảng do Giảng viên gửi lên; quyết định cho phép khóa học được chính thức xuất bản trên hệ thống.
-- **Điều kiện tiên quyết:** Quản lý đào tạo đã đăng nhập; Khóa học đang ở trạng thái `pending_approval` (Chờ duyệt).
+- **Điều kiện tiên quyết:** Quản lý đào tạo đã đăng nhập; Khóa học đang ở trạng thái `pending` (Chờ duyệt).
 - **Điều kiện sau:** Khóa học chuyển trạng thái thành `published` (Được duyệt) hoặc `rejected` (Bị từ chối); Giảng viên nhận được email thông báo kết quả.
 
 #### Luồng sự kiện chính (Main Flow):
 1. Quản lý Đào tạo truy cập mục **"Kiểm duyệt khóa học"** trên thanh điều hướng.
-2. Hệ thống hiển thị danh sách các khóa học đang chờ duyệt (`status = pending_approval`), sắp xếp theo thứ tự thời gian gửi từ cũ đến mới.
+2. Hệ thống hiển thị danh sách các khóa học đang chờ duyệt (`status = pending`), sắp xếp theo thứ tự thời gian gửi từ cũ đến mới.
 3. Quản lý chọn một khóa học cần thẩm định.
 4. Hệ thống mở giao diện **Thẩm định khóa học (Inspection View)**, cho phép xem:
    - Thông tin chung: Tiêu đề, Mục tiêu đào tạo, Cấp độ, Ảnh bìa.

@@ -32,6 +32,8 @@
 |:---:|---|:---:|---|
 | `GET` | `/api/v1/classes/:id/progress` | `[Roles: teacher, training_manager, admin]` | Báo cáo thống kê tiến độ học tập của cả lớp (`UC-PROGRESS-003`) |
 | `GET` | `/api/v1/classes/:id/grades/export-excel` | `[Roles: teacher, training_manager, admin]` | Xuất bảng điểm tổng hợp của lớp ra file Excel/CSV (`UC-GRADE-003`) |
+| `GET` | `/api/v1/classes/:id/gradebook` | `[Roles: teacher, training_manager, admin]` | Bảng điểm JSON của cả lớp, dùng cho trang Sổ điểm (*bổ sung 13/10/2026*) |
+| `GET` | `/api/v1/classes/:id/my-grades` | `[Roles: student]` | Điểm của chính học viên trong lớp (*bổ sung 13/10/2026*) |
 
 ---
 
@@ -648,6 +650,87 @@
 | `401` | `Unauthorized` | Chưa đăng nhập | Access Token thiếu hoặc hết hạn |
 | `403` | `Forbidden` | Không có quyền xuất bảng điểm | Người dùng không phải giảng viên đứng lớp hoặc người quản lý |
 | `404` | `Not Found` | Không tìm thấy lớp học | ID lớp học không tồn tại |
+
+---
+
+### 2.14. Bảng điểm JSON của cả lớp (Gradebook) — *bổ sung 13/10/2026*
+
+#### `GET /api/v1/classes/:id/gradebook`
+* **Mô tả chức năng:** Trả về bảng điểm của các học viên đang học (`active`) để dựng trang **Sổ điểm** (`/teacher/classes/:id/gradebook`) và trang Báo cáo của Quản lý. Cùng số liệu và công thức với file Excel ở mục 2.13 — xem [`grading-policy.md`](../requirements/grading-policy.md).
+* **Quyền hạn:** `[Roles: teacher, training_manager, admin]`; Giảng viên phải là người phụ trách lớp (giảng viên khác nhận `403`).
+* **Headers:** `Authorization: Bearer <access_token>`
+* **Path Parameters:** `id` *(UUID)*: ID lớp học.
+
+#### Response Thành Công (`200 OK`):
+```json
+{
+  "success": true,
+  "statusCode": 200,
+  "message": "Lấy bảng điểm lớp thành công",
+  "data": {
+    "class": { "id": "…", "name": "Web 2026A", "classCode": "WEB26A", "course": { "id": "…", "title": "Lập trình Web Fullstack" } },
+    "weights": { "quiz": 0.4, "assignment": 0.5, "progress": 0.1 },
+    "totalLessons": 12,
+    "quizzes": [ { "id": "…", "title": "Kiểm tra giữa kỳ" } ],
+    "assignments": [ { "id": "…", "title": "Bài tập lớn 1" } ],
+    "rows": [
+      {
+        "index": 1,
+        "student": { "id": "…", "fullName": "Nguyễn Văn A", "email": "a@example.com" },
+        "completedLessons": 9,
+        "totalLessons": 12,
+        "progressPercentage": 75,
+        "progressScore": 7.5,
+        "quizScores": [ { "quizId": "…", "score": 8, "attempted": true } ],
+        "quizAverage": 8,
+        "assignmentScores": [ { "assignmentId": "…", "grade": 0, "state": "ungraded" } ],
+        "assignmentAverage": 0,
+        "finalScore": 3.95,
+        "ranking": "Chưa đạt",
+        "notes": [ "Chưa chấm: Bài tập lớn 1" ]
+      }
+    ],
+    "summary": { "totalStudents": 1, "averageFinalScore": 3.95, "distribution": { "Giỏi": 0, "Khá": 0, "Trung bình": 0, "Chưa đạt": 1 }, "ungradedCount": 1 },
+    "generatedAt": "2026-10-13T08:00:00.000Z"
+  },
+  "timestamp": "2026-10-13T08:00:00.000Z"
+}
+```
+
+* **Ý nghĩa các trường:**
+  * `weights`: tỷ trọng thực tế; thành phần không có (lớp chưa có bài kiểm tra hoặc bài tập) bị bỏ và các tỷ trọng còn lại được chia lại (quy tắc E1).
+  * `quizzes[]` / `assignments[]`: bài kiểm tra đã công khai và bài tập đã giao cho lớp, theo thứ tự đề cương; mỗi dòng học viên có `quizScores[]` / `assignmentScores[]` cùng thứ tự.
+  * `quizScores[]`: điểm cao nhất của học viên; chưa làm = `0` và `attempted: false`.
+  * `assignmentScores[].state`: `missing` (chưa nộp), `ungraded` (đã nộp, chưa chấm), `graded`, `regrade_pending` (nộp lại sau khi đã chấm), `resubmission_requested` (giảng viên yêu cầu nộp lại). Chưa nộp / chưa chấm tính `0` điểm.
+  * `quizAverage` / `assignmentAverage`: `null` khi lớp không có thành phần đó.
+  * `finalScore` thang 10; `ranking`: Giỏi (≥ 8), Khá (≥ 6.5), Trung bình (≥ 5), Chưa đạt (< 5); `notes[]`: ghi chú như bài tập chưa chấm.
+  * `summary.averageFinalScore` là `null` khi lớp chưa có học viên đang học.
+
+#### Các lỗi thường gặp:
+| HTTP Code | Error | Message | Nguyên nhân |
+|:---:|---|---|---|
+| `400` | `Bad Request` | Mã định danh (ID) không hợp lệ | `:id` sai định dạng UUID |
+| `401` | `Unauthorized` | Chưa đăng nhập | Access Token thiếu hoặc hết hạn |
+| `403` | `Forbidden` | Không có quyền xem bảng điểm lớp này | Không phải giảng viên phụ trách lớp, Quản lý đào tạo hoặc Admin |
+| `404` | `Not Found` | Không tìm thấy lớp học | ID không tồn tại hoặc khóa học của lớp đã bị xóa |
+
+---
+
+### 2.15. Điểm của chính học viên trong lớp (My Grades) — *bổ sung 13/10/2026*
+
+#### `GET /api/v1/classes/:id/my-grades`
+* **Mô tả chức năng:** Học viên xem điểm của chính mình trong một lớp (trang `/student/grades`). Cấu trúc như mục 2.14 nhưng **không có `rows` và `summary`**; điểm của riêng học viên nằm trong `me` (cùng cấu trúc một phần tử của `rows`).
+* **Quyền hạn:** `[Roles: student]` và phải là thành viên `active` của lớp.
+* **Headers:** `Authorization: Bearer <access_token>`
+* **Path Parameters:** `id` *(UUID)*: ID lớp học.
+* **Response (`200 OK`)** — `data` gồm `class`, `weights`, `totalLessons`, `quizzes`, `assignments`, `generatedAt` và `me`; `message`: "Lấy điểm của bạn thành công".
+
+#### Các lỗi thường gặp:
+| HTTP Code | Error | Message | Nguyên nhân |
+|:---:|---|---|---|
+| `401` | `Unauthorized` | Chưa đăng nhập | Access Token thiếu hoặc hết hạn |
+| `403` | `Forbidden` | Bạn không thuộc lớp học này | Không phải học viên `active` của lớp (hoặc không có vai trò `student`) |
+| `404` | `Not Found` | Không tìm thấy lớp học | ID không tồn tại |
 
 ---
 

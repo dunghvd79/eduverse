@@ -23,7 +23,7 @@
 
 | # | Quy tắc | Chi tiết |
 |---|---|---|
-| BR-010 | Khóa học có **3 trạng thái** | `draft` (nháp), `published` (đã xuất bản), `archived` (lưu trữ) |
+| BR-010 | Khóa học có **4 trạng thái** đang dùng | `draft` (nháp), `pending` (chờ duyệt), `published` (đã xuất bản), `rejected` (bị từ chối kèm lý do, sửa rồi gửi duyệt lại). Từ `pending`/`published`/`rejected` có thể đưa về `draft` bằng `PATCH /courses/:id/unpublish`. `archived` được dành sẵn trong CSDL nhưng chưa triển khai |
 | BR-011 | Khóa học cần **phê duyệt** trước khi public | Teacher xuất bản → Training Manager phê duyệt → mới hiển thị cho học viên |
 | BR-012 | Khóa học hiện tại **miễn phí** | Nhưng DB có trường `price: decimal(10,2) DEFAULT 0` để mở rộng sau |
 | BR-013 | Cấu trúc nội dung **3 cấp** | Khóa học → Chương (Chapter) → Bài học (Lesson) |
