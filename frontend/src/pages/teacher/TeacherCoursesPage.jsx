@@ -30,6 +30,7 @@ import courseService from '../../services/courseService';
 import categoryService from '../../services/categoryService';
 import { toast } from '../../components/common/Toast';
 import { confirmModal } from '../../components/common/ConfirmModal';
+import uploadService, { checkImageFile } from '../../services/uploadService';
 
 const EMPTY_FORM = { title: '', description: '', price: '0', categoryId: '' };
 const isEditable = (course) => course.status === 'draft' || course.status === 'rejected';
@@ -238,6 +239,10 @@ export default function TeacherCoursesPage() {
   const [editingCourse, setEditingCourse] = useState(null);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
+  const [thumbnailFile, setThumbnailFile] = useState(null);
+  const thumbnailInputRef = useRef(null);
+  const thumbnailPreview = useMemo(() => (thumbnailFile ? URL.createObjectURL(thumbnailFile) : null), [thumbnailFile]);
+  useEffect(() => () => { if (thumbnailPreview) URL.revokeObjectURL(thumbnailPreview); }, [thumbnailPreview]);
   const [menuOpenId, setMenuOpenId] = useState(null);
 
   const loadCourses = async () => {
@@ -318,12 +323,14 @@ export default function TeacherCoursesPage() {
 
   const openCreate = () => {
     setEditingCourse(null);
+    setThumbnailFile(null);
     setForm(EMPTY_FORM);
     setShowForm(true);
   };
 
   const openEdit = (course) => {
     setEditingCourse(course);
+    setThumbnailFile(null);
     setForm({
       title: course.title || '',
       description: course.description || '',
@@ -331,6 +338,29 @@ export default function TeacherCoursesPage() {
       categoryId: course.category?.id || ''
     });
     setShowForm(true);
+  };
+
+  const pickThumbnail = (event) => {
+    const file = event.target.files?.[0];
+    event.target.value = ''; // cho phép chọn lại đúng tệp vừa chọn
+    if (!file) return;
+    const invalid = checkImageFile(file, 5);
+    if (invalid) {
+      toast.error(invalid);
+      return;
+    }
+    setThumbnailFile(file);
+  };
+
+  // Tải ảnh bìa (nếu có chọn) rồi gắn vào khóa học. Lỗi ảnh không làm mất việc đã lưu khóa học.
+  const saveThumbnail = async (courseId) => {
+    if (!thumbnailFile) return;
+    try {
+      const { publicUrl } = await uploadService.uploadFile(thumbnailFile, 'course_thumbnail', courseId);
+      await courseService.update(courseId, { thumbnailUrl: publicUrl });
+    } catch (error) {
+      toast.error(`Đã lưu khóa học nhưng chưa tải được ảnh bìa: ${error?.message || 'lỗi không xác định'}`);
+    }
   };
 
   const submitForm = async (event) => {
@@ -351,6 +381,7 @@ export default function TeacherCoursesPage() {
 
       if (editingCourse) {
         await courseService.update(editingCourse.id, payload);
+        await saveThumbnail(editingCourse.id);
         toast.success('Đã cập nhật thông tin khóa học.');
         setShowForm(false);
         await loadCourses();
@@ -358,6 +389,7 @@ export default function TeacherCoursesPage() {
       }
 
       const data = await courseService.create(payload);
+      await saveThumbnail(data.id);
       toast.success('Tạo khóa học thành công.');
       setShowForm(false);
       setForm(EMPTY_FORM);
@@ -955,6 +987,34 @@ export default function TeacherCoursesPage() {
                   onChange={(e) => setForm({ ...form, price: e.target.value })}
                   placeholder="0 (Miễn phí)"
                 />
+              </div>
+
+              <div>
+                <span className="mb-1.5 block text-xs font-bold text-slate-600">Ảnh bìa khóa học</span>
+                <div className="flex items-center gap-3">
+                  <div className="h-16 w-24 flex-shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
+                    {thumbnailPreview || editingCourse?.thumbnailUrl ? (
+                      <img src={thumbnailPreview || editingCourse.thumbnailUrl} alt="Ảnh bìa khóa học" className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="grid h-full w-full place-items-center text-slate-300"><BookOpen size={22} /></div>
+                    )}
+                  </div>
+                  <div className="min-w-0">
+                    <input
+                      ref={thumbnailInputRef}
+                      type="file"
+                      accept="image/png,image/jpeg,image/webp"
+                      className="hidden"
+                      onChange={pickThumbnail}
+                    />
+                    <Button type="button" variant="secondary" onClick={() => thumbnailInputRef.current?.click()}>
+                      Chọn ảnh từ máy
+                    </Button>
+                    <p className="m-0 mt-1 truncate text-xs text-slate-500">
+                      {thumbnailFile ? thumbnailFile.name : 'JPG, PNG hoặc WEBP, tối đa 5MB.'}
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
 

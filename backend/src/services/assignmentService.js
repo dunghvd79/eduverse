@@ -6,6 +6,7 @@ import { canViewAsStaff } from './quizService.js';
 import { findClassOrFail, canManageClass, isActiveMember } from './classService.js';
 import { createSignedPutUrl, getFileExtension, isMimeAllowed, sanitizeFileName, UPLOAD_URL_EXPIRES_IN } from './uploadService.js';
 import { checkObjectMetadata, deleteStorageObject, createDownloadGetUrl } from './storageService.js';
+import { notifyAssignmentScheduled, notifySubmissionResult } from './notificationService.js';
 
 const {
   sequelize, Assignment, ClassAssignment, AssignmentSubmission, Lesson, Chapter, Course,
@@ -511,6 +512,9 @@ export const scheduleAssignment = async (classId, assignmentId, data, user) => {
     }
   }
 
+  // Giao bài lần đầu cho lớp -> báo học viên (lỗi thông báo không làm hỏng việc giao bài)
+  if (!classAssignment) await notifyAssignmentScheduled(cls, assignment, saved.deadline);
+
   return { classId: cls.id, assignmentId: assignment.id, ...scheduleOf(saved), ...windowFlags(saved), updatedAt: new Date() };
 };
 
@@ -792,6 +796,7 @@ export const gradeSubmission = async (submissionId, user, data) => {
     await applyGrade(found, data, user, transaction);
     return found;
   });
+  await notifySubmissionResult(submission, 'graded');
   return {
     id: submission.id,
     grade: toNumber(submission.grade),
@@ -812,6 +817,7 @@ export const requestResubmission = async (submissionId, user, reason) => {
   submission.resubmission_reason = reason;
   submission.resubmission_requested_at = new Date();
   await submission.save();
+  await notifySubmissionResult(submission, 'resubmission', reason);
   return {
     id: submission.id,
     status: submission.status,
@@ -832,7 +838,7 @@ export const bulkGrade = async (classId, assignmentId, user, grades) => {
     throw new AppError('Bài tập chưa được giao cho lớp', 404, 'Not Found');
   }
 
-  await sequelize.transaction(async (transaction) => {
+  const graded = await sequelize.transaction(async (transaction) => {
     const submissions = await AssignmentSubmission.findAll({
       where: { id: grades.map((g) => g.submissionId), class_assignment_id: classAssignment.id },
       include: [{ model: ClassAssignment, include: [{ model: ClassModel, attributes: ['id', 'teacher_id'] }] }],
@@ -845,7 +851,9 @@ export const bulkGrade = async (classId, assignmentId, user, grades) => {
     for (const item of grades) {
       await applyGrade(byId[item.submissionId], item, user, transaction);
     }
+    return submissions;
   });
+  await notifySubmissionResult(graded, 'graded');
   return { totalUpdated: grades.length };
 };
 

@@ -1,6 +1,7 @@
 import ExcelJS from 'exceljs';
 import { getClassGradebook } from './gradebookService.js';
 import { sanitizeFileName } from './uploadService.js';
+import { computeClassStatistics, buildStatisticsTables, buildProgressTable } from '../utils/gradebookStats.js';
 
 /**
  * GET /classes/:id/grades/export-excel?format=xlsx|csv (api-classes.md 2.13, UC-GRADE-003)
@@ -44,6 +45,12 @@ const formulaText = (book) => {
   return `Điểm tổng kết = ${parts}`;
 };
 
+const styleHeaderRow = (row) => {
+  row.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+  row.alignment = { vertical: 'middle', wrapText: true };
+  row.eachCell((cell) => { cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1168BD' } }; });
+};
+
 const toXlsx = async (book) => {
   const workbook = new ExcelJS.Workbook();
   workbook.creator = 'EduVerse';
@@ -67,6 +74,29 @@ const toXlsx = async (book) => {
     if (i >= 4 && !['Xếp loại', 'Ghi chú'].includes(header)) column.numFmt = '0.00';
   });
 
+  // Sheet thống kê lớp: nhiều bảng nhỏ xếp dọc, cách nhau một dòng trống (UC-GRADE-003)
+  const statsSheet = workbook.addWorksheet('Thống kê lớp');
+  statsSheet.addRow([`THỐNG KÊ LỚP: ${book.class.name} (${book.class.classCode})`]).font = { bold: true, size: 14 };
+  statsSheet.addRow([`Khóa học: ${book.class.course.title} · ${book.rows.length} học viên đang học`]);
+  buildStatisticsTables(computeClassStatistics(book)).forEach((table) => {
+    statsSheet.addRow([]);
+    statsSheet.addRow([table.title]).font = { bold: true, size: 12 };
+    styleHeaderRow(statsSheet.addRow(table.headers));
+    table.rows.forEach((values) => statsSheet.addRow(values));
+  });
+  statsSheet.getColumn(1).width = 44;
+  for (let i = 2; i <= 10; i += 1) statsSheet.getColumn(i).width = 20;
+
+  // Sheet tiến độ học: mỗi học viên một dòng (UC-PROGRESS-003)
+  const progressTable = buildProgressTable(book);
+  const progressSheet = workbook.addWorksheet('Tiến độ học', { views: [{ state: 'frozen', ySplit: 4 }] });
+  progressSheet.addRow([`TIẾN ĐỘ HỌC TẬP: ${book.class.name} (${book.class.classCode})`]).font = { bold: true, size: 14 };
+  progressSheet.addRow([`Khóa học: ${book.class.course.title} · Tổng số bài học: ${book.totalLessons}`]);
+  progressSheet.addRow([]);
+  styleHeaderRow(progressSheet.addRow(progressTable.headers));
+  progressTable.rows.forEach((values) => progressSheet.addRow(values));
+  [6, 24, 30, 22, 18, 14, 16].forEach((width, i) => { progressSheet.getColumn(i + 1).width = width; });
+
   // Sheet quy tắc tính điểm
   const rules = workbook.addWorksheet('Quy tắc tính điểm');
   [
@@ -76,7 +106,9 @@ const toXlsx = async (book) => {
     ['Bài tập: chưa nộp = 0; đã nộp chưa chấm tạm tính 0 (ghi chú "Chưa chấm"); nộp lại dùng điểm lần chấm gần nhất'],
     ['Tiến độ: % bài học hoàn thành / 10'],
     ['Thiếu Quiz hoặc Bài tập: bỏ thành phần đó, chia lại tỷ trọng theo tỷ lệ'],
-    ['Xếp loại: Giỏi ≥ 8 · Khá ≥ 6.5 · Trung bình ≥ 5 · Chưa đạt < 5']
+    ['Xếp loại: Giỏi ≥ 8 · Khá ≥ 6.5 · Trung bình ≥ 5 · Chưa đạt < 5'],
+    ['Sheet "Thống kê lớp": đạt = điểm tổng kết từ 5 trở lên; "Điểm TB cả lớp" tính cả học viên chưa làm (0 điểm), còn "Điểm TB người đã làm" và "Điểm TB bài đã chấm" chỉ tính bài thật sự có điểm'],
+    ['Sheet "Tiến độ học": Hoàn thành = 100% bài học · Đang học = trên 0% · Chưa bắt đầu = 0%']
   ].forEach((row) => rules.addRow(row));
   rules.getRow(1).font = { bold: true };
   rules.getColumn(1).width = 110;

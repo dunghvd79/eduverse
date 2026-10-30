@@ -288,7 +288,7 @@ flowchart LR
 ## 4. Đặc Tả Tóm Tắt Các Use Case Còn Lại (Brief Specifications)
 
 ### 🔹 UC-COURSE-002: Yêu cầu phê duyệt khóa học (Request Course Approval)
-- **Kịch bản:** Sau khi giảng viên đã xây dựng hoàn chỉnh đề cương khóa học (tối thiểu 1 chương và 1 bài học) $\rightarrow$ Giảng viên nhấn nút **"Gửi yêu cầu phê duyệt"** $\rightarrow$ Hệ thống chuyển trạng thái khóa học từ `draft` sang `pending_approval` $\rightarrow$ Hệ thống gửi thông báo tới Quản lý đào tạo (Training Manager) để kiểm duyệt chất lượng nội dung trước khi xuất bản lên nền tảng.
+- **Kịch bản:** Sau khi giảng viên đã xây dựng hoàn chỉnh đề cương khóa học (tối thiểu 1 chương và 1 bài học) $\rightarrow$ Giảng viên nhấn nút **"Gửi yêu cầu phê duyệt"** $\rightarrow$ Hệ thống chuyển trạng thái khóa học từ `draft` sang `pending` $\rightarrow$ Hệ thống gửi thông báo tới Quản lý đào tạo (Training Manager) để kiểm duyệt chất lượng nội dung trước khi xuất bản lên nền tảng.
 
 ### 🔹 UC-CHAPTER-001: Quản lý chương học (Chapter Management)
 - **Kịch bản:** Trong màn hình Curriculum Builder $\rightarrow$ Giảng viên nhấn "Thêm chương mới" $\rightarrow$ Nhập tên chương (ví dụ: *Chương 1: Tổng quan về TypeScript*) $\rightarrow$ Hệ thống tạo chương mới $\rightarrow$ Giảng viên có thể kéo thả để đổi thứ tự các chương hoặc nhấn nút sửa/xóa chương.

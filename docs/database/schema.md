@@ -6,7 +6,7 @@
 
 ---
 
-## 1. Danh Mục Các Bảng Dữ Liệu (19 Bảng)
+## 1. Danh Mục Các Bảng Dữ Liệu (20 Bảng)
 
 1. [`users`](#1-bảng-users-người-dùng)
 2. [`user_tokens`](#2-bảng-user_tokens-mã-xác-thực--khôi-phục-mật-khẩu)
@@ -27,6 +27,7 @@
 17. [`assignment_submissions`](#17-bảng-assignment_submissions-bài-làm-đã-nộp)
 18. [`lesson_progress`](#18-bảng-lesson_progress-tiến-độ-học-tập)
 19. [`categories`](#18b-bảng-categories-danh-mục-khóa-học--bổ-sung-09102026) *(bổ sung 09/10/2026)*
+20. [`lesson_discussions`](#19-bảng-lesson_discussions-thảo-luận--hỏi-đáp-trong-bài-học--bổ-sung-25102026) *(bổ sung 25/10/2026)*
 
 ---
 
@@ -434,4 +435,32 @@ Ghi nhận trạng thái hoàn thành bài học của học viên trong lớp �
 
 **Ràng buộc Unique:**
 - `uq_lesson_progress` UNIQUE (`class_id`, `student_id`, `lesson_id`)
+
+---
+
+### 19. Bảng `lesson_discussions` (Thảo luận / Hỏi đáp trong bài học) — *bổ sung 25/10/2026*
+
+Lưu câu hỏi và câu trả lời của học viên, giảng viên dưới mỗi bài học. Một cuộc thảo luận thuộc về **một lớp + một bài học**. Câu hỏi gốc có `parent_id = NULL`; câu trả lời trỏ về câu hỏi gốc (chỉ một cấp). Đặc tả API: [`api-discussions.md`](../api/api-discussions.md).
+
+| Tên Cột | Kiểu Dữ Liệu | Nullable | Mặc Định | Ràng Buộc / Mô Tả |
+|---|---|:---:|---|---|
+| `id` | `uuid` | ❌ | `gen_random_uuid()` | Khóa chính (PK) |
+| `class_id` | `uuid` | ❌ | | Khóa ngoại $\rightarrow$ `classes(id)` `ON DELETE CASCADE` |
+| `lesson_id` | `uuid` | ❌ | | Khóa ngoại $\rightarrow$ `lessons(id)` `ON DELETE CASCADE` |
+| `author_id` | `uuid` | ❌ | | Khóa ngoại $\rightarrow$ `users(id)` `ON DELETE CASCADE` — người đăng |
+| `parent_id` | `uuid` | ✔️ | `NULL` | Khóa ngoại $\rightarrow$ `lesson_discussions(id)` `ON DELETE CASCADE`. `NULL` = câu hỏi gốc, có giá trị = câu trả lời |
+| `content` | `text` | ❌ | | Nội dung văn bản thuần, 1–2000 ký tự (kiểm tra ở tầng validation) |
+| `is_resolved` | `boolean` | ❌ | `false` | Đã giải đáp. Chỉ có ý nghĩa với câu hỏi gốc |
+| `edited_at` | `timestamptz` | ✔️ | `NULL` | Thời điểm tác giả sửa nội dung gần nhất |
+| `created_at` | `timestamptz` | ❌ | `now()` | Thời điểm đăng |
+| `updated_at` | `timestamptz` | ❌ | `now()` | Thời điểm cập nhật bản ghi |
+| `deleted_at` | `timestamptz` | ✔️ | `NULL` | Xóa mềm (xóa câu hỏi gốc thì xóa mềm luôn các câu trả lời) |
+
+**Indexes & Constraints:**
+- `idx_lesson_discussions_thread` ON (`class_id`, `lesson_id`, `parent_id`, `created_at`) — tải danh sách câu hỏi của một bài học trong lớp.
+- `idx_lesson_discussions_parent` ON (`parent_id`) — tải câu trả lời của một câu hỏi.
+- `idx_lesson_discussions_author` ON (`author_id`).
+- Không có ràng buộc UNIQUE (một người đăng được nhiều bài).
+
+**Migration:** `backend/src/scripts/migrations/20261025-lesson-discussions.js` (`npm run db:migrate:discussions`, idempotent) — chỉ tạo bảng mới, không đụng bảng cũ.
 

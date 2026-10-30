@@ -12,13 +12,22 @@ import categoryRoutes from './routes/categoryRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
 import classRoutes from './routes/classRoutes.js';
 import dashboardRoutes from './routes/dashboardRoutes.js';
+import notificationRoutes from './routes/notificationRoutes.js';
 import quizRoutes from './routes/quizRoutes.js';
 import assignmentRoutes from './routes/assignmentRoutes.js';
+import discussionRoutes from './routes/discussionRoutes.js';
 import { errorHandler } from './middlewares/errorMiddleware.js';
 import { sendError } from './utils/response.js';
 import { AppError } from './utils/AppError.js';
 
 const app = express();
+
+// Chạy sau reverse proxy (nginx trong Docker Compose): đặt TRUST_PROXY=1 (số lớp proxy) để req.ip là IP thật của người dùng
+// cho rate limiter. Mặc định tắt khi chạy trực tiếp (npm run dev).
+const trustProxyHops = Number(process.env.TRUST_PROXY);
+if (Number.isInteger(trustProxyHops) && trustProxyHops > 0) {
+  app.set('trust proxy', trustProxyHops);
+}
 
 // Security HTTP headers (cho phép load ảnh từ origin khác)
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
@@ -31,7 +40,9 @@ app.use('/uploads', express.static(path.resolve(process.cwd(), 'uploads')));
 const allowedOrigins = [
   'http://localhost:5173',
   'http://localhost:5174',
-  'http://127.0.0.1:5173'
+  'http://127.0.0.1:5173',
+  // Origin bổ sung khi triển khai (Docker Compose, máy chủ demo...): CLIENT_URL, nhiều giá trị cách nhau bằng dấu phẩy
+  ...(process.env.CLIENT_URL || '').split(',').map((origin) => origin.trim().replace(/\/+$/, '')).filter(Boolean)
 ];
 
 app.use(cors({
@@ -76,10 +87,12 @@ app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/categories', categoryRoutes);
 app.use('/api/v1/classes', classRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);
+app.use('/api/v1/notifications', notificationRoutes);
 app.use('/api/v1', courseRoutes);
 app.use('/api/v1', uploadRoutes);
 app.use('/api/v1', quizRoutes);
 app.use('/api/v1', assignmentRoutes);
+app.use('/api/v1', discussionRoutes);
 
 // 404 cho route không tồn tại (trả JSON theo Envelope Pattern thay vì trang HTML mặc định của Express)
 app.use((req, res) => {

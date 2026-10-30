@@ -9,6 +9,7 @@ import ClassFormModal from './ClassFormModal';
 import ClassQuizzesTab from './ClassQuizzesTab';
 import ClassAssignmentsTab from './ClassAssignmentsTab';
 import ClassGradebook from './ClassGradebook';
+import ClassDiscussionsTab from './ClassDiscussionsTab';
 import classService, { CLASS_STATUS, PROGRESS_STATUS, formatDate } from '../../services/classService';
 import { useAuthStore } from '../../stores/useAuthStore';
 import { toast } from '../common/Toast';
@@ -263,7 +264,7 @@ export default function ClassManagePage({ basePath, initialTab = 'members' }) {
   const [showEdit, setShowEdit] = useState(false);
 
   useEffect(() => {
-    if (urlTab && ['members', 'progress', 'quizzes', 'assignments', 'gradebook'].includes(urlTab)) {
+    if (urlTab && ['members', 'progress', 'quizzes', 'assignments', 'gradebook', 'discussions'].includes(urlTab)) {
       setTab(urlTab);
     }
   }, [urlTab]);
@@ -378,6 +379,7 @@ export default function ClassManagePage({ basePath, initialTab = 'members' }) {
         <button className={`tab ${tab === 'quizzes' ? 'active' : ''}`} onClick={() => handleTabChange('quizzes')}>Bài kiểm tra</button>
         <button className={`tab ${tab === 'assignments' ? 'active' : ''}`} onClick={() => handleTabChange('assignments')}>Bài tập</button>
         <button className={`tab ${tab === 'gradebook' ? 'active' : ''}`} onClick={() => handleTabChange('gradebook')}>Bảng điểm</button>
+        <button className={`tab ${tab === 'discussions' ? 'active' : ''}`} onClick={() => handleTabChange('discussions')}>Thảo luận</button>
       </div>
 
       {tab === 'members' && <MembersTab cls={cls} canManageMembers={canManageMembers} onChanged={load} />}
@@ -385,6 +387,7 @@ export default function ClassManagePage({ basePath, initialTab = 'members' }) {
       {tab === 'quizzes' && <ClassQuizzesTab cls={cls} role={role} />}
       {tab === 'assignments' && <ClassAssignmentsTab cls={cls} role={role} />}
       {tab === 'gradebook' && <ClassGradebook cls={cls} />}
+      {tab === 'discussions' && <ClassDiscussionsTab cls={cls} />}
 
       {showEdit && (
         <ClassFormModal

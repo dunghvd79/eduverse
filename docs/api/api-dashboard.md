@@ -214,7 +214,7 @@
 | `database` | `ok` \| `degraded` \| `down` | Ping thật bằng `sequelize.authenticate()`, timeout 5 giây; `degraded` khi ≥ 1000 ms. Kèm `latencyMs`. |
 | `storage` | `configured` \| `not_configured` | Có đủ `AWS_REGION` và `S3_BUCKET` (cùng điều kiện với API upload). Không kiểm tra kết nối tới S3. |
 | `ai` | `configured` \| `not_configured` | Có `GEMINI_API_KEY`. |
-| `email` | `dev_console` | Chưa cài Nodemailer: OTP và link đặt lại mật khẩu in ra console backend. |
+| `email` | `configured` \| `dev_console` | `configured` khi có `SMTP_HOST` (email OTP/đặt lại mật khẩu gửi qua SMTP, không kiểm tra đăng nhập SMTP); ngược lại `dev_console`: in ra console backend. |
 
 - **Bảo mật:** chỉ trả trạng thái. Không bao giờ trả giá trị biến môi trường, tên bucket/region/model hay thông báo lỗi kết nối CSDL (có thể chứa host).
 

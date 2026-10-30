@@ -7,15 +7,13 @@ if (!dbUrl) {
   throw new Error('DATABASE_URL is not defined in environment variables');
 }
 
+// Neon yêu cầu SSL. PostgreSQL chạy trong Docker Compose không có SSL -> đặt DATABASE_SSL=false (docs/architecture/deployment.md)
+const useSsl = process.env.DATABASE_SSL !== 'false';
+
 export const sequelize = new Sequelize(dbUrl, {
   dialect: 'postgres',
   logging: process.env.NODE_ENV === 'development' ? (msg) => console.log(`[Sequelize] ${msg}`) : false,
-  dialectOptions: {
-    ssl: {
-      require: true,
-      rejectUnauthorized: false
-    }
-  },
+  dialectOptions: useSsl ? { ssl: { require: true, rejectUnauthorized: false } } : {},
   pool: {
     max: 10,
     min: 0,

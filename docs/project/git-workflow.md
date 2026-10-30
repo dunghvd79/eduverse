@@ -14,6 +14,8 @@
 | `feature-<tên>` | Nhánh làm việc của từng thành viên: `feature-dung`, `feature-ngocson`, `feature-anh`, `feature-manh` | Tạo từ `main`, thường xuyên cập nhật từ `main` |
 | `feature-<tên>-<việc>` *(tùy chọn)* | Việc lớn, tách riêng cho dễ review. VD: `feature-manh-assignments` | Tạo từ `main` **mới nhất**, xóa sau khi merge |
 
+> **Lưu ý (28/10/2026):** `feature-manh` có lịch sử riêng (không chung commit gốc với `main`), nên người merge dùng `git merge origin/feature-manh --allow-unrelated-histories -X theirs`; tuyệt đối không `push --force`.
+
 ```mermaid
 flowchart LR
     A[main] -->|git checkout -b| B[feature-ten]
@@ -103,6 +105,7 @@ Co-authored-by: tuanmanh205 <tuanmanhdang12012005@gmail.com>
 - **Không dùng `sequelize.sync({ alter: true })` trên DB dùng chung** (Neon dev) — từng tạo trùng lặp nhiều ràng buộc UNIQUE.
 - Thêm bảng / cột / index → viết script **idempotent** (chạy lại nhiều lần không lỗi) trong `backend/src/scripts/migrations/YYYYMMDD-<tên>.js`, dùng hàm chung trong `helpers.js`, thêm lệnh `db:migrate:<tên>` vào `backend/package.json`, cập nhật `docs/database/schema.md`.
 - Ghi rõ trong mô tả PR: *"Cần chạy `npm run db:migrate:<tên>`"* và đã chạy trên Neon dev hay chưa.
+- **Docker Compose:** DB trống thì backend tự chạy mọi migration; DB đã có dữ liệu thì chạy tay `docker compose exec backend node src/scripts/migrations/<tệp>.js`.
 
 **Sau khi pull code mới** (trong `backend/`):
 ```bash
@@ -111,6 +114,8 @@ npm run db:migrate:categories    # các migration hiện có — chỉ cần n�
 npm run db:migrate:classes
 npm run db:migrate:quizzes
 npm run db:migrate:assignments
+npm run db:migrate:notifications
+npm run db:migrate:discussions
 ```
 (trong `frontend/`: `npm install` nếu `package.json` thay đổi)
 
