@@ -1,12 +1,28 @@
 # 🧭 Trạng Thái Tiến Độ Dự Án (Project State)
 
-> **Cập nhật lần cuối:** 14/10/2026  
-> **Người cập nhật:** dunghvd79, Hoàng Ngọc Sơn & AI Assistant  
-> **Giai đoạn hiện tại:** Phase 1 — ✅ Hoàn thành Sprint 6 (Bài tập & Bảng điểm), Tính năng Vòng đời khóa học (Unpublish to Draft), Custom Confirm Modal toàn hệ thống & Bộ điều phối Local Storage Fallback. Đã push remote `origin/feature-dung`.
+> **Cập nhật lần cuối:** 28/10/2026  
+> **Người cập nhật:** dunghvd79, Hoàng Ngọc Sơn, tuanmanh205 & AI Assistant  
+> **Giai đoạn hiện tại:** Phase 1 ✅ xong · Phase 2 (Excel nâng cao, Thảo luận trong bài học, Email tự động BullMQ + Redis) ✅ xong trên nhánh `feature-manh` · Phase 3 đã có Docker Compose + kiểm thử tự động, còn báo cáo đồ án và triển khai cloud.
 
 ---
 
-## 0. Chốt Phiên Làm Việc Gần Nhất (14/10/2026) — đọc mục này trước
+## 0. Chốt Phiên Làm Việc Gần Nhất (28/10/2026) — đọc mục này trước
+
+**Tình trạng Git:** làm trên nhánh `feature-manh` (repo `dunghvd79/eduverse`), chưa mở PR — Dũng sẽ merge sau. Lịch sử của `feature-manh` khác `main` (hai nhánh không có commit gốc chung); khi merge dùng `git merge origin/feature-manh --allow-unrelated-histories -X theirs` (đã kiểm tra cho ra cây tệp giống hệt `feature-manh`). Toàn bộ commit không-merge của `main` đã có nội dung tương đương trong `feature-manh`.
+
+**Đã xong trên `feature-manh`:**
+1. Trang chủ nối API thật, trang chi tiết duyệt khóa học, trang Admin quản lý khóa học, dashboard 4 vai trò, báo cáo của Quản lý, upload avatar/ảnh bìa (chi tiết ở mục 3).
+2. Phase 3 (22–24/10): Docker Compose (Nginx + backend + PostgreSQL 16), kiểm thử tự động — xem `docs/testing/automated-tests.md`.
+3. Phase 2 (24–27/10): Excel nâng cao, Thảo luận trong bài học, Email tự động BullMQ + Redis (Redis 7 trong Docker Compose).
+4. Đồng bộ tài liệu với code thực tế (28/10): API `unpublish`, `gradebook`, `my-grades`, lưu trữ cục bộ; sitemap, business-rules, git-workflow, project-plan.
+
+**Sau khi pull code mới** (trong `backend/`): `npm install` (thư viện mới: `@aws-sdk/*`, `archiver`, `exceljs`, `bullmq`, `nodemailer`, `ioredis`). Migration cho DB riêng hoặc Neon dùng chung: `db:migrate:categories`, `db:migrate:classes`, `db:migrate:quizzes`, `db:migrate:assignments`, `db:migrate:notifications`, `db:migrate:discussions`. Docker: DB trống thì tự tạo bảng; DB đã có dữ liệu thì chạy tay `docker compose exec backend node src/scripts/migrations/<tệp>.js`. Neon dùng chung do Dũng chạy migration — `notifications` và `discussions` cần được chạy trước khi demo bằng DB đó.
+
+**Việc còn mở:** xem mục 3 — S3 thật, `video-stream-url`, CI/CD, HTTPS/cloud, backlog bảo mật Auth, báo cáo đồ án.
+
+---
+
+## 0b. Phiên 14/10/2026 (nhánh `feature-dung`) — lưu để tra cứu
 
 **Tình trạng Git:** nhánh `feature-dung`, đã commit và push thành công lên GitHub remote (`origin/feature-dung`) với commit `5de9354` & `e4b60a8`.
 
@@ -43,12 +59,12 @@
 
 
 
-**Migration đã chạy trên Neon dev** (ai dùng DB riêng phải tự chạy trong `backend/`): `db:migrate:categories`, `db:migrate:classes`, `db:migrate:quizzes`, `db:migrate:assignments`. Sau khi pull nhớ `npm install` (thư viện mới: `@aws-sdk/*`, `archiver`, `exceljs`).
+_Danh sách migration hiện hành và việc cần làm sau khi pull: xem mục 0 ở trên._
 
 ---
 
 ## 1. Tóm Tắt Trạng Thái Hiện Tại
-1. Dự án đã **hoàn thành toàn diện 100% Phase 0 — Đặc Tả Kiến Trúc & Thiết Kế Hệ Thống** (Use Cases, ERD 18 bảng, Sequence Diagrams, 8/8 API Docs, C4 Architecture, Master Frontend Blueprint, Design System Tokens, Wireframes, Sitemap).
+1. Dự án đã **hoàn thành toàn diện 100% Phase 0 — Đặc Tả Kiến Trúc & Thiết Kế Hệ Thống** (Use Cases, ERD (ban đầu 18 bảng, nay 20 bảng), Sequence Diagrams, 8/8 API Docs, C4 Architecture, Master Frontend Blueprint, Design System Tokens, Wireframes, Sitemap).
 2. **Tiến độ Phase 1 (Frontend):** Hoàn thành **100% (37/37 Màn hình)** và **6 Master Layouts**, kiểm thử build 2062 modules không lỗi. Đã tích hợp Zustand Auth Store & Axios Interceptor.
 3. **Tiến độ Phase 1 (Backend & Database):**
    - Khởi tạo kiến trúc mã nguồn Backend Express.js chuẩn ES Modules (`backend/`).
@@ -108,18 +124,20 @@
    - [x] **Khóa chỉnh sửa** khi khóa học `pending`/`published` (đã chốt 09/10/2026): mọi thao tác sửa khóa/chương/bài trả `409`; chỉ sửa ở `draft`/`rejected`. Admin vẫn xóa được khóa để kiểm duyệt. Trình soạn đề cương chuyển sang chế độ chỉ đọc.
    - [x] **Danh mục khóa học (Categories)** (đã chốt 09/10/2026): bảng `categories` (bảng thứ 19) + `courses.category_id`, 5 endpoint `/api/v1/categories`, trang `/manager/categories` nối API thật (thêm/sửa/ẩn-hiện/sắp xếp/xóa), lọc Catalog theo danh mục, giảng viên chọn danh mục khi tạo/sửa khóa. Migration `npm run db:migrate:categories` **đã chạy trên Neon dev**.
    - [ ] **Admin tự gửi duyệt và tự duyệt được khóa học của chính mình** (`approveCourse`/`rejectCourse` không chặn người duyệt là chủ khóa). Nhóm tạm giữ nguyên (09/10/2026); nếu cần kiểm tra chéo thì chặn trường hợp người duyệt = `owner_id`.
-   - [ ] Luồng "mở lại để chỉnh sửa" khóa đã `published` (phiên bản mới → duyệt lại) — chưa có, cần chốt nghiệp vụ.
-   - [ ] Trang **Chi tiết duyệt** (`/manager/approvals/:id/review`) mới chỉ hiện tiêu đề bài, Quản lý chưa xem được nội dung bài để duyệt.
-   - [ ] Trang chủ (`HomePage`) vẫn dùng danh mục & khóa học giả (mock) — chưa nối API.
+   - [x] "Mở lại để chỉnh sửa" khóa đã `pending`/`published`/`rejected`: `PATCH /courses/:id/unpublish` đưa về `draft` (14/10/2026, `api-courses.md` mục 2.22); chỉnh xong phải gửi duyệt lại. Chưa có phiên bản song song (khóa không còn công khai trong lúc sửa).
+   - [x] Trang **Chi tiết duyệt** (`/manager/approvals/:id/review`) đã xem được nội dung từng bài và tài liệu đính kèm (14/10/2026).
+   - [x] Admin có trang **Quản lý khóa học** (`/admin/courses`): xem mọi khóa, lọc theo trạng thái, tìm kiếm, xóa mềm khóa không dùng (15/10/2026).
+   - [x] Trang chủ (`HomePage`): khóa học nổi bật nối API thật (14/10/2026); danh mục và thẻ môn học vẫn là nội dung tĩnh.
    - [x] Tài liệu đính kèm bài học (`CourseMaterial`) + Presigned upload S3 (12/10/2026).
    - [ ] **Cấu hình bucket AWS S3 thật** (bucket, CORS cho PUT/GET từ frontend, policy Public Read cho `public/*`, IAM `s3:PutObject/GetObject/DeleteObject/ListBucket`) rồi test upload thật trên trình duyệt.
    - [ ] `GET /lessons/:lessonId/video-stream-url` + mở purpose `lesson_video` (cần cho phép `videoUrl` nhận S3 key).
-   - [ ] Nối upload avatar (trang Hồ sơ) và ảnh bìa khóa học vào presigned-url (backend đã sẵn sàng).
-   - [ ] Dọn tệp S3 khi xóa bài học/chương, dọn avatar/thumbnail cũ.
+   - [x] Nối upload avatar (trang Hồ sơ, nút "Tải ảnh từ máy") và ảnh bìa khóa học (form tạo/sửa khóa học của Giảng viên) vào presigned-url (17/10/2026). Đổi hoặc gỡ ảnh thì tệp ảnh cũ được dọn tự động (18/10/2026).
+   - [ ] Dọn tệp S3 khi xóa bài học/chương (avatar/thumbnail cũ đã được dọn khi đổi ảnh, 18/10/2026).
 2. **Sprint 4: Lớp học & Thành viên** — ✅ xong (12/10/2026). Còn lại:
-   - [ ] `GET /classes/:id/grades/export-excel` — làm cùng Sprint 5 khi có điểm Quiz/Assignment.
-   - [ ] Dashboard Học viên/Giảng viên vẫn dùng số liệu giả; menu Giảng viên còn link demo `Đề cương` (`/teacher/courses/1/curriculum`) và `Sổ điểm` (`/teacher/classes/1/gradebook`).
-   - [ ] Quản lý chọn giảng viên khi mở lớp chỉ từ danh sách chủ các khóa đã published (API `/users` chỉ dành cho Admin).
+   - [x] `GET /classes/:id/grades/export-excel` — xong 13/10/2026 cùng Sprint 5 (`?format=xlsx` hoặc `csv`).
+   - [x] Dashboard 4 vai trò dùng số liệu thật qua `GET /dashboard/{student,teacher,manager,admin}` (Dũng, 14/10/2026). Đã bỏ link demo `Đề cương` và `Chi tiết duyệt` trên menu (15/10/2026).
+   - [x] Trang **Báo cáo** của Quản lý (`/manager/reports`) dùng số liệu thật, tính từ `GET /classes` + `GET /classes/:id/gradebook`: điểm TB, tiến độ, phân bố xếp loại, xếp hạng giảng viên theo điểm TB, xuất CSV. Đã bỏ chỉ số "giữ chân" và "điểm hài lòng" vì hệ thống chưa có dữ liệu (17/10/2026).
+   - [x] Quản lý chọn giảng viên khi mở lớp chỉ từ danh sách chủ các khóa đã published (API `/users` chỉ dành cho Admin).
 3. **Sprint 5: Bài kiểm tra** — ✅ xong (12/10/2026). Còn lại:
    - [x] Đã test Gemini thật (12/10/2026): sinh đúng 3 loại câu hỏi, đề tiếng Anh B1 ra dạng điền chỗ trống bằng tiếng Anh. **Key nằm trong `backend/.env` từng máy — mỗi thành viên tự tạo key ở aistudio.google.com/apikey, không commit, không dán vào nhóm chat.**
    - **Tình trạng AI (tạm dừng 12/10/2026, quay lại sau):** key Free level (gói Google AI Pro không áp dụng cho API — Paid tier phải bật "Configure billing" trên project Cloud). `.env` máy dunghvd79 đặt `GEMINI_MODEL=gemini-3.8-flash` (~12-25s/lần, hay bị `503 high demand`). Đã có: tự thử lại 2 lần + chuyển model dự phòng `GEMINI_FALLBACK_MODEL` (mặc định `gemini-flash-lite-latest`, ~2-3s). Tài liệu mẫu để demo: đoạn "Tiếng Anh cơ bản bậc B1" (≥100 từ).
@@ -127,10 +145,20 @@
    - [ ] Lượt làm bỏ dở quá giờ hiện được chốt khi có người mở lại dữ liệu; chưa có Cron/BullMQ chốt chủ động.
    - [x] AGENTS.md, tech-stack, seq-ai-001, actor-admin đã cập nhật: model cấu hình qua `GEMINI_MODEL` (12/10/2026).
 4. **Sprint 5: Bài tập** — ✅ xong (13/10/2026): đủ 18/18 endpoint `api-assignments.md`. Backend `assignmentService.js` (khung bài tập, giao bài theo lớp, nộp/nộp lại qua S3, chấm đơn lẻ/hàng loạt, yêu cầu nộp lại giữ điểm cũ theo E3), `assignmentZipService.js` (ZIP cả lớp, ≤50MB trả ngay, lớn hơn chạy nền). Migration `npm run db:migrate:assignments` (đã chạy trên Neon dev). Frontend: GV — trang Bài tập, tạo/sửa đề từ Soạn đề cương, tab Bài tập trong lớp (giao bài, lịch nộp, thống kê), trang Chấm bài (lọc, chấm nhanh trên bảng, modal chấm/yêu cầu nộp lại, tải ZIP); HV — trang Bài tập, trang nộp bài (đề, đếm ngược, nộp/nộp lại, điểm & nhận xét), tab Bài tập trong lớp, thẻ bài tập trong trình học. Test API 68/68 + E2E Edge 24/24 (S3 giả lập, nộp file thật qua trình duyệt). **Chưa test với bucket S3 thật.**
-   - [ ] Thông báo (in-app/email) khi giao bài, chấm điểm, yêu cầu nộp lại — chưa có module thông báo.
+   - [x] Thông báo trong ứng dụng (in-app): bảng `notifications`, 4 API (`docs/api/api-notifications.md`), tự sinh khi giao bài, chấm điểm, yêu cầu nộp lại, gửi/duyệt/từ chối khóa học; chuông thông báo trên thanh trên cùng của cả 4 portal, cập nhật mỗi 30 giây (18/10/2026). Chưa làm: email, Socket.IO push, thông báo đề kiểm tra mới. Kiểm thử tay chuông thông báo và thông báo tự động (mục D, E của `docs/testing/manual-test-notifications-uploads.md`) đã đạt (xác nhận 21/10/2026).
    - [ ] Job nén ZIP lưu trong bộ nhớ (chưa có Redis/BullMQ).
-5. **Sprint 5: Bảng điểm** — ✅ xong (13/10/2026): `gradebookService.js` tính điểm theo `grading-policy.md` (E1-E3), xuất `.xlsx` (2 sheet) / `.csv` (`exceljs`); thêm `GET /classes/:id/gradebook` và `GET /classes/:id/my-grades`. Frontend: tab "Bảng điểm" trong trang lớp (GV/Quản lý/Admin, lọc xếp loại, xuất Excel/CSV), trang "Điểm số" của HV. Đã bỏ link demo "Sổ điểm" trên menu GV (link cũ `/teacher/classes/:id/gradebook` mở thẳng tab Bảng điểm). Test 25/25 (số liệu tính tay) + E2E Edge 11/11.
+5. **Sprint 5: Bảng điểm** — ✅ xong (13/10/2026): `gradebookService.js` tính điểm theo `grading-policy.md` (E1-E3), xuất `.xlsx` (4 sheet: Bảng điểm, Thống kê lớp, Tiến độ học, Quy tắc tính điểm; hai sheet giữa thêm 24/10/2026 — Phase 2 "Excel nâng cao") / `.csv` (`exceljs`); thêm `GET /classes/:id/gradebook` và `GET /classes/:id/my-grades`. Frontend: tab "Bảng điểm" trong trang lớp (GV/Quản lý/Admin, lọc xếp loại, xuất Excel/CSV), trang "Điểm số" của HV. Đã bỏ link demo "Sổ điểm" trên menu GV (link cũ `/teacher/classes/:id/gradebook` mở thẳng tab Bảng điểm). Test 25/25 (số liệu tính tay) + E2E Edge 11/11.
    - ✅ **Công thức điểm tổng kết đã chốt (12/10/2026):** Quiz 40% · Bài tập 50% · Tiến độ 10%; Quiz lấy điểm cao nhất; chưa làm/chưa nộp = 0; Giỏi ≥ 8 · Khá ≥ 6.5 · Trung bình ≥ 5 · Chưa đạt < 5. Chi tiết: `docs/requirements/grading-policy.md` (BR-034 → BR-037). Trường hợp đặc biệt cũng đã chốt: lớp không có Quiz/Bài tập → chia lại tỷ trọng; bài đã nộp chưa chấm → tạm 0 + ghi "Chưa chấm"; nộp lại → điểm lần chấm gần nhất (BR-038, BR-039).
+6. **Phase 3: Triển khai & Demo** — Docker Compose (22/10/2026), hướng dẫn ở `docs/architecture/deployment.md`:
+   - [x] `docker-compose.yml` (frontend Nginx + backend + PostgreSQL 16), `backend/Dockerfile`, `frontend/Dockerfile`, `.env.example`; backend tự tạo bảng + nạp dữ liệu mẫu khi CSDL trống (`backend/src/scripts/dockerStart.js`).
+   - [x] **Chạy thử trên máy có Docker Desktop** (Windows): build và khởi động không lỗi, 22/10/2026. Image dùng bản Debian (`node:22-slim`, `nginx:1.27`) vì `node:20-alpine` báo `exec format error` trên máy test.
+   - [x] **Kiểm thử tự động** (24/10/2026), hướng dẫn ở `docs/testing/automated-tests.md`: 152 unit test (công thức điểm tổng kết, thống kê lớp cho file Excel, quy tắc quyền của Thảo luận, cấu hình/nội dung/hàng đợi email; `npm test` trong `backend/`, không cần CSDL) và 51 kiểm tra API chạy vào hệ thống đang bật (`npm run test:e2e`; chỉ đọc, trừ nhóm Thảo luận có ghi bài thử rồi tự xóa). Để test được, hàm tính điểm đã tách khỏi `gradebookService.js` sang `backend/src/utils/grading.js` (kết quả tính điểm không đổi: so sánh 500.000 mẫu ngẫu nhiên giữa mã cũ và mã mới, 0 chênh lệch).
+   - [x] Redis 7 trong Docker Compose làm hàng đợi email (27/10/2026).
+   - [ ] HTTPS/cloud, CI/CD (chạy test tự động trên GitHub Actions), sao lưu CSDL.
+7. **Phase 2: Tính năng bổ sung** (`docs/project/project-plan.md`), làm lần lượt theo thứ tự:
+   - [x] **Xuất Excel nâng cao** (24/10/2026): file `.xlsx` bảng điểm thêm sheet "Thống kê lớp" (tổng quan, phân bố xếp loại, từng bài kiểm tra, từng bài tập, phân bố tiến độ) và "Tiến độ học" (mỗi học viên một dòng); số liệu tính ở `backend/src/utils/gradebookStats.js` (hàm thuần, có unit test). Không đổi API, không cần migration.
+   - [x] **Thảo luận / Hỏi đáp trong bài học** (26/10/2026): đặc tả ở `docs/api/api-discussions.md` (BR-070 → BR-078, bảng `lesson_discussions` mục 19 của `schema.md`). Mỗi cuộc thảo luận thuộc một lớp + một bài học, một cấp trả lời, đánh dấu "đã giải đáp", xóa mềm, lớp tạm dừng/kết thúc chỉ đọc, thông báo cho giảng viên (có câu hỏi) và người hỏi (có trả lời). Học viên: khu Thảo luận cuối bài học; giảng viên/quản lý/admin: tab "Thảo luận" của lớp. **Cần chạy migration** `npm run db:migrate:discussions` (Docker đã có dữ liệu thì chạy `docker compose exec backend node src/scripts/migrations/20261025-lesson-discussions.js`; CSDL Neon dùng chung thì báo lead Dũng).
+   - [x] **Email tự động qua BullMQ + Redis** (27/10/2026): mã OTP kích hoạt (đăng ký, gửi lại) và link đặt lại mật khẩu được gửi qua Nodemailer (SMTP, ví dụ Gmail App Password) bằng hàng đợi BullMQ `email` (thử lại 5 lần, worker chạy cùng backend). Cấu hình bằng `SMTP_*`, `MAIL_FROM`, `REDIS_URL`; thiếu thì tự lùi về gửi trực tiếp hoặc in ra log như trước; gửi email lỗi không làm hỏng API. Mã ở `backend/src/services/emailService.js`, `utils/mailConfig.js`, `utils/emailTemplates.js`. Hướng dẫn Gmail: `docs/architecture/deployment.md` mục 4.1. **Cần cài thư viện:** `cd backend; npm install bullmq ioredis nodemailer` (cập nhật `package.json` + `package-lock.json`, Dockerfile dùng `npm ci`). BullMQ 6 không tự nạp `ioredis` khi chạy ESM, nên `emailService.js` tự tạo client `ioredis` rồi truyền vào Queue và Worker (thiếu `ioredis` thì worker lỗi lặp vô tận và backend không khỏe trong Docker). Chưa làm: email cho thông báo trong chuông, nhập người dùng hàng loạt, nén ZIP qua BullMQ.
 
 ## 4. Ghi Chú Kỹ Thuật Quan Trọng
 - **Migration CSDL:** không chạy `sequelize.sync({ alter: true })` trên DB chung để thêm bảng/cột mới; viết script idempotent trong `backend/src/scripts/migrations/` (mẫu: `20261009-add-categories.js`) và thêm lệnh vào `package.json`. Mỗi thành viên cần chạy `npm run db:migrate:categories` nếu dùng DB riêng.
@@ -145,6 +173,7 @@
 - **Bài kiểm tra:** đề thi là nội dung khóa học → mọi API sửa đề/câu hỏi phải qua `assertCanEditQuiz` (chủ khóa/Admin + `assertCourseEditable`). Không trả `isCorrect`/`explanation` cho học viên khi đang làm bài (`mapQuestion(q, { withAnswers: false })`). Thời gian làm bài tính trên server (`deadlineOf` + ân hạn 30s). Lượt làm thuộc `class_quizzes`, tự tạo khi học viên bắt đầu lần đầu. Mỗi máy dùng DB riêng cần chạy `npm run db:migrate:quizzes`.
 - **Bài tập:** giao bài = tạo `class_assignments` qua `PUT .../schedule`; chấm/giao bài chỉ GV phụ trách lớp hoặc Admin (`assertClassGrader`). Yêu cầu nộp lại **giữ điểm cũ** (cột `resubmission_reason`), bài cần chấm xác định bằng `needsGrading` (chưa có điểm hoặc nộp sau lần chấm gần nhất). Mỗi máy dùng DB riêng cần chạy `npm run db:migrate:assignments`.
 - **Upload S3 dùng chung:** backend `uploadService.createSignedPutUrl` / `isMimeAllowed`, frontend `uploadService.putToS3` / `contentTypeOf`.
+- **Lưu trữ tệp cục bộ (dev/Docker):** thiếu `AWS_REGION`/`S3_BUCKET` thì `storageService.js` lưu tệp vào `backend/uploads/` (Docker: volume `uploads-data`) qua `PUT /uploads/local-put` và `GET /uploads/local-download?key&sig` (chữ ký HMAC theo `key`); ảnh công khai phục vụ tĩnh ở `/uploads/*`. Chỉ dành cho dev/demo: `local-put` chưa yêu cầu đăng nhập và link tải không hết hạn — xem `api-uploads.md` mục 6.
 - **Frontend gọi POST không body:** gửi `{}` chứ không gửi `null` — `express.json()` strict từ chối `null` (nay trả `400`).
 - **Component `Button` (PortalUI):** không truyền `className` vì nó ghi đè class `ui-btn`; bọc bằng `div` nếu cần căn lề.
 - **Tailwind:** dự án tự định nghĩa `screens` chỉ có `md`/`lg`/`xl` — **không có `sm:`**, viết `sm:` sẽ không có tác dụng.
@@ -155,7 +184,7 @@
 - **Refresh token chỉ dùng 1 lần:** frontend phải gọi qua `refreshAccessToken()` trong `stores/useAuthStore.js`, không tự gọi `axios.post('/auth/refresh-token')`.
 - **Xóa cookie refresh:** controller `refreshToken` chỉ gọi `clearRefreshCookie` khi lỗi `401` và không có cờ `preserveCookie`. Lỗi mới trong `refreshSession` mà không muốn xóa cookie thì đặt `err.preserveCookie = true`.
 - **Quy trình Git:** xem `docs/project/git-workflow.md` (nhánh, commit, PR, migration, không commit secret).
-- **Nhánh Git:** `feature-dung` đã được merge vào `main` qua PR #7 và PR #8; từ `2ce7fa9` đến `5a9ae2b` (10 commit, 13/10/2026) chưa vào `main`, chờ PR mới. Các commit Sprint 3 từ `2ce7fa9` trở đi trên `feature-dung` chưa vào `main`, cần PR mới. Nhánh `tuanmanh205-sprint3-course-api` viết song song Sprint 3 (bảng `course_categories`, còn lỗi lộ nội dung bài) — **không merge**, phần S3 đã được chuyển sang `feature-dung`. Các nhánh `feature-ngocson`, `feature-anh`, `feature-manh` nên cập nhật từ `main` thường xuyên để tránh conflict lớn.
+- **Nhánh Git:** xem mục 0. `feature-dung` đã được merge vào `main` qua Pull Request (xem lịch sử GitHub). Nhánh `tuanmanh205-sprint3-course-api` viết song song Sprint 3 (bảng `course_categories`, còn lỗi lộ nội dung bài) — **không merge**, phần S3 đã được chuyển sang `feature-dung`. `feature-manh` có lịch sử riêng nên merge cần `--allow-unrelated-histories` (xem mục 0). Các nhánh `feature-ngocson`, `feature-anh` nên cập nhật từ `main` thường xuyên để tránh conflict lớn.
 - Toàn bộ diagram chỉ dùng các loại Mermaid phổ biến (`flowchart`, `sequenceDiagram`, `erDiagram`). Tránh dùng `gitgraph`.
 - Tất cả tài liệu viết bằng Markdown trong `docs/` theo chuẩn Docs-as-Code.
 - Đảm bảo 100% Traceability (tính truy vết) đồng bộ giữa Use Case, Sequence Diagram, Database Schema, API Spec, Design System và Frontend Blueprint.

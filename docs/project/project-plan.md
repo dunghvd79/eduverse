@@ -44,15 +44,16 @@
 
 ### Phase 2: Tính năng bổ sung (Tuần 8 — Nâng cao)
 
-- [ ] Thông báo hệ thống & Email tự động qua BullMQ Worker
-- [ ] Thảo luận / Hỏi đáp trong bài học
-- [ ] Xuất báo cáo điểm & thống kê lớp học ra file Excel nâng cao
+- [x] Thông báo hệ thống (trong ứng dụng, 18/10/2026) & Email tự động qua BullMQ + Redis (27/10/2026)
+- [x] Thảo luận / Hỏi đáp trong bài học (26/10/2026)
+- [x] Xuất báo cáo điểm & thống kê lớp học ra file Excel nâng cao (24/10/2026)
 
 ### Phase 3: Hoàn thiện & Demo
 
-- [ ] Testing & Bug fixes (Unit Tests, E2E Tests)
+- [x] Testing & Bug fixes — 152 unit test + 51 kiểm tra E2E (24–27/10/2026), xem `docs/testing/automated-tests.md`
 - [ ] Viết báo cáo đồ án liên ngành
-- [ ] Triển khai Deployment (Docker Compose / Cloud Hosting) & Chuẩn bị Demo
+- [x] Triển khai bằng Docker Compose (22/10/2026), hướng dẫn ở `docs/architecture/deployment.md`
+- [ ] Cloud hosting (HTTPS) & chuẩn bị Demo
 
 ---
 
@@ -60,11 +61,12 @@
 
 | Thành viên | Vai trò | Module phụ trách |
 |---|---|---|
-| _Tên 1_ | _Backend Lead_ | _Auth, Users_ |
-| _Tên 2_ | _Backend_ | _Course, Class, Quiz_ |
-| _Tên 3_ | _Frontend Lead_ | _Layout, Auth pages_ |
-| _Tên 4_ | _Frontend_ | _Course, Lesson pages_ |
-| _Tên 5_ | _Fullstack_ | _Upload, AI, Integration_ |
+| Dũng (`dunghvd79`) | Trưởng nhóm, review & merge `main` | Nền tảng Auth/Users, Khóa học, Lớp học, Bài kiểm tra, Bài tập, Dashboard (nhánh `feature-dung`) |
+| Mạnh (`tuanmanh205`) | Thành viên | Nhánh `feature-manh`: nối frontend–API, Excel nâng cao, Thảo luận, Email BullMQ + Redis, Docker Compose, kiểm thử tự động |
+| Hoàng Ngọc Sơn | Thành viên | Nhánh `feature-ngocson` _(ghi rõ phần phụ trách sau buổi họp nhóm)_ |
+| Anh | Thành viên | Nhánh `feature-anh` _(ghi rõ phần phụ trách sau buổi họp nhóm)_ |
+
+_Bảng được tổng hợp từ lịch sử các nhánh; cập nhật lại sau khi họp nhóm._
 
 ---
 
@@ -77,8 +79,10 @@
 | 26/09/2026 | Hoàn thành trọn vẹn 100% Phase 0 Thiết kế: Cập nhật Tech Stack (Express.js/Sequelize), Sửa C4 Level 2 Container Diagram, Hoàn thiện tài liệu UI (sitemap.md & wireframes.md 10 màn hình cốt lõi) |
 | 13/10/2026 | Hoàn thành Sprint 3–5 (Upload S3, Lớp học, Bài kiểm tra Gemini AI, Bài tập & Bảng điểm). Nâng cấp toàn diện Portal Giảng viên: Dashboard chỉ số KPI & Class Cards chuẩn Enterprise LMS, Quản lý Khóa học đa chế độ (Lưới 16:9 / Bảng dữ liệu) kèm bộ lọc tức thời; chuẩn hóa dữ liệu khóa học thật trên Database Neon.tech |
 | 14/10/2026 | Hoàn thành Vòng đời khóa học (Unpublish to Draft), hệ thống Custom Confirm Modal toàn ứng dụng, Bộ điều phối Local Storage Fallback tự động khi chưa có AWS S3, cải tiến danh sách Quiz và chuẩn hóa giao diện Trang chủ & Footer |
+| 24–27/10/2026 | Phase 3: Docker Compose + kiểm thử tự động (152 unit test, 51 kiểm tra E2E). Phase 2: Excel nâng cao, Thảo luận trong bài học, Email tự động BullMQ + Redis — hoàn thành trên nhánh `feature-manh` |
+| 28/10/2026 | Rà soát tài liệu so với code thực tế và đồng bộ lại: API `unpublish`, `gradebook`, `my-grades`, lưu trữ cục bộ, sitemap, quy tắc nghiệp vụ, quy trình Git |
 
 ---
 
-_Cập nhật lần cuối: 14/10/2026_
+_Cập nhật lần cuối: 28/10/2026_
 

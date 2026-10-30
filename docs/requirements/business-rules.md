@@ -23,7 +23,7 @@
 
 | # | Quy tắc | Chi tiết |
 |---|---|---|
-| BR-010 | Khóa học có **3 trạng thái** | `draft` (nháp), `published` (đã xuất bản), `archived` (lưu trữ) |
+| BR-010 | Khóa học có **4 trạng thái** đang dùng | `draft` (nháp), `pending` (chờ duyệt), `published` (đã xuất bản), `rejected` (bị từ chối kèm lý do, sửa rồi gửi duyệt lại). Từ `pending`/`published`/`rejected` có thể đưa về `draft` bằng `PATCH /courses/:id/unpublish`. `archived` được dành sẵn trong CSDL nhưng chưa triển khai |
 | BR-011 | Khóa học cần **phê duyệt** trước khi public | Teacher xuất bản → Training Manager phê duyệt → mới hiển thị cho học viên |
 | BR-012 | Khóa học hiện tại **miễn phí** | Nhưng DB có trường `price: decimal(10,2) DEFAULT 0` để mở rộng sau |
 | BR-013 | Cấu trúc nội dung **3 cấp** | Khóa học → Chương (Chapter) → Bài học (Lesson) |
@@ -64,6 +64,22 @@
 |---|---|---|
 | BR-040 | Tiến độ tính theo **% bài học hoàn thành** | Số bài học đã đánh dấu hoàn thành / Tổng số bài học trong khóa |
 | BR-041 | Học viên **tự đánh dấu** hoàn thành bài học | Nhấn nút "Hoàn thành" sau khi đọc/xem xong |
+
+---
+
+## 5b. Thảo luận / Hỏi đáp trong bài học
+
+| # | Quy tắc | Chi tiết |
+|---|---|---|
+| BR-070 | Thảo luận thuộc về **một lớp + một bài học** | Hai lớp học cùng khóa học có khu thảo luận riêng. Chỉ học viên đang học (`active`) trong lớp, giảng viên phụ trách lớp, Quản lý đào tạo và Admin được xem |
+| BR-071 | **Học viên và giảng viên phụ trách** được đăng câu hỏi và trả lời | Quản lý đào tạo và Admin chỉ xem và kiểm duyệt (xóa), không đăng bài |
+| BR-072 | Chỉ **một cấp trả lời** | Câu trả lời gắn vào câu hỏi gốc, không trả lời lồng nhau |
+| BR-073 | Nội dung là **văn bản thuần** 1–2000 ký tự | Không hỗ trợ HTML, Markdown, đính kèm tệp/ảnh ở Phase 2 |
+| BR-074 | **Tác giả** được sửa bài của mình | Bài đã sửa hiện "(đã chỉnh sửa)". Không ai sửa hộ bài của người khác |
+| BR-075 | **Tác giả, giảng viên phụ trách, Quản lý, Admin** được xóa | Xóa mềm; xóa câu hỏi gốc thì xóa luôn các câu trả lời |
+| BR-076 | **Người đặt câu hỏi, giảng viên phụ trách, Quản lý, Admin** được đánh dấu "đã giải đáp" | Chỉ áp dụng cho câu hỏi gốc, bỏ đánh dấu được |
+| BR-077 | Lớp **tạm dừng hoặc đã kết thúc** thì thảo luận **chỉ đọc** | Học viên không đăng, sửa, trả lời; giảng viên, Quản lý, Admin vẫn xóa được để kiểm duyệt |
+| BR-078 | Học viên đặt câu hỏi → báo **giảng viên phụ trách**; có người trả lời → báo **người đặt câu hỏi** | Thông báo trong ứng dụng; không báo cho cả lớp |
 
 ---
 

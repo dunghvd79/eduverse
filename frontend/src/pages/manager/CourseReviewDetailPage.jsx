@@ -4,6 +4,14 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { PortalHeader, Button, Card, SectionTitle, Badge } from '../../components/portal/PortalUI';
 import courseService from '../../services/courseService';
 import { toast } from '../../components/common/Toast';
+import LessonMaterialsPanel from '../../components/course/LessonMaterialsPanel';
+
+const LESSON_TYPE_LABEL = {
+  theory: 'LÝ THUYẾT',
+  video: 'VIDEO',
+  quiz: 'BÀI KIỂM TRA',
+  assignment: 'BÀI TẬP'
+};
 
 export default function CourseReviewDetailPage() {
   const { id } = useParams();
@@ -13,6 +21,9 @@ export default function CourseReviewDetailPage() {
   const [loading, setLoading] = useState(true);
   const [reason, setReason] = useState('');
   const [rejecting, setRejecting] = useState(false);
+    const [selectedLessonId, setSelectedLessonId] = useState(null);
+  const [lesson, setLesson] = useState(null);
+  const [lessonLoading, setLessonLoading] = useState(false);
 
   const load = async () => {
     try {
@@ -33,6 +44,26 @@ export default function CourseReviewDetailPage() {
   useEffect(() => {
     load();
   }, [id]);
+    useEffect(() => {
+    if (!selectedLessonId) {
+      setLesson(null);
+      return;
+    }
+
+    let cancelled = false;
+    setLessonLoading(true);
+    courseService.getLesson(selectedLessonId)
+      .then(data => { if (!cancelled) setLesson(data); })
+      .catch(error => {
+        if (!cancelled) {
+          setLesson(null);
+          toast.error(error?.message || 'Không thể tải nội dung bài học.');
+        }
+      })
+      .finally(() => { if (!cancelled) setLessonLoading(false); });
+
+    return () => { cancelled = true; };
+  }, [selectedLessonId]);
 
   const approve = async () => {
     try {
@@ -118,14 +149,57 @@ export default function CourseReviewDetailPage() {
                 <span>{index + 1}</span>
                 <div className="flex-1">
                   <b>{chapter.title}</b>
-                  <div className="text-xs text-slate-500 mt-1">
-                    {(chapter.lessons || []).map(lesson => lesson.title).join(' · ') || 'Chưa có bài học'}
-                  </div>
+                  <div className="flex flex-wrap gap-1.5 mt-2">
+  {(chapter.lessons || []).length === 0 && (
+    <span className="text-xs text-slate-500">Chưa có bài học</span>
+  )}
+  {(chapter.lessons || []).map(item => (
+    <button
+      key={item.id}
+      type="button"
+      onClick={() => setSelectedLessonId(item.id)}
+      className={`rounded-full border px-3 py-1 text-xs font-semibold transition ${
+        selectedLessonId === item.id
+          ? 'border-primary bg-primary text-white'
+          : 'border-slate-300 bg-white text-slate-700 hover:border-primary hover:text-primary'
+      }`}
+    >
+      {item.title}
+    </button>
+  ))}
+</div>
                 </div>
                 <small>{(chapter.lessons || []).length} bài</small>
                 <CheckCircle2 size={18}/>
               </div>
             ))}
+          </div>
+                    <div className="review-section">
+            <h3>Nội dung bài học</h3>
+            {!selectedLessonId ? (
+              <p className="text-sm text-slate-500">Chọn một bài học trong đề cương để xem nội dung.</p>
+            ) : lessonLoading ? (
+              <p className="text-sm text-slate-500">Đang tải nội dung bài học...</p>
+            ) : lesson ? (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <Badge>{LESSON_TYPE_LABEL[lesson.lessonType] || String(lesson.lessonType).toUpperCase()}</Badge>
+                  <b>{lesson.title}</b>
+                </div>
+                {lesson.videoUrl && (
+                  <p className="text-sm break-all">
+                    Video:{' '}
+                    <a href={lesson.videoUrl} target="_blank" rel="noreferrer" className="text-primary font-semibold hover:underline">
+                      {lesson.videoUrl}
+                    </a>
+                  </p>
+                )}
+                <div className="whitespace-pre-wrap text-slate-700 leading-7 rounded-xl border border-slate-200 bg-slate-50 p-4">
+                  {lesson.contentText || 'Bài học chưa có nội dung.'}
+                </div>
+                <LessonMaterialsPanel lessonId={lesson.id} />
+              </div>
+            ) : null}
           </div>
         </Card>
 

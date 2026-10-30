@@ -40,6 +40,8 @@
 - [API: Bài kiểm tra (Quizzes)](api/api-quizzes.md)
 - [API: Bài tập (Assignments)](api/api-assignments.md)
 - [API: Tổng quan (Dashboard)](api/api-dashboard.md)
+- [API: Thông báo (Notifications)](api/api-notifications.md)
+- [API: Thảo luận / Hỏi đáp trong bài học (Discussions)](api/api-discussions.md)
 - [API: Upload & Đa phương tiện (Uploads)](api/api-uploads.md)
 
 ### 🎨 Giao diện
@@ -53,6 +55,12 @@
 - [Luồng ghi danh](sequences/seq-enroll.md)
 - [Luồng làm bài kiểm tra](sequences/seq-quiz.md)
 - [Luồng nộp bài tập](sequences/seq-submit.md)
+
+### 🧪 Kiểm thử
+- [Kiểm thử tự động (unit test + API)](testing/automated-tests.md)
+- [Kiểm thử thủ công: Sprint 3](testing/manual-test-sprint3.md)
+- [Kiểm thử thủ công: Dashboard](testing/manual-test-dashboard-ui.md)
+- [Kiểm thử thủ công: Thông báo, Upload ảnh, Báo cáo](testing/manual-test-notifications-uploads.md)
 
 ### 📅 Quản lý Dự án
 - [Kế hoạch dự án](project/project-plan.md)

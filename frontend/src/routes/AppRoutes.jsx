@@ -49,6 +49,7 @@ import ManagerReportsPage from '../pages/manager/ManagerReportsPage';
 
 import AdminDashboardPage from '../pages/admin/AdminDashboardPage';
 import UserManagementPage from '../pages/admin/UserManagementPage';
+import AdminCoursesPage from '../pages/admin/AdminCoursesPage';
 import AuditLogsPage from '../pages/admin/AuditLogsPage';
 import PlatformSettingsPage from '../pages/admin/PlatformSettingsPage';
 
@@ -123,6 +124,7 @@ export default function AppRoutes() {
       <Route path="/admin" element={<AdminLayout />}>
         <Route path="dashboard" element={<AdminDashboardPage />} />
         <Route path="users" element={<UserManagementPage />} />
+        <Route path="courses" element={<AdminCoursesPage />} />
         <Route path="classes" element={<ClassListPage basePath="/admin/classes" />} />
         <Route path="classes/:id" element={<ClassManagePage basePath="/admin/classes" />} />
         <Route path="classes/:classId/assignments/:assignmentId/grade" element={<AssignmentGradingPage />} />

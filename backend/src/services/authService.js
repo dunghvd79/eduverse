@@ -11,6 +11,8 @@ import {
   generateSecureRandomToken
 } from '../utils/jwt.js';
 import { AppError } from '../utils/AppError.js';
+import { sendOtpEmail, sendPasswordResetEmail } from './emailService.js';
+import { RESET_TTL_MINUTES } from '../utils/emailTemplates.js';
 
 const OTP_TTL_MS = 10 * 60 * 1000; // 10 minutes
 const REFRESH_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
@@ -103,7 +105,8 @@ export const register = async ({ email, password, fullName }) => {
       return createEmailOtp(existingUser.id, t);
     });
 
-    console.log(`\n📨 [DEV OTP EMAIL] Mã xác thực kích hoạt cho ${email}: ${otp}\n`);
+    // Không await: gửi email chạy nền, không bao giờ ném lỗi và không làm chậm API
+    sendOtpEmail({ to: normalizedEmail, fullName, otp, ttlMinutes: OTP_TTL_MS / 60000 });
     return formatUser(existingUser);
   }
 
@@ -125,7 +128,7 @@ export const register = async ({ email, password, fullName }) => {
     return createEmailOtp(createdUser.id, t);
   });
 
-  console.log(`\n📨 [DEV OTP EMAIL] Mã xác thực kích hoạt cho ${email}: ${otp}\n`);
+  sendOtpEmail({ to: normalizedEmail, fullName, otp, ttlMinutes: OTP_TTL_MS / 60000 });
   return formatUser(createdUser);
 };
 
@@ -202,7 +205,7 @@ export const resendOtp = async ({ email }) => {
 
   const otp = await sequelize.transaction((t) => createEmailOtp(user.id, t));
 
-  console.log(`\n📨 [DEV OTP RESEND] Mã xác thực mới cho ${email}: ${otp}\n`);
+  sendOtpEmail({ to: user.email, fullName: user.full_name, otp, ttlMinutes: OTP_TTL_MS / 60000, resend: true });
   return true;
 };
 
@@ -339,12 +342,12 @@ export const forgotPassword = async ({ email }) => {
         user_id: user.id,
         token_hash: hashToken(resetToken),
         token_type: 'password_reset',
-        expires_at: new Date(Date.now() + 15 * 60 * 1000), // 15 mins
+        expires_at: new Date(Date.now() + RESET_TTL_MINUTES * 60 * 1000),
         is_used: false
       }, { transaction: t });
     });
 
-    console.log(`\n🔗 [DEV RESET PASSWORD LINK] http://localhost:5173/reset-password?token=${resetToken}\n`);
+    sendPasswordResetEmail({ to: user.email, fullName: user.full_name, token: resetToken, ttlMinutes: RESET_TTL_MINUTES });
   }
 
   // Always return true to prevent user enumeration

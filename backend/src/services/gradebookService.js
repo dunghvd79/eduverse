@@ -1,5 +1,8 @@
 import models from '../models/index.js';
 import { AppError } from '../utils/AppError.js';
+import {
+  BASE_WEIGHTS, RANKINGS, round2, average, rankingOf, effectiveWeights, assignmentStateOf, assignmentGradeOf, finalScoreOf
+} from '../utils/grading.js';
 import { findClassOrFail, canManageClass, isActiveMember, getCourseLessonIds, getStudentProgress } from './classService.js';
 
 const {
@@ -15,31 +18,8 @@ const {
  *   P: % bài học hoàn thành / 10
  *   Lớp không có Quiz hoặc không có Bài tập -> bỏ thành phần đó, chia lại tỷ trọng theo tỷ lệ (E1)
  */
-export const BASE_WEIGHTS = { quiz: 0.4, assignment: 0.5, progress: 0.1 };
-
-export const RANKINGS = [
-  { min: 8, label: 'Giỏi' },
-  { min: 6.5, label: 'Khá' },
-  { min: 5, label: 'Trung bình' },
-  { min: -Infinity, label: 'Chưa đạt' }
-];
-
-const round2 = (value) => Math.round(value * 100) / 100;
-const average = (values) => (values.length ? values.reduce((s, v) => s + v, 0) / values.length : null);
-export const rankingOf = (score) => RANKINGS.find((r) => score >= r.min).label;
-
-/**
- * Tỷ trọng thực tế sau khi bỏ thành phần không có (E1)
- */
-export const effectiveWeights = (hasQuiz, hasAssignment) => {
-  // Thứ tự khóa cố định Quiz -> Bài tập -> Tiến độ để công thức hiển thị/xuất file nhất quán
-  const used = {};
-  if (hasQuiz) used.quiz = BASE_WEIGHTS.quiz;
-  if (hasAssignment) used.assignment = BASE_WEIGHTS.assignment;
-  used.progress = BASE_WEIGHTS.progress;
-  const total = Object.values(used).reduce((s, w) => s + w, 0);
-  return Object.fromEntries(Object.entries(used).map(([k, w]) => [k, round2(w / total * 10000) / 10000]));
-};
+// Hàm thuần tính điểm nằm ở utils/grading.js (có unit test); giữ export tại đây để mã cũ import không đổi
+export { BASE_WEIGHTS, RANKINGS, rankingOf, effectiveWeights };
 
 // Bài kiểm tra / bài tập của khóa, theo thứ tự trong đề cương
 const courseContent = (model, courseId, where = {}) => model.findAll({
@@ -111,12 +91,7 @@ export const computeGradebook = async (cls, { studentId = null } = {}) => {
 
     const assignmentScores = assignments.map((assignment) => {
       const s = submissionOf[`${sid}:${assignment.id}`];
-      let state = 'missing';
-      if (s?.status === 'resubmission_requested') state = 'resubmission_requested';
-      else if (s && s.grade !== null && !(s.graded_at && new Date(s.submitted_at) > new Date(s.graded_at))) state = 'graded';
-      else if (s && s.grade !== null) state = 'regrade_pending'; // nộp lại sau lần chấm: dùng điểm cũ (E3)
-      else if (s) state = 'ungraded'; // đã nộp chưa chấm: tạm tính 0 (E2)
-      return { assignmentId: assignment.id, grade: s?.grade !== null && s?.grade !== undefined ? Number(s.grade) : 0, state };
+      return { assignmentId: assignment.id, grade: assignmentGradeOf(s), state: assignmentStateOf(s) };
     });
 
     const completedLessons = progress[sid]?.completedLessons || 0;
@@ -126,11 +101,7 @@ export const computeGradebook = async (cls, { studentId = null } = {}) => {
     const assignmentAverage = assignments.length ? round2(average(assignmentScores.map((a) => a.grade))) : null;
     const progressScore = round2(progressPercentage / 10);
 
-    // Tính trên giá trị chưa làm tròn để không lệch do làm tròn 2 lần
-    const raw = (weights.quiz ? weights.quiz * average(quizScores.map((q) => q.score)) : 0)
-      + (weights.assignment ? weights.assignment * average(assignmentScores.map((a) => a.grade)) : 0)
-      + weights.progress * (progressPercentage / 10);
-    const finalScore = round2(raw);
+    const finalScore = finalScoreOf({ quizScores, assignmentScores, progressPercentage }, weights);
 
     const notes = [];
     const titleOf = (id, list) => list.find((x) => x.id === id)?.title;

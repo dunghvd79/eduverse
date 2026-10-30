@@ -11,14 +11,13 @@
 
 ## 2. Tech Stack Cốt Lõi (đối chiếu `package.json` ngày 13/10/2026)
 **Đang dùng:**
-- **Backend:** Express **5** (Node.js 20, JavaScript ES Modules: `import/export`), Sequelize ORM v6 + PostgreSQL (Neon), Joi **v18**, JWT (`jsonwebtoken`) + `bcryptjs`, `helmet`, `express-rate-limit` (lưu in-memory), `exceljs` (xuất bảng điểm), `archiver` (nén ZIP bài nộp).
+- **Backend:** Express **5** (Node.js 20, JavaScript ES Modules: `import/export`), Sequelize ORM v6 + PostgreSQL (Neon), Joi **v18**, JWT (`jsonwebtoken`) + `bcryptjs`, `helmet`, `express-rate-limit` (lưu in-memory), `exceljs` (xuất bảng điểm), `archiver` (nén ZIP bài nộp), `nodemailer` + `bullmq` + `ioredis` (email OTP/đặt lại mật khẩu qua hàng đợi Redis; tùy chọn, thiếu cấu hình thì in ra console; xem `docs/architecture/deployment.md` mục 4.1), Docker Compose.
 - **Frontend:** React 18 (Vite 5, JavaScript thuần `.jsx`), React Router v6, Tailwind CSS v3, component tự viết bằng Tailwind (chưa dùng shadcn/ui; `@radix-ui/*` đã cài nhưng chưa import), TanStack Query v5 + Zustand **v5**, Axios, React Hook Form, Joi v17 (validate form), `sonner` (toast), `lucide-react` (icon).
 - **Services:** AWS S3 qua `@aws-sdk/client-s3` (Presigned URLs; chưa có bucket thật, đang test bằng S3 giả lập), Google Gemini API gọi REST trực tiếp (model cấu hình qua `GEMINI_MODEL`, mặc định `gemini-flash-latest`; dự phòng `GEMINI_FALLBACK_MODEL`, mặc định `gemini-flash-lite-latest`).
 
 **Kế hoạch, CHƯA cài đặt** (đừng import hay giả định đã có):
-- Nodemailer + Gmail SMTP: OTP và link đặt lại mật khẩu hiện chỉ in ra console backend (`[DEV OTP EMAIL]`, `[DEV RESET PASSWORD LINK]`).
-- Redis 7 (`ioredis`) / BullMQ: cho rate limiter và job nén ZIP.
-- Socket.IO v4 (Phase 2), Docker + Docker Compose.
+- Redis cho rate limiter và job nén ZIP (hiện vẫn lưu in-memory; Redis đã có trong Docker Compose nhưng chỉ làm hàng đợi email).
+- Socket.IO v4 (Phase 2).
 
 
 ## 3. Quy Tắc Nghiệp Vụ Bắt Buộc (Critical Business Rules)

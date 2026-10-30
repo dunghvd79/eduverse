@@ -1,7 +1,8 @@
 import React, {useState} from 'react';
 import {Link, NavLink, Navigate, Outlet, useLocation, useNavigate} from 'react-router-dom';
-import {BookOpen, LayoutDashboard, GraduationCap, Users, ClipboardCheck, FileText, BarChart3, Settings, ShieldCheck, FolderTree, Sparkles, Menu, X, Search, Bell, ChevronRight, LogOut, UserCircle, RefreshCw, Home, Compass} from 'lucide-react';
+import {BookOpen, LayoutDashboard, GraduationCap, Users, ClipboardCheck, FileText, BarChart3, Settings, ShieldCheck, FolderTree, Sparkles, Menu, X, Search, ChevronRight, LogOut, UserCircle, RefreshCw, Home, Compass} from 'lucide-react';
 import { useAuthStore } from '../../stores/useAuthStore';
+import NotificationBell from './NotificationBell';
 
 // Ánh xạ role trong DB sang tiền tố URL của portal
 const PORTAL_BY_ROLE = { student: 'student', teacher: 'teacher', training_manager: 'manager', admin: 'admin' };
@@ -17,7 +18,7 @@ const roleConfig={
   ['Tổng quan','/manager/dashboard',LayoutDashboard],['Duyệt khóa học','/manager/approvals',ClipboardCheck],['Danh mục','/manager/categories',FolderTree],['Lớp học','/manager/classes',Users],['Báo cáo','/manager/reports',BarChart3],['Hồ sơ','/manager/profile',UserCircle]
  ]},
  admin:{label:'Quản trị viên',links:[
-  ['Tổng quan','/admin/dashboard',LayoutDashboard],['Người dùng','/admin/users',Users],['Lớp học','/admin/classes',GraduationCap],['Nhật ký hệ thống','/admin/audit-logs',ShieldCheck],['Cài đặt hệ thống','/admin/settings',Settings],['Hồ sơ','/admin/profile',UserCircle]
+  ['Tổng quan','/admin/dashboard',LayoutDashboard],['Người dùng','/admin/users',Users],['Khóa học','/admin/courses',BookOpen],['Lớp học','/admin/classes',GraduationCap],['Nhật ký hệ thống','/admin/audit-logs',ShieldCheck],['Cài đặt hệ thống','/admin/settings',Settings],['Hồ sơ','/admin/profile',UserCircle]
  ]}
 };
 
@@ -72,7 +73,7 @@ export function PortalLayout({role}) {
   </aside>
   {open&&<div className="sidebar-overlay" onClick={()=>setOpen(false)}/>}
   <section className="portal-main">
-   <header className="portal-topbar"><button className="mobile-menu" onClick={()=>setOpen(true)}><Menu/></button><div className="crumb"><Link to="/" className="text-slate-500 hover:text-[#1168bd] no-underline transition-colors font-medium flex items-center gap-1" title="Về trang chủ EduVerse"><span>EduVerse</span></Link><ChevronRight size={15}/><b>{cfg.label}</b></div><div className="top-actions"><div className="search-mini"><Search size={17}/><input placeholder="Tìm kiếm..."/></div><button className="icon-btn"><Bell size={19}/><i/></button><div className="top-avatar cursor-pointer overflow-hidden transition-transform hover:scale-105" onClick={()=>nav(`/${role}/profile`)} title="Xem hồ sơ cá nhân">{user?.avatarUrl ? <img src={user.avatarUrl} alt={displayName} className="w-full h-full object-cover" /> : initials}</div></div></header>
+   <header className="portal-topbar"><button className="mobile-menu" onClick={()=>setOpen(true)}><Menu/></button><div className="crumb"><Link to="/" className="text-slate-500 hover:text-[#1168bd] no-underline transition-colors font-medium flex items-center gap-1" title="Về trang chủ EduVerse"><span>EduVerse</span></Link><ChevronRight size={15}/><b>{cfg.label}</b></div><div className="top-actions"><div className="search-mini"><Search size={17}/><input placeholder="Tìm kiếm..."/></div><NotificationBell/><div className="top-avatar cursor-pointer overflow-hidden transition-transform hover:scale-105" onClick={()=>nav(`/${role}/profile`)} title="Xem hồ sơ cá nhân">{user?.avatarUrl ? <img src={user.avatarUrl} alt={displayName} className="w-full h-full object-cover" /> : initials}</div></div></header>
    <main className="portal-content"><Outlet/></main>
   </section>
  </div>

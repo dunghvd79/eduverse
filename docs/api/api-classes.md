@@ -1,4 +1,4 @@
-﻿# 🏫 Đặc Tả API: Module Lớp Học & Ghi Danh — api-classes.md
+# 🏫 Đặc Tả API: Module Lớp Học & Ghi Danh — api-classes.md
 
 > **Tài liệu tham chiếu:** [`api-conventions.md`](api-conventions.md), [`schema.md`](../database/schema.md), [`actor-student.md`](../use-cases/actor-student.md#uc-class-001), [`actor-teacher.md`](../use-cases/actor-teacher.md)  
 > **Base Path:** `/api/v1/classes`  
@@ -32,6 +32,8 @@
 |:---:|---|:---:|---|
 | `GET` | `/api/v1/classes/:id/progress` | `[Roles: teacher, training_manager, admin]` | Báo cáo thống kê tiến độ học tập của cả lớp (`UC-PROGRESS-003`) |
 | `GET` | `/api/v1/classes/:id/grades/export-excel` | `[Roles: teacher, training_manager, admin]` | Xuất bảng điểm tổng hợp của lớp ra file Excel/CSV (`UC-GRADE-003`) |
+| `GET` | `/api/v1/classes/:id/gradebook` | `[Roles: teacher, training_manager, admin]` | Bảng điểm JSON của cả lớp, dùng cho trang Sổ điểm (*bổ sung 13/10/2026*) |
+| `GET` | `/api/v1/classes/:id/my-grades` | `[Roles: student]` | Điểm của chính học viên trong lớp (*bổ sung 13/10/2026*) |
 
 ---
 
@@ -639,6 +641,7 @@
   9. `Điểm TB Assignments`: Trung bình cộng điểm bài tập tự luận.
   10. `Điểm Tổng kết (GPA - Thang 10)`: = 0.4 × Điểm TB Quizzes + 0.5 × Điểm TB Assignments + 0.1 × (Tiến độ % / 10) — xem [`grading-policy.md`](../requirements/grading-policy.md).
   11. `Xếp loại`: Giỏi (≥ 8) / Khá (≥ 6.5) / Trung bình (≥ 5) / Chưa đạt (< 5).
+* **Các sheet của file `.xlsx`** (file `.csv` chỉ có bảng điểm ở trên): `Bảng điểm` (các cột trên), `Thống kê lớp` (tổng quan: điểm trung bình/cao nhất/thấp nhất/trung vị, tỷ lệ đạt; phân bố xếp loại; từng bài kiểm tra: số người làm, điểm trung bình/cao nhất/thấp nhất; từng bài tập: số đã nộp/đã chấm/chờ chấm, điểm trung bình; phân bố tiến độ học), `Tiến độ học` (mỗi học viên: số bài học đã hoàn thành, %, trạng thái Hoàn thành/Đang học/Chưa bắt đầu — `UC-PROGRESS-003`), `Quy tắc tính điểm`.
 * **Quy tắc tính điểm (đã chốt 12/10/2026):** mỗi Quiz lấy điểm cao nhất; Quiz chưa làm / bài tập chưa nộp tính 0 điểm. Chi tiết và các trường hợp đặc biệt: [`grading-policy.md`](../requirements/grading-policy.md).
 
 #### Các lỗi thường gặp:
@@ -647,6 +650,87 @@
 | `401` | `Unauthorized` | Chưa đăng nhập | Access Token thiếu hoặc hết hạn |
 | `403` | `Forbidden` | Không có quyền xuất bảng điểm | Người dùng không phải giảng viên đứng lớp hoặc người quản lý |
 | `404` | `Not Found` | Không tìm thấy lớp học | ID lớp học không tồn tại |
+
+---
+
+### 2.14. Bảng điểm JSON của cả lớp (Gradebook) — *bổ sung 13/10/2026*
+
+#### `GET /api/v1/classes/:id/gradebook`
+* **Mô tả chức năng:** Trả về bảng điểm của các học viên đang học (`active`) để dựng trang **Sổ điểm** (`/teacher/classes/:id/gradebook`) và trang Báo cáo của Quản lý. Cùng số liệu và công thức với file Excel ở mục 2.13 — xem [`grading-policy.md`](../requirements/grading-policy.md).
+* **Quyền hạn:** `[Roles: teacher, training_manager, admin]`; Giảng viên phải là người phụ trách lớp (giảng viên khác nhận `403`).
+* **Headers:** `Authorization: Bearer <access_token>`
+* **Path Parameters:** `id` *(UUID)*: ID lớp học.
+
+#### Response Thành Công (`200 OK`):
+```json
+{
+  "success": true,
+  "statusCode": 200,
+  "message": "Lấy bảng điểm lớp thành công",
+  "data": {
+    "class": { "id": "…", "name": "Web 2026A", "classCode": "WEB26A", "course": { "id": "…", "title": "Lập trình Web Fullstack" } },
+    "weights": { "quiz": 0.4, "assignment": 0.5, "progress": 0.1 },
+    "totalLessons": 12,
+    "quizzes": [ { "id": "…", "title": "Kiểm tra giữa kỳ" } ],
+    "assignments": [ { "id": "…", "title": "Bài tập lớn 1" } ],
+    "rows": [
+      {
+        "index": 1,
+        "student": { "id": "…", "fullName": "Nguyễn Văn A", "email": "a@example.com" },
+        "completedLessons": 9,
+        "totalLessons": 12,
+        "progressPercentage": 75,
+        "progressScore": 7.5,
+        "quizScores": [ { "quizId": "…", "score": 8, "attempted": true } ],
+        "quizAverage": 8,
+        "assignmentScores": [ { "assignmentId": "…", "grade": 0, "state": "ungraded" } ],
+        "assignmentAverage": 0,
+        "finalScore": 3.95,
+        "ranking": "Chưa đạt",
+        "notes": [ "Chưa chấm: Bài tập lớn 1" ]
+      }
+    ],
+    "summary": { "totalStudents": 1, "averageFinalScore": 3.95, "distribution": { "Giỏi": 0, "Khá": 0, "Trung bình": 0, "Chưa đạt": 1 }, "ungradedCount": 1 },
+    "generatedAt": "2026-10-13T08:00:00.000Z"
+  },
+  "timestamp": "2026-10-13T08:00:00.000Z"
+}
+```
+
+* **Ý nghĩa các trường:**
+  * `weights`: tỷ trọng thực tế; thành phần không có (lớp chưa có bài kiểm tra hoặc bài tập) bị bỏ và các tỷ trọng còn lại được chia lại (quy tắc E1).
+  * `quizzes[]` / `assignments[]`: bài kiểm tra đã công khai và bài tập đã giao cho lớp, theo thứ tự đề cương; mỗi dòng học viên có `quizScores[]` / `assignmentScores[]` cùng thứ tự.
+  * `quizScores[]`: điểm cao nhất của học viên; chưa làm = `0` và `attempted: false`.
+  * `assignmentScores[].state`: `missing` (chưa nộp), `ungraded` (đã nộp, chưa chấm), `graded`, `regrade_pending` (nộp lại sau khi đã chấm), `resubmission_requested` (giảng viên yêu cầu nộp lại). Chưa nộp / chưa chấm tính `0` điểm.
+  * `quizAverage` / `assignmentAverage`: `null` khi lớp không có thành phần đó.
+  * `finalScore` thang 10; `ranking`: Giỏi (≥ 8), Khá (≥ 6.5), Trung bình (≥ 5), Chưa đạt (< 5); `notes[]`: ghi chú như bài tập chưa chấm.
+  * `summary.averageFinalScore` là `null` khi lớp chưa có học viên đang học.
+
+#### Các lỗi thường gặp:
+| HTTP Code | Error | Message | Nguyên nhân |
+|:---:|---|---|---|
+| `400` | `Bad Request` | Mã định danh (ID) không hợp lệ | `:id` sai định dạng UUID |
+| `401` | `Unauthorized` | Chưa đăng nhập | Access Token thiếu hoặc hết hạn |
+| `403` | `Forbidden` | Không có quyền xem bảng điểm lớp này | Không phải giảng viên phụ trách lớp, Quản lý đào tạo hoặc Admin |
+| `404` | `Not Found` | Không tìm thấy lớp học | ID không tồn tại hoặc khóa học của lớp đã bị xóa |
+
+---
+
+### 2.15. Điểm của chính học viên trong lớp (My Grades) — *bổ sung 13/10/2026*
+
+#### `GET /api/v1/classes/:id/my-grades`
+* **Mô tả chức năng:** Học viên xem điểm của chính mình trong một lớp (trang `/student/grades`). Cấu trúc như mục 2.14 nhưng **không có `rows` và `summary`**; điểm của riêng học viên nằm trong `me` (cùng cấu trúc một phần tử của `rows`).
+* **Quyền hạn:** `[Roles: student]` và phải là thành viên `active` của lớp.
+* **Headers:** `Authorization: Bearer <access_token>`
+* **Path Parameters:** `id` *(UUID)*: ID lớp học.
+* **Response (`200 OK`)** — `data` gồm `class`, `weights`, `totalLessons`, `quizzes`, `assignments`, `generatedAt` và `me`; `message`: "Lấy điểm của bạn thành công".
+
+#### Các lỗi thường gặp:
+| HTTP Code | Error | Message | Nguyên nhân |
+|:---:|---|---|---|
+| `401` | `Unauthorized` | Chưa đăng nhập | Access Token thiếu hoặc hết hạn |
+| `403` | `Forbidden` | Bạn không thuộc lớp học này | Không phải học viên `active` của lớp (hoặc không có vai trò `student`) |
+| `404` | `Not Found` | Không tìm thấy lớp học | ID không tồn tại |
 
 ---
 
@@ -686,5 +770,5 @@
 - `POST /classes/:id/members`: chỉ thêm được tài khoản `student` đang hoạt động (`400` nếu là role khác hoặc bị khóa); lớp `closed` không thêm được học viên (`400`).
 - `GET /classes/:id/progress`: `meta` phân trang nằm **trong** `data` (thống nhất với các API danh sách khác), không nằm cạnh `data` như ví dụ ở mục 2.12.
 - `GET /courses/:id/curriculum?classId=` (api-courses.md) trả thêm `totalLessons`, `completedLessons`, `progressPercentage` cho trình học.
-- **Xuất bảng điểm:** file `.xlsx` có 2 sheet ("Bảng điểm" + "Quy tắc tính điểm"), dòng tiêu đề ghi công thức với tỷ trọng thực tế, thêm cột **Ghi chú** ("Chưa chấm: ..."). Cột "Mã học viên" là UUID tài khoản (hệ thống chưa có MSSV). File `.csv` có BOM UTF-8 để Excel mở đúng tiếng Việt. Tên file `Bang_Diem_Lop_<MaLop>_<YYYYMMDD>`. Header `Content-Disposition` được expose qua CORS.
+- **Xuất bảng điểm:** file `.xlsx` có 4 sheet ("Bảng điểm", "Thống kê lớp", "Tiến độ học", "Quy tắc tính điểm"; hai sheet thống kê/tiến độ thêm ngày 24/10/2026 từ `utils/gradebookStats.js`), dòng tiêu đề ghi công thức với tỷ trọng thực tế, thêm cột **Ghi chú** ("Chưa chấm: ..."). Cột "Mã học viên" là UUID tài khoản (hệ thống chưa có MSSV). File `.csv` có BOM UTF-8 để Excel mở đúng tiếng Việt. Tên file `Bang_Diem_Lop_<MaLop>_<YYYYMMDD>`. Header `Content-Disposition` được expose qua CORS.
 - **CSDL:** partial unique index `uq_classes_code_active` và `uq_enrollments_active` được tạo bằng migration `npm run db:migrate:classes` (thay các UNIQUE toàn bảng do `sync({ alter: true })` tạo trùng lặp trước đây).

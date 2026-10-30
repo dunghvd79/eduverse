@@ -126,6 +126,38 @@ export const deleteStorageObject = async (key) => {
 };
 
 /**
+ * Suy ra key lưu trữ từ URL công khai do getPublicFileUrl tạo ra.
+ * Trả về null nếu URL không thuộc kho lưu trữ hiện tại (ví dụ avatar preset hoặc ảnh ngoài).
+ */
+export const getKeyFromPublicUrl = (url) => {
+  if (!url || typeof url !== 'string') return null;
+  const base = isS3Configured() ? getS3Config().publicBaseUrl : `${getServerBaseUrl()}/uploads`;
+  const prefix = `${base}/`;
+  if (!url.startsWith(prefix)) return null;
+  try {
+    return decodeURIComponent(url.slice(prefix.length).split(/[?#]/)[0]);
+  } catch {
+    return null;
+  }
+};
+
+/**
+ * Dọn ảnh công khai cũ (avatar, thumbnail) sau khi đã đổi sang ảnh mới (api-uploads.md, mục dọn dẹp rác).
+ * Chỉ xóa khi key bắt đầu bằng `ownedPrefix` (ví dụ `public/avatars/<userId>_`) để không xóa nhầm tệp của người khác.
+ * Không bao giờ ném lỗi: dọn thất bại thì chỉ ghi log, thao tác chính vẫn thành công.
+ */
+export const deleteReplacedPublicFile = async (oldUrl, newUrl, ownedPrefix) => {
+  try {
+    if (!oldUrl || oldUrl === newUrl) return;
+    const key = getKeyFromPublicUrl(oldUrl);
+    if (!key || !key.startsWith(ownedPrefix) || key.includes('..')) return;
+    await deleteStorageObject(key);
+  } catch (error) {
+    console.warn('⚠️ Không dọn được tệp ảnh cũ:', error.message);
+  }
+};
+
+/**
  * 5. Tạo link tải tệp riêng tư (Presigned GET URL hoặc Signed Local Download)
  */
 export const createDownloadGetUrl = async (key, fileName) => {
@@ -151,6 +183,8 @@ export default {
   getPublicFileUrl,
   checkObjectMetadata,
   deleteStorageObject,
+  getKeyFromPublicUrl,
+  deleteReplacedPublicFile,
   createDownloadGetUrl,
   resolveLocalFilePath,
   verifyDownloadSignature

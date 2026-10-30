@@ -3,6 +3,8 @@ import models from '../models/index.js';
 import { AppError } from '../utils/AppError.js';
 import { generateUniqueSlug } from '../utils/slugify.js';
 import { assertCategoryAssignable } from './categoryService.js';
+import { notifyUsers, notifyManagers } from './notificationService.js';
+import { deleteReplacedPublicFile } from './storageService.js';
 
 const { Course, Category, Chapter, Lesson, LessonProgress, User, Quiz, Assignment, ClassAssignment } = models;
 
@@ -423,6 +425,7 @@ export const updateCourse = async (courseId, data, currentUser) => {
   if (data.description !== undefined) {
     course.description = data.description ? data.description.trim() : null;
   }
+  const previousThumbnailUrl = course.thumbnail_url;
   if (data.thumbnailUrl !== undefined) {
     course.thumbnail_url = data.thumbnailUrl || null;
   }
@@ -431,6 +434,10 @@ export const updateCourse = async (courseId, data, currentUser) => {
   }
 
   await course.save();
+  // Đổi hoặc gỡ ảnh bìa -> dọn tệp ảnh bìa cũ của chính khóa học này (lỗi dọn chỉ ghi log)
+  if (data.thumbnailUrl !== undefined) {
+    await deleteReplacedPublicFile(previousThumbnailUrl, course.thumbnail_url, `public/thumbnails/${course.id}_`);
+  }
 
   return {
     id: course.id,
@@ -508,6 +515,12 @@ export const publishRequest = async (courseId, currentUser) => {
 
   course.status = 'pending';
   await course.save();
+  await notifyManagers({
+    type: 'course_pending',
+    title: 'Khóa học mới chờ duyệt',
+    message: `Khóa học "${course.title}" vừa được gửi duyệt.`,
+    link: `/manager/approvals/${course.id}/review`
+  });
 
   return {
     id: course.id,
@@ -536,6 +549,12 @@ export const approveCourse = async (courseId, managerId) => {
   course.approved_at = new Date();
   course.rejection_reason = null; // Xóa lý do từ chối nếu có từ trước
   await course.save();
+  await notifyUsers([course.owner_id], {
+    type: 'course_approved',
+    title: 'Khóa học đã được duyệt',
+    message: `Khóa học "${course.title}" đã được phê duyệt và công khai.`,
+    link: '/teacher/courses'
+  });
 
   return {
     id: course.id,
@@ -562,6 +581,12 @@ export const rejectCourse = async (courseId, managerId, reason) => {
   course.status = 'rejected';
   course.rejection_reason = reason.trim();
   await course.save();
+  await notifyUsers([course.owner_id], {
+    type: 'course_rejected',
+    title: 'Khóa học bị từ chối',
+    message: `Khóa học "${course.title}" bị từ chối. Lý do: ${course.rejection_reason}`,
+    link: `/teacher/courses/${course.id}/curriculum`
+  });
 
   return {
     id: course.id,
