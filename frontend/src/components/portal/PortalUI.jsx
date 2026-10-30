@@ -3,6 +3,7 @@ import {Link, NavLink, Navigate, Outlet, useLocation, useNavigate} from 'react-r
 import {BookOpen, LayoutDashboard, GraduationCap, Users, ClipboardCheck, FileText, BarChart3, Settings, ShieldCheck, FolderTree, Sparkles, Menu, X, Search, ChevronRight, LogOut, UserCircle, RefreshCw, Home, Compass} from 'lucide-react';
 import { useAuthStore } from '../../stores/useAuthStore';
 import NotificationBell from './NotificationBell';
+import { getInitials } from '../../utils/initials';
 
 // Ánh xạ role trong DB sang tiền tố URL của portal
 const PORTAL_BY_ROLE = { student: 'student', teacher: 'teacher', training_manager: 'manager', admin: 'admin' };
@@ -22,6 +23,25 @@ const roleConfig={
  ]}
 };
 
+// Ô tìm kiếm thanh trên cùng: Enter -> trang danh sách chính của vai trò, kèm ?search= (trang đích đọc bằng useUrlSearch)
+const SEARCH_TARGET = {
+  student: ['/student/my-courses', 'Tìm khóa học của tôi...'],
+  teacher: ['/teacher/courses', 'Tìm khóa học...'],
+  manager: ['/manager/classes', 'Tìm lớp học...'],
+  admin: ['/admin/users', 'Tìm người dùng...']
+};
+function GlobalSearch({role}) {
+  const nav = useNavigate();
+  const [keyword, setKeyword] = useState('');
+  const [path, placeholder] = SEARCH_TARGET[role] || SEARCH_TARGET.student;
+  const submit = (event) => {
+    event.preventDefault();
+    const q = keyword.trim();
+    nav(q ? `${path}?search=${encodeURIComponent(q)}` : path);
+  };
+  return <form className="search-mini" onSubmit={submit} role="search"><Search size={17}/><input value={keyword} onChange={e => setKeyword(e.target.value)} placeholder={placeholder} aria-label={placeholder}/></form>;
+}
+
 export function PortalLayout({role}) {
  const [open,setOpen]=useState(false); const cfg=roleConfig[role]; const location=useLocation();
  const nav = useNavigate();
@@ -36,12 +56,6 @@ export function PortalLayout({role}) {
    nav('/auth/login');
  };
 
- const getInitials = (name) => {
-   if (!name) return 'EV';
-   const parts = name.trim().split(' ');
-   if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
- };
 
  const displayName = user?.fullName || (role==='student'?'Học viên':role==='teacher'?'Giảng viên':role==='manager'?'Quản lý':'Admin');
  const initials = getInitials(displayName);
@@ -73,7 +87,7 @@ export function PortalLayout({role}) {
   </aside>
   {open&&<div className="sidebar-overlay" onClick={()=>setOpen(false)}/>}
   <section className="portal-main">
-   <header className="portal-topbar"><button className="mobile-menu" onClick={()=>setOpen(true)}><Menu/></button><div className="crumb"><Link to="/" className="text-slate-500 hover:text-[#1168bd] no-underline transition-colors font-medium flex items-center gap-1" title="Về trang chủ EduVerse"><span>EduVerse</span></Link><ChevronRight size={15}/><b>{cfg.label}</b></div><div className="top-actions"><div className="search-mini"><Search size={17}/><input placeholder="Tìm kiếm..."/></div><NotificationBell/><div className="top-avatar cursor-pointer overflow-hidden transition-transform hover:scale-105" onClick={()=>nav(`/${role}/profile`)} title="Xem hồ sơ cá nhân">{user?.avatarUrl ? <img src={user.avatarUrl} alt={displayName} className="w-full h-full object-cover" /> : initials}</div></div></header>
+   <header className="portal-topbar"><button className="mobile-menu" onClick={()=>setOpen(true)}><Menu/></button><div className="crumb"><Link to="/" className="text-slate-500 hover:text-[#1168bd] no-underline transition-colors font-medium flex items-center gap-1" title="Về trang chủ EduVerse"><span>EduVerse</span></Link><ChevronRight size={15}/><b>{cfg.label}</b></div><div className="top-actions"><GlobalSearch role={role}/><NotificationBell/><div className="top-avatar cursor-pointer overflow-hidden transition-transform hover:scale-105" onClick={()=>nav(`/${role}/profile`)} title="Xem hồ sơ cá nhân">{user?.avatarUrl ? <img src={user.avatarUrl} alt={displayName} className="w-full h-full object-cover" /> : initials}</div></div></header>
    <main className="portal-content"><Outlet/></main>
   </section>
  </div>

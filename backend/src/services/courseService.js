@@ -6,7 +6,7 @@ import { assertCategoryAssignable } from './categoryService.js';
 import { notifyUsers, notifyManagers } from './notificationService.js';
 import { deleteReplacedPublicFile } from './storageService.js';
 
-const { Course, Category, Chapter, Lesson, LessonProgress, User, Quiz, Assignment, ClassAssignment } = models;
+const { Course, Category, Chapter, Lesson, LessonProgress, User, Quiz, Assignment, ClassAssignment, ClassModel } = models;
 
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -614,6 +614,17 @@ export const unpublishCourse = async (courseId, currentUser) => {
 
   if (course.status === 'draft') {
     throw new AppError('Khóa học hiện đã ở trạng thái bản nháp', 400, 'Bad Request');
+  }
+
+  // Về draft là mở khóa sửa/xóa bài học; bài học bị xóa hẳn kéo theo tiến độ, bài nộp, lượt làm quiz
+  // và thảo luận của các lớp (ON DELETE CASCADE) -> chặn khi còn lớp đang học, áp dụng cho mọi vai trò (BR-015)
+  const runningClasses = await ClassModel.count({ where: { course_id: course.id, status: ['active', 'paused'] } });
+  if (runningClasses > 0) {
+    throw new AppError(
+      `Khóa học đang có ${runningClasses} lớp hoạt động hoặc tạm dừng nên không thể chuyển về bản nháp. Hãy kết thúc các lớp này trước.`,
+      409,
+      'Conflict'
+    );
   }
 
   course.status = 'draft';

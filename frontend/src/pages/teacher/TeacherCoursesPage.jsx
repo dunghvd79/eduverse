@@ -31,6 +31,7 @@ import categoryService from '../../services/categoryService';
 import { toast } from '../../components/common/Toast';
 import { confirmModal } from '../../components/common/ConfirmModal';
 import uploadService, { checkImageFile } from '../../services/uploadService';
+import { useUrlSearch } from '../../utils/useUrlSearch';
 
 const EMPTY_FORM = { title: '', description: '', price: '0', categoryId: '' };
 const isEditable = (course) => course.status === 'draft' || course.status === 'rejected';
@@ -231,6 +232,7 @@ export default function TeacherCoursesPage() {
   const [categories, setCategories] = useState([]);
   const [status, setStatus] = useState('');
   const [search, setSearch] = useState('');
+  useUrlSearch(setSearch);
   const [selectedCategory, setSelectedCategory] = useState('');
   const [sortBy, setSortBy] = useState('updated_desc');
   const [viewMode, setViewMode] = useState('grid'); // 'grid' | 'list'

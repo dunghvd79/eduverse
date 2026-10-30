@@ -42,3 +42,6 @@ docker-compose.override.yml
 # Local agent & personal notes
 context-local.md
 .claude/
+
+# Kết quả kiểm thử luồng chính qua giao diện (ảnh chụp, file tạm)
+docs/testing/e2e-ket-qua/

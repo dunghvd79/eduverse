@@ -1,4 +1,5 @@
 import * as classService from '../services/classService.js';
+import { withTodoSummary } from '../services/studentTodoService.js';
 import { sendSuccess } from '../utils/response.js';
 
 export const getClasses = async (req, res, next) => {
@@ -12,7 +13,9 @@ export const getClasses = async (req, res, next) => {
 
 export const getMyClasses = async (req, res, next) => {
   try {
-    const data = await classService.getMyClasses(req.user);
+    const classes = await classService.getMyClasses(req.user);
+    // Học viên: kèm số việc cần làm từng lớp (studentTodoService tách riêng để tránh vòng import với classService)
+    const data = req.user.role === 'student' ? await withTodoSummary(classes, req.user.id) : classes;
     return sendSuccess(res, 200, 'Lấy danh sách lớp học cá nhân thành công', data);
   } catch (error) {
     next(error);

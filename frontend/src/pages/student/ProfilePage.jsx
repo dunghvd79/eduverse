@@ -21,6 +21,7 @@ import { PortalHeader, Button, Card, SectionTitle, Badge } from '../../component
 import { userService } from '../../services/userService';
 import { uploadService, checkImageFile } from '../../services/uploadService';
 import { useAuthStore } from '../../stores/useAuthStore';
+import { getInitials } from '../../utils/initials';
 
 const AVATAR_PRESETS = [
   'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=256&q=80',
@@ -232,12 +233,6 @@ export default function ProfilePage() {
     }
   };
 
-  const getInitials = (name) => {
-    if (!name) return 'EV';
-    const parts = name.trim().split(' ');
-    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-  };
 
   const formattedDate = profileData.createdAt 
     ? new Date(profileData.createdAt).toLocaleDateString('vi-VN', { year: 'numeric', month: 'long', day: 'numeric' })

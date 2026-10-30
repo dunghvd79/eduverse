@@ -14,12 +14,13 @@ import classService, { CLASS_STATUS, PROGRESS_STATUS, formatDate } from '../../s
 import { useAuthStore } from '../../stores/useAuthStore';
 import { toast } from '../common/Toast';
 import { confirmModal } from '../common/ConfirmModal';
+import { formatPercent } from '../../services/quizService';
+import { getInitials } from '../../utils/initials';
 
-const initials = (name = '') => name.trim().split(/\s+/).slice(-2).map(part => part[0]).join('').toUpperCase();
 
 const StudentCell = ({ student }) => (
   <div className="table-user">
-    <div className="avatar sm">{initials(student.fullName)}</div>
+    <div className="avatar sm">{getInitials(student.fullName)}</div>
     <b>{student.fullName}</b>
   </div>
 );
@@ -197,7 +198,7 @@ function ProgressTab({ cls }) {
     <>
       {summary && (
         <div className="stats-grid">
-          <StatCard icon={BarChart3} label="Tiến độ trung bình" value={`${summary.averageProgressPercentage}%`} sub={`${summary.totalLessons} bài học trong khóa`} />
+          <StatCard icon={BarChart3} label="Tiến độ trung bình" value={formatPercent(summary.averageProgressPercentage)} sub={`${summary.totalLessons} bài học trong khóa`} />
           <StatCard icon={CheckCircle2} label="Đã hoàn thành" value={summary.completedCount} sub={`/${summary.totalStudents} học viên`} />
           <StatCard icon={Users} label="Đang học" value={summary.inProgressCount} />
           <StatCard icon={Users} label="Chưa bắt đầu" value={summary.notStartedCount} sub="Cần nhắc nhở" />
@@ -235,7 +236,7 @@ function ProgressTab({ cls }) {
               return [
                 <StudentCell student={item.student} />,
                 item.student.email,
-                <div className="table-progress"><Progress value={item.progressPercentage} /><small>{item.progressPercentage}%</small></div>,
+                <div className="table-progress"><Progress value={item.progressPercentage} /><small>{formatPercent(item.progressPercentage)}</small></div>,
                 `${item.completedLessons}/${item.totalLessons}`,
                 <Badge tone={tone}>{label}</Badge>,
                 item.lastActiveAt ? new Date(item.lastActiveAt).toLocaleString('vi-VN') : <span className="text-slate-500">Chưa học</span>

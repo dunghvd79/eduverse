@@ -5,7 +5,7 @@ import { PortalHeader, Button, StatCard, Progress, Card, SectionTitle, Badge, Lo
 import { useAuthStore } from '../../stores/useAuthStore';
 import { toast } from '../../components/common/Toast';
 import dashboardService from '../../services/dashboardService';
-import { formatScore, formatDateTime } from '../../services/quizService';
+import { formatScore, formatDateTime, formatPercent } from '../../services/quizService';
 
 const COVER_TONES = ['', 'c1', 'c2'];
 
@@ -80,7 +80,7 @@ export default function StudentDashboardPage() {
           <SectionTitle title="Tiến độ học tập" action={<Button variant="ghost" onClick={() => navigate('/student/grades')}>Xem điểm số</Button>} />
           {classes.map((cls) => (
             <div className="progress-row" key={cls.id}>
-              <div><b>{cls.course.title}</b><span>{cls.progress.progressPercentage}%</span></div>
+              <div><b>{cls.course.title}</b><span>{formatPercent(cls.progress.progressPercentage)}</span></div>
               <Progress value={cls.progress.progressPercentage} />
             </div>
           ))}

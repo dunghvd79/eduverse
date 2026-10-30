@@ -14,7 +14,12 @@ export const ATTEMPT_STATUS = {
 
 export const DIFFICULTY = { easy: 'Dễ', medium: 'Trung bình', hard: 'Khó' };
 
-export const formatScore = (score) => (score === null || score === undefined ? '—' : Number(score).toFixed(2).replace(/\.?0+$/, ''));
+// Định dạng số hiển thị theo chuẩn Việt Nam (dấu phẩy thập phân: 7,5 · 33,3%). Dùng chung cho mọi trang, đừng tự toFixed().
+// Ô nhập số và file Excel/CSV vẫn dùng giá trị số gốc.
+const VI_SCORE = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 2 });
+const VI_PERCENT = new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 1 });
+export const formatScore = (score) => (score === null || score === undefined || score === '' ? '—' : VI_SCORE.format(Number(score)));
+export const formatPercent = (value) => (value === null || value === undefined || value === '' ? '—' : `${VI_PERCENT.format(Number(value))}%`);
 export const formatDateTime = (value) => (value ? new Date(value).toLocaleString('vi-VN') : '—');
 
 export const quizService = {

@@ -6,6 +6,7 @@ import ClassFormModal from './ClassFormModal';
 import classService, { CLASS_STATUS, formatDate } from '../../services/classService';
 import { useAuthStore } from '../../stores/useAuthStore';
 import { toast } from '../common/Toast';
+import { useUrlSearch } from '../../utils/useUrlSearch';
 
 const STATUS_TABS = [['', 'Tất cả'], ['active', 'Đang hoạt động'], ['paused', 'Tạm dừng'], ['closed', 'Đã kết thúc']];
 const PAGE_SIZE = 10;
@@ -24,6 +25,7 @@ export default function ClassListPage({ basePath }) {
   const [meta, setMeta] = useState(null);
   const [status, setStatus] = useState('');
   const [search, setSearch] = useState('');
+  useUrlSearch(setSearch);
   const [keyword, setKeyword] = useState('');
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(true);

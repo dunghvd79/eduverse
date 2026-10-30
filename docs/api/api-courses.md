@@ -880,6 +880,7 @@
 | `401` | `Unauthorized` | Chưa đăng nhập | Access Token thiếu hoặc hết hạn |
 | `403` | `Forbidden` | Bạn không có quyền chuyển khóa học này về bản nháp | Không phải chủ khóa học (và không phải Admin) |
 | `404` | `Not Found` | Không tìm thấy khóa học | ID không tồn tại hoặc khóa đã bị xóa mềm |
+| `409` | `Conflict` | Khóa học đang có N lớp hoạt động hoặc tạm dừng nên không thể chuyển về bản nháp... | Khóa còn lớp `active`/`paused` (BR-015, *bổ sung 30/10/2026*): về `draft` sẽ mở khóa xóa bài học và làm mất dữ liệu học tập của lớp |
 
 ---
 

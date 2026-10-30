@@ -28,6 +28,7 @@
 | BR-012 | Khóa học hiện tại **miễn phí** | Nhưng DB có trường `price: decimal(10,2) DEFAULT 0` để mở rộng sau |
 | BR-013 | Cấu trúc nội dung **3 cấp** | Khóa học → Chương (Chapter) → Bài học (Lesson) |
 | BR-014 | Mỗi khóa học có **1 chủ sở hữu** (owner) | Là giảng viên tạo ra khóa học, có toàn quyền chỉnh sửa |
+| BR-015 | Không đưa khóa về `draft` khi **còn lớp đang học** | `PATCH /courses/:id/unpublish` trả `409` nếu khóa còn lớp `active` hoặc `paused` (mọi vai trò, kể cả Admin). Lý do: ở `draft` được xóa bài học, mà bài học bị xóa hẳn kéo theo tiến độ, lượt làm quiz, bài nộp và thảo luận của học viên; học viên đang học cũng sẽ không mở được bài (khóa chưa công khai). Muốn sửa thì kết thúc lớp (`closed`) trước (*bổ sung 30/10/2026*) |
 
 ---
 
@@ -38,6 +39,7 @@
 | BR-020 | Lớp học là **1 lần tổ chức** của khóa học | 1 khóa học có thể tạo nhiều lớp, mỗi lớp có thời gian và danh sách học viên riêng |
 | BR-021 | Mỗi lớp có **mã tham gia** (class code) | Học viên nhập mã để ghi danh vào lớp |
 | BR-022 | Giảng viên có thể **mời trực tiếp** học viên | Thêm học viên vào lớp bằng email |
+| BR-023 | Giảng viên chỉ **tự mở lớp cho khóa học của mình** | `POST /classes` trả `403` nếu giảng viên mở lớp cho khóa của người khác. Quản lý đào tạo/Admin mở lớp cho mọi khóa đã `published` và phân công bất kỳ giảng viên nào, nên nhiều giảng viên vẫn dạy chung một khóa được (mô hình trường học: phòng đào tạo phân công) (*bổ sung 30/10/2026*) |
 
 ---
 

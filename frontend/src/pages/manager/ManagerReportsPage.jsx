@@ -5,6 +5,7 @@ import { PortalHeader, Button, StatCard, Progress, Card, SectionTitle, Table, Ba
 import { toast } from '../../components/common/Toast';
 import classService, { CLASS_STATUS } from '../../services/classService';
 import gradebookService, { RANKING_TONE } from '../../services/gradebookService';
+import { formatPercent, formatScore } from '../../services/quizService';
 
 // Báo cáo tính ở frontend từ API có sẵn: GET /classes (toàn hệ thống) + GET /classes/:id/gradebook (từng lớp)
 const MAX_CLASSES = 50; // chỉ tính trên các lớp mới nhất để trang không quá nặng
@@ -15,7 +16,7 @@ const STATUS_TABS = [['', 'Tất cả'], ['active', 'Đang hoạt động'], ['p
 // --- helpers (hàm thuần, không dùng React) ---
 const round2 = (v) => Math.round(v * 100) / 100;
 const sum = (list) => list.reduce((total, v) => total + v, 0);
-const fmt = (v, suffix = '') => (v === null || v === undefined ? '—' : `${Number(v).toLocaleString('vi-VN', { maximumFractionDigits: 2 })}${suffix}`);
+const fmt = (v, suffix = '') => (suffix === '%' ? formatPercent(v) : formatScore(v));
 
 const toReport = (cls, book) => {
   const rows = book.rows || [];
@@ -199,7 +200,7 @@ export default function ManagerReportsPage() {
           const count = stats.distribution[label];
           const percent = Math.round((count / stats.students) * 1000) / 10;
           return <div className="progress-row" key={label}>
-            <div><span><Badge tone={RANKING_TONE[label]}>{label}</Badge></span><b>{count} học viên · {percent}%</b></div>
+            <div><span><Badge tone={RANKING_TONE[label]}>{label}</Badge></span><b>{count} học viên · {formatPercent(percent)}</b></div>
             <Progress value={percent} />
           </div>;
         })}

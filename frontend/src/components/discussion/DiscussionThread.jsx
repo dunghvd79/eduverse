@@ -4,8 +4,8 @@ import { Badge, Button } from '../portal/PortalUI';
 import { toast } from '../common/Toast';
 import { confirmModal } from '../common/ConfirmModal';
 import discussionService, { MAX_CONTENT_LENGTH } from '../../services/discussionService';
+import { getInitials } from '../../utils/initials';
 
-const initials = (name = '') => name.trim().split(/\s+/).slice(-2).map(part => part[0]).join('').toUpperCase();
 
 export const formatDateTime = (value) => (value
   ? new Date(value).toLocaleString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false })
@@ -66,7 +66,7 @@ const AuthorLine = ({ author, createdAt, editedAt }) => {
   const [roleLabel, roleTone] = ROLE_BADGE[author?.role] || [];
   return (
     <div className="flex flex-wrap items-center gap-2">
-      <div className="avatar sm">{initials(author?.fullName)}</div>
+      <div className="avatar sm">{getInitials(author?.fullName)}</div>
       <b className="text-sm">{author?.fullName || 'Người dùng đã xóa'}</b>
       {roleLabel && <Badge tone={roleTone}>{roleLabel}</Badge>}
       <small className="text-slate-500">{formatDateTime(createdAt)}{editedAt ? ' (đã chỉnh sửa)' : ''}</small>

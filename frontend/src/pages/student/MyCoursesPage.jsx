@@ -1,18 +1,39 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { BookOpen, Plus, Search } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { PortalHeader, Button, Progress, Card, Badge, Field } from '../../components/portal/PortalUI';
-import classService, { CLASS_STATUS } from '../../services/classService';
+import classService, { CLASS_STATUS, formatDate, formatRelativeTime, learnUrl } from '../../services/classService';
 import { toast } from '../../components/common/Toast';
+import { formatPercent } from '../../services/quizService';
+import { useUrlSearch } from '../../utils/useUrlSearch';
 
-const isCompleted = (cls) => cls.progress?.totalLessons > 0 && cls.progress.completedLessons >= cls.progress.totalLessons;
+const allLessonsDone = (cls) => cls.progress?.totalLessons > 0 && cls.progress.completedLessons >= cls.progress.totalLessons;
+// Hoàn thành = lớp đã kết thúc, hoặc học hết bài và không còn bài tập/bài kiểm tra phải làm (việc đã lỡ hạn không chặn)
+const isCompleted = (cls) => cls.status === 'closed' || (allLessonsDone(cls) && !cls.todo?.todoCount);
+
+// API đã xếp theo học gần nhất (chưa học thì theo ghi danh mới nhất)
+const SORTS = {
+  recent: ['Học gần nhất', null],
+  enrolled: ['Ghi danh mới nhất', (a, b) => new Date(b.enrolledAt) - new Date(a.enrolledAt)],
+  title: ['Tên khóa học A–Z', (a, b) => (a.course?.title || '').localeCompare(b.course?.title || '', 'vi')]
+};
+
+// Nút chính trên thẻ: học tiếp đúng bài đang dở; học hết bài nhưng còn việc thì vào trang lớp để làm
+const primaryActionOf = (cls, classUrl) => {
+  if (isCompleted(cls)) return ['Xem lại', classUrl];
+  if (allLessonsDone(cls)) return ['Làm bài', classUrl];
+  if (!cls.progress?.nextLessonId) return ['Vào lớp', classUrl];
+  return [cls.progress.completedLessons > 0 ? 'Tiếp tục' : 'Bắt đầu học', learnUrl(cls.course.id, cls.progress.nextLessonId, cls.id)];
+};
 
 export default function MyCoursesPage() {
   const navigate = useNavigate();
   const [classes, setClasses] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState('all');
+  const [sort, setSort] = useState('recent');
   const [search, setSearch] = useState('');
+  useUrlSearch(setSearch);
   const [showEnroll, setShowEnroll] = useState(false);
   const [code, setCode] = useState('');
   const [enrolling, setEnrolling] = useState(false);
@@ -20,7 +41,8 @@ export default function MyCoursesPage() {
   const load = async () => {
     try {
       setLoading(true);
-      setClasses(await classService.myClasses());
+      // Khóa học đang chỉnh sửa (chưa công khai) không mở được bài -> ẩn khỏi trang này (vẫn xem điểm ở trang Điểm số)
+      setClasses((await classService.myClasses()).filter(cls => cls.course?.status === 'published'));
     } catch (error) {
       toast.error(error?.message || 'Không thể tải lớp học của bạn.');
     } finally {
@@ -38,11 +60,13 @@ export default function MyCoursesPage() {
 
   const visible = useMemo(() => {
     const key = search.trim().toLowerCase();
-    return classes.filter(cls =>
+    const list = classes.filter(cls =>
       (tab === 'all' || (tab === 'completed' ? isCompleted(cls) : !isCompleted(cls))) &&
       (!key || cls.name.toLowerCase().includes(key) || cls.course?.title?.toLowerCase().includes(key))
     );
-  }, [classes, tab, search]);
+    const compare = SORTS[sort][1];
+    return compare ? [...list].sort(compare) : list;
+  }, [classes, tab, search, sort]);
 
   const enroll = async (event) => {
     event.preventDefault();
@@ -80,10 +104,15 @@ export default function MyCoursesPage() {
             <button key={value} className={`tab ${tab === value ? 'active' : ''}`} onClick={() => setTab(value)}>{label} <b>{count}</b></button>
           ))}
         </div>
-        <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 h-9 w-full md:w-64">
-          <Search size={15} className="text-slate-500" />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tìm khóa học..." className="flex-1 min-w-0 text-sm outline-none" />
-        </label>
+        <div className="flex flex-wrap gap-2 w-full md:w-auto">
+          <select value={sort} onChange={e => setSort(e.target.value)} className="h-9 rounded-lg border border-slate-200 px-2 text-sm bg-white" aria-label="Sắp xếp">
+            {Object.entries(SORTS).map(([value, [label]]) => <option key={value} value={value}>{label}</option>)}
+          </select>
+          <label className="flex items-center gap-2 rounded-lg border border-slate-200 bg-white px-3 h-9 flex-1 md:flex-none md:w-64">
+            <Search size={15} className="text-slate-500" />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tìm khóa học..." className="flex-1 min-w-0 text-sm outline-none" />
+          </label>
+        </div>
       </div>
 
       {loading ? (
@@ -109,24 +138,37 @@ export default function MyCoursesPage() {
             const done = isCompleted(cls);
             const percent = cls.progress?.progressPercentage || 0;
             const [statusLabel, statusTone] = CLASS_STATUS[cls.status] || [cls.status, 'gray'];
+            const classUrl = `/student/classes/${cls.id}`;
+            const [actionLabel, actionUrl] = primaryActionOf(cls, classUrl);
+            const { todoCount = 0, dueSoonCount = 0, nextDeadline = null } = cls.todo || {};
             return (
               <Card key={cls.id} className="course-row !flex-col !items-stretch md:!flex-row md:!items-center">
-                {/* Mobile: ảnh bìa nằm trên, rộng hết thẻ */}
-                {cls.course?.thumbnailUrl
-                  ? <img src={cls.course.thumbnailUrl} alt="" className="course-cover object-cover !w-full md:!w-[145px]" />
-                  : <div className={`course-cover c${index % 3} !w-full md:!w-[145px]`}>EDU</div>}
+                {/* Mobile: ảnh bìa nằm trên, rộng hết thẻ. Ảnh bìa và tên khóa cùng mở trang lớp như nút "Tiếp tục" */}
+                <Link to={classUrl} tabIndex={-1} aria-hidden="true" className="block flex-none w-full md:w-auto">
+                  {cls.course?.thumbnailUrl
+                    ? <img src={cls.course.thumbnailUrl} alt="" className="course-cover object-cover !w-full md:!w-[145px]" />
+                    : <div className={`course-cover c${index % 3} !w-full md:!w-[145px]`}>EDU</div>}
+                </Link>
                 <div className="course-info min-w-0">
                   <div className="flex flex-wrap gap-1.5">
-                    <Badge tone={done ? 'gray' : 'green'}>{done ? 'Hoàn thành' : 'Đang học'}</Badge>
+                    {done
+                      ? <Badge tone="gray">Hoàn thành</Badge>
+                      : <Badge tone={allLessonsDone(cls) ? 'blue' : 'green'}>{allLessonsDone(cls) ? 'Đã học hết bài' : 'Đang học'}</Badge>}
                     {cls.status !== 'active' && <Badge tone={statusTone}>{statusLabel}</Badge>}
+                    {dueSoonCount > 0
+                      ? <Badge tone="orange">{dueSoonCount} việc sắp đến hạn{nextDeadline ? ` · gần nhất ${formatDate(nextDeadline)}` : ''}</Badge>
+                      : todoCount > 0 && <Badge tone="blue">{todoCount} việc cần làm</Badge>}
                   </div>
-                  <h3>{cls.course?.title}</h3>
+                  <h3><Link to={classUrl} className="hover:text-primary hover:underline">{cls.course?.title}</Link></h3>
                   <p className="text-sm text-slate-500">{cls.name} · Giảng viên: {cls.teacher?.fullName || '—'}</p>
                   <Progress value={percent} />
-                  <small>{cls.progress?.completedLessons || 0}/{cls.progress?.totalLessons || 0} bài · {percent}% hoàn thành</small>
+                  <small>
+                    {cls.progress?.completedLessons || 0}/{cls.progress?.totalLessons || 0} bài · {formatPercent(percent)} hoàn thành
+                    {' · '}{cls.progress?.lastActiveAt ? `Học lần cuối ${formatRelativeTime(cls.progress.lastActiveAt)}` : 'Chưa bắt đầu học'}
+                  </small>
                 </div>
                 <div className="self-end md:self-auto">
-                  <Button variant="ghost" onClick={() => navigate(`/student/classes/${cls.id}`)}>{done ? 'Xem lại' : 'Tiếp tục'}</Button>
+                  <Button variant="ghost" onClick={() => navigate(actionUrl)}>{actionLabel}</Button>
                 </div>
               </Card>
             );

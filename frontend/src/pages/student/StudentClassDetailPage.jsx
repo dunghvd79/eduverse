@@ -2,16 +2,16 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { ArrowLeft, CheckCircle2, Circle, ClipboardCheck, FileQuestion, FileText, PlayCircle, Video } from 'lucide-react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { PortalHeader, Button, Progress, Card, SectionTitle, Badge } from '../../components/portal/PortalUI';
-import classService, { CLASS_STATUS, formatDate } from '../../services/classService';
+import classService, { CLASS_STATUS, formatDate, learnUrl as buildLearnUrl } from '../../services/classService';
 import courseService from '../../services/courseService';
-import quizService from '../../services/quizService';
+import quizService, { formatPercent } from '../../services/quizService';
 import { StudentQuizTable } from './StudentQuizzesPage';
 import assignmentService from '../../services/assignmentService';
 import { StudentAssignmentTable } from './StudentAssignmentsPage';
 import { toast } from '../../components/common/Toast';
+import { getInitials } from '../../utils/initials';
 
 const TYPE_ICON = { theory: FileText, video: Video, quiz: ClipboardCheck, assignment: FileQuestion };
-const initials = (name = '') => name.trim().split(/\s+/).slice(-2).map(part => part[0]).join('').toUpperCase();
 
 export default function StudentClassDetailPage() {
   const { id } = useParams();
@@ -58,7 +58,7 @@ export default function StudentClassDetailPage() {
 
   const lessons = useMemo(() => (outline?.chapters || []).flatMap(chapter => chapter.lessons || []), [outline]);
   const nextLesson = lessons.find(lesson => !lesson.isCompleted) || lessons[0];
-  const learnUrl = (lessonId) => `/student/courses/${cls.course.id}/learn/${lessonId}?classId=${cls.id}`;
+  const learnUrl = (lessonId) => buildLearnUrl(cls.course.id, lessonId, cls.id);
 
   if (loading) return <div className="p-10 text-center text-slate-500">Đang tải lớp học...</div>;
   if (!cls) return null;
@@ -99,7 +99,7 @@ export default function StudentClassDetailPage() {
       <div className="dashboard-grid">
         <Card>
           <SectionTitle title="Tiến độ của bạn" action={cls.status !== 'active' ? <Badge tone={statusTone}>{statusLabel}</Badge> : null} />
-          <div className="big-number">{percent}%</div>
+          <div className="big-number">{formatPercent(percent)}</div>
           <Progress value={percent} />
           <div className="mini-stats">
             <span><b>{outline?.completedLessons ?? 0}</b><small>Bài hoàn thành</small></span>
@@ -167,7 +167,7 @@ export default function StudentClassDetailPage() {
             <div className="member-grid">
               {members.items.map(member => (
                 <div className="member" key={member.studentId}>
-                  <div className="avatar">{initials(member.fullName)}</div>
+                  <div className="avatar">{getInitials(member.fullName)}</div>
                   <div className="min-w-0">
                     <b className="block truncate">{member.fullName}</b>
                     <small>Tham gia {formatDate(member.enrolledAt)}</small>
