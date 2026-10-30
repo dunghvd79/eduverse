@@ -3,6 +3,7 @@ import { ArrowLeft, CheckCircle2, ChevronLeft, ChevronRight, ClipboardCheck, Fil
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Button, Badge, Card, Progress } from '../../components/portal/PortalUI';
 import courseService from '../../services/courseService';
+import { learnUrl } from '../../services/classService';
 import LessonMaterialsPanel from '../../components/course/LessonMaterialsPanel';
 import LessonDiscussion from '../../components/discussion/LessonDiscussion';
 import { toast } from '../../components/common/Toast';
@@ -51,7 +52,7 @@ export default function ClassroomPage() {
   const quizId = flatLessons[currentIndex]?.quizId;
   const assignmentId = flatLessons[currentIndex]?.assignmentId;
   const isAssignmentScheduled = flatLessons[currentIndex]?.isAssignmentScheduled;
-  const lessonUrl = (id) => `/student/courses/${courseId}/learn/${id}${classId ? `?classId=${classId}` : ''}`;
+  const lessonUrl = (id) => learnUrl(courseId, id, classId);
 
   const setProgress = async (isCompleted) => {
     if (!classId) {

@@ -2,6 +2,7 @@ import crypto from 'crypto';
 import { Op } from 'sequelize';
 import models from '../models/index.js';
 import { AppError } from '../utils/AppError.js';
+import { byLastActiveDesc, nextLessonIdOf } from '../utils/studentTodo.js';
 
 const { sequelize, ClassModel, Course, Chapter, Lesson, Enrollment, LessonProgress, User } = models;
 
@@ -99,6 +100,23 @@ export const getCourseLessonIds = async (courseId) => {
   return lessons.map((l) => l.id);
 };
 
+/**
+ * Bài học của nhiều khóa theo đúng thứ tự đề cương (chương, rồi bài): { [courseId]: [lessonId, ...] }
+ */
+const getOrderedLessonIdsByCourse = async (courseIds) => {
+  if (courseIds.length === 0) return {};
+  const lessons = await Lesson.findAll({
+    attributes: ['id'],
+    include: [{ model: Chapter, attributes: ['course_id'], where: { course_id: courseIds } }],
+    order: [[{ model: Chapter }, 'order_index', 'ASC'], ['order_index', 'ASC']],
+    raw: true
+  });
+  return lessons.reduce((acc, l) => {
+    (acc[l['chapter.course_id']] ||= []).push(l.id);
+    return acc;
+  }, {});
+};
+
 const toPercentage = (completed, total) => (total > 0 ? Math.round((completed / total) * 1000) / 10 : 0);
 
 /**
@@ -121,7 +139,7 @@ export const getStudentProgress = async (classId, lessonIds, studentIds) => {
 };
 
 /**
- * Tiến độ của một học viên trong một lớp - dùng cho My Classes và đề cương có classId
+ * Tiến độ của một học viên trong một lớp - dùng cho chi tiết lớp (GET /classes/:id)
  */
 export const getLessonProgressSummary = async (classId, courseId, studentId) => {
   const lessonIds = await getCourseLessonIds(courseId);
@@ -221,17 +239,48 @@ export const getMyClasses = async (currentUser) => {
       include: [{ model: ClassModel, as: 'class', required: true, include }],
       order: [['enrolled_at', 'DESC']]
     });
+    const classes = enrollments.map((e) => e.class);
 
-    return Promise.all(enrollments.map(async (enrollment) => {
+    // Gộp truy vấn cho mọi lớp: bài học theo thứ tự đề cương + các bài học viên đã hoàn thành
+    const [lessonIdsOf, doneRows] = await Promise.all([
+      getOrderedLessonIdsByCourse([...new Set(classes.map((c) => c.course_id))]),
+      classes.length
+        ? LessonProgress.findAll({
+          attributes: ['class_id', 'lesson_id', 'completed_at'],
+          where: { student_id: currentUser.id, class_id: classes.map((c) => c.id), is_completed: true },
+          raw: true
+        })
+        : []
+    ]);
+    const doneOf = doneRows.reduce((acc, r) => {
+      (acc[r.class_id] ||= []).push(r);
+      return acc;
+    }, {});
+
+    // Học gần nhất lên đầu; lớp chưa học bài nào giữ thứ tự ghi danh mới nhất (sort ổn định)
+    return enrollments.map((enrollment) => {
       const cls = enrollment.class;
-      const progress = await getLessonProgressSummary(cls.id, cls.course_id, currentUser.id);
+      const lessonIds = lessonIdsOf[cls.course_id] || [];
+      const lessonSet = new Set(lessonIds);
+      // Cùng quy tắc với getStudentProgress (chỉ đếm bài còn thuộc khóa, lần học cuối = MAX completed_at)
+      // nhưng gộp truy vấn cho nhiều lớp -> đổi quy tắc tiến độ thì sửa cả hai nơi
+      const done = (doneOf[cls.id] || []).filter((r) => lessonSet.has(r.lesson_id));
+      const lastActive = done.reduce((max, r) => (!max || new Date(r.completed_at) > new Date(max) ? r.completed_at : max), null);
+      const data = mapClass(cls, currentUser);
       return {
-        ...mapClass(cls, currentUser),
+        ...data,
+        course: { ...data.course, status: cls.course.status },
         teacher: mapTeacherRef(cls.teacher),
         enrolledAt: enrollment.enrolled_at,
-        progress
+        progress: {
+          totalLessons: lessonIds.length,
+          completedLessons: done.length,
+          progressPercentage: toPercentage(done.length, lessonIds.length),
+          lastActiveAt: lastActive,
+          nextLessonId: nextLessonIdOf(lessonIds, new Set(done.map((r) => r.lesson_id)))
+        }
       };
-    }));
+    }).sort((a, b) => byLastActiveDesc(a.progress, b.progress));
   }
 
   if (currentUser.role === 'teacher') {

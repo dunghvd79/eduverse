@@ -106,8 +106,13 @@
 
 #### `GET /api/v1/classes/my-classes`
 * **Mô tả chức năng:**
-  * Nếu người đăng nhập là **Học viên (`student`)**: Trả về các lớp học mà học viên đã ghi danh thành công (`status: active`).
-  * Nếu người đăng nhập là **Giảng viên (`teacher`)**: Trả về các lớp học do chính giảng viên này phụ trách giảng dạy.
+  * Nếu người đăng nhập là **Học viên (`student`)**: Trả về các lớp học mà học viên đã ghi danh thành công (`status: active`), **xếp theo lần học gần nhất** (lớp chưa học bài nào xếp sau, theo ngày ghi danh mới nhất). Mỗi lớp kèm `progress` và `todo` (*bổ sung 30/10/2026*, dùng cho trang Khóa học của tôi):
+    * `progress.lastActiveAt`: lần cuối học viên **hoàn thành** một bài trong lớp (hệ thống không lưu thời điểm mở bài); `null` nếu chưa hoàn thành bài nào.
+    * `progress.nextLessonId`: bài đầu tiên chưa hoàn thành theo thứ tự đề cương (chương, rồi bài); học hết thì là bài đầu tiên (để xem lại); khóa không có bài thì `null`.
+    * `course.status`: trạng thái khóa học. Lớp của khóa chưa `published` vẫn được trả về (trang Điểm số cần), frontend trang Khóa học của tôi tự ẩn.
+    * `todo`: việc cần làm, cùng định nghĩa với trang Tổng quan (`docs/api/api-dashboard.md`): bài tập chưa nộp còn trong hạn (kể cả hạn nộp muộn) hoặc bị yêu cầu nộp lại; bài kiểm tra đang mở, chưa đạt và còn lượt. `todoCount` = tổng số việc, `dueSoonCount` = số việc có hạn trong 7 ngày tới, `nextDeadline` = hạn gần nhất chưa qua (`null` nếu không có). Lớp tạm dừng, đã kết thúc hoặc thuộc khóa chưa `published` luôn có `todoCount: 0`.
+    * Frontend coi lớp là **Hoàn thành** khi lớp đã kết thúc (`closed`) hoặc đã học hết bài và `todo.todoCount === 0` (việc đã lỡ hạn không chặn).
+  * Nếu người đăng nhập là **Giảng viên (`teacher`)**: Trả về các lớp học do chính giảng viên này phụ trách giảng dạy (không có `progress`, `todo`).
 * **Quyền hạn:** `[Authenticated]`
 * **Headers:** `Authorization: Bearer <access_token>`
 
@@ -128,12 +133,25 @@
       "course": {
         "id": "c1f7a2d4-3a21-4f9e-8c3b-7f1a2b3c4d5e",
         "title": "Lập trình Web với React & ExpressJS",
-        "thumbnailUrl": "https://s3.ap-southeast-1.amazonaws.com/eduverse/thumbnails/course-web.jpg"
+        "thumbnailUrl": "https://s3.ap-southeast-1.amazonaws.com/eduverse/thumbnails/course-web.jpg",
+        "status": "published"
       },
       "teacher": {
         "fullName": "ThS. Trần Thị Giảng Viên"
       },
-      "enrolledAt": "2026-09-23T14:20:00.000Z"
+      "enrolledAt": "2026-09-23T14:20:00.000Z",
+      "progress": {
+        "totalLessons": 12,
+        "completedLessons": 5,
+        "progressPercentage": 41.7,
+        "lastActiveAt": "2026-10-28T09:15:00.000Z",
+        "nextLessonId": "a7b8c9d0-1e2f-4a3b-8c4d-5e6f7a8b9c0d"
+      },
+      "todo": {
+        "todoCount": 3,
+        "dueSoonCount": 2,
+        "nextDeadline": "2026-11-01T16:59:00.000Z"
+      }
     }
   ],
   "timestamp": "2026-09-24T11:12:00.000Z"

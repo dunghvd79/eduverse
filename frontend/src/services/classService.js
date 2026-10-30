@@ -14,6 +14,22 @@ export const PROGRESS_STATUS = {
 
 export const formatDate = (value) => (value ? new Date(value).toLocaleDateString('vi-VN') : '—');
 
+// "vừa xong", "5 phút trước", "3 ngày trước"...; từ `maxDays` ngày trở đi thì hiện ngày cụ thể (dùng chung với chuông thông báo)
+export const formatRelativeTime = (value, { maxDays = 30 } = {}) => {
+  if (!value) return '—';
+  const minutes = Math.floor((Date.now() - new Date(value).getTime()) / 60000);
+  if (!(minutes >= 1)) return 'vừa xong';
+  if (minutes < 60) return `${minutes} phút trước`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} giờ trước`;
+  const days = Math.floor(hours / 24);
+  return days < maxDays ? `${days} ngày trước` : formatDate(value);
+};
+
+// Trang học bài của học viên (trình phát bài học), classId để ghi tiến độ đúng lớp
+export const learnUrl = (courseId, lessonId, classId) =>
+  `/student/courses/${courseId}/learn/${lessonId}${classId ? `?classId=${classId}` : ''}`;
+
 export const classService = {
   list: async (params = {}) => {
     const response = await api.get('/classes', { params });

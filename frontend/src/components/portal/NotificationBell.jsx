@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Bell, CheckCircle2, ClipboardCheck, FileText, RotateCcw, XCircle } from 'lucide-react';
 import { useAuthStore } from '../../stores/useAuthStore';
 import notificationService from '../../services/notificationService';
+import { formatRelativeTime } from '../../services/classService';
 
 // Phase 1 dùng HTTP polling (docs/architecture/design-decisions.md): hỏi số chưa đọc mỗi 30 giây
 const POLL_MS = 30000;
@@ -16,17 +17,6 @@ const TYPE_STYLE = {
   course_pending: { icon: ClipboardCheck, tone: 'bg-blue-50 text-blue-600' },
   course_approved: { icon: CheckCircle2, tone: 'bg-green-50 text-green-600' },
   course_rejected: { icon: XCircle, tone: 'bg-red-50 text-red-600' }
-};
-
-const timeAgo = (iso) => {
-  const minutes = Math.floor((Date.now() - new Date(iso).getTime()) / 60000);
-  if (!(minutes >= 1)) return 'Vừa xong';
-  if (minutes < 60) return `${minutes} phút trước`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} giờ trước`;
-  const days = Math.floor(hours / 24);
-  if (days < 7) return `${days} ngày trước`;
-  return new Date(iso).toLocaleDateString('vi-VN');
 };
 
 const clamp2 = { display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' };
@@ -191,7 +181,7 @@ export default function NotificationBell() {
                   <span className="flex-1 min-w-0">
                     <span className={`block text-[13px] ${item.isRead ? 'font-semibold text-slate-700' : 'font-bold text-slate-900'}`}>{item.title}</span>
                     <span className="block mt-0.5 text-xs leading-relaxed text-slate-500" style={clamp2}>{item.message}</span>
-                    <span className="block mt-1 text-[11px] text-slate-400">{timeAgo(item.createdAt)}</span>
+                    <span className="block mt-1 text-[11px] text-slate-400 first-letter:uppercase">{formatRelativeTime(item.createdAt, { maxDays: 7 })}</span>
                   </span>
                   {!item.isRead && <span className="flex-none mt-1.5 w-2 h-2 rounded-full bg-[#1168bd]" aria-label="Chưa đọc" />}
                 </button>
