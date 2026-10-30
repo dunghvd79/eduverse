@@ -21,7 +21,7 @@ import { useAuthStore } from '../../stores/useAuthStore';
 import { toast } from '../../components/common/Toast';
 import dashboardService from '../../services/dashboardService';
 import { CLASS_STATUS } from '../../services/classService';
-import { formatScore, formatDateTime } from '../../services/quizService';
+import { formatScore, formatDateTime, formatPercent } from '../../services/quizService';
 
 // Xếp loại theo docs/requirements/grading-policy.md, thứ tự từ cao xuống thấp
 const RANKINGS = [
@@ -262,7 +262,7 @@ function ClassCard({ cls }) {
           <div className="mb-2 flex items-baseline justify-between text-xs font-semibold">
             <span className="text-slate-600">Tiến độ trung bình</span>
             <span className="text-sm font-bold text-slate-900 tabular-nums">
-              {cls.averageProgress === null ? '—' : `${cls.averageProgress}%`}
+              {formatPercent(cls.averageProgress)}
             </span>
           </div>
           <ProgressBar value={cls.averageProgress || 0} />

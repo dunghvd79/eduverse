@@ -23,6 +23,8 @@ import {
 import { PortalHeader, Button, Card, Badge } from '../../components/portal/PortalUI';
 import { userService } from '../../services/userService';
 import { useAuthStore } from '../../stores/useAuthStore';
+import { getInitials } from '../../utils/initials';
+import { useUrlSearch } from '../../utils/useUrlSearch';
 
 export default function UserManagementPage() {
   const currentAdmin = useAuthStore((state) => state.user);
@@ -34,6 +36,7 @@ export default function UserManagementPage() {
   const [roleFilter, setRoleFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchTerm, setSearchTerm] = useState('');
+  useUrlSearch(setSearchTerm);
   const [debouncedSearch, setDebouncedSearch] = useState('');
 
   // Notification Toast
@@ -215,12 +218,6 @@ export default function UserManagementPage() {
     }
   };
 
-  const getInitials = (name) => {
-    if (!name) return 'EV';
-    const parts = name.trim().split(' ');
-    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-  };
 
   return (
     <>

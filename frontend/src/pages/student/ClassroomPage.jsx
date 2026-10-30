@@ -7,6 +7,7 @@ import { learnUrl } from '../../services/classService';
 import LessonMaterialsPanel from '../../components/course/LessonMaterialsPanel';
 import LessonDiscussion from '../../components/discussion/LessonDiscussion';
 import { toast } from '../../components/common/Toast';
+import { formatPercent } from '../../services/quizService';
 
 export default function ClassroomPage() {
   const { courseId, lessonId } = useParams();
@@ -87,7 +88,7 @@ export default function ClassroomPage() {
           <div className="mt-2 max-w-xl">
             <Progress value={outline?.progressPercentage || 0} />
             <small className="text-slate-500">
-              {outline?.completedLessons || 0}/{outline?.totalLessons || 0} bài hoàn thành · {outline?.progressPercentage || 0}%
+              {outline?.completedLessons || 0}/{outline?.totalLessons || 0} bài hoàn thành · {formatPercent(outline?.progressPercentage || 0)}
             </small>
           </div>
         </div>

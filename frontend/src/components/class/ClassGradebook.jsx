@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { BarChart3, Download, FileSpreadsheet, Info, Search, Trophy, Users } from 'lucide-react';
 import { Button, Card, Badge, StatCard } from '../portal/PortalUI';
 import gradebookService, { ASSIGNMENT_STATE, RANKING_TONE, formulaText } from '../../services/gradebookService';
-import { formatScore } from '../../services/quizService';
+import { formatScore, formatPercent } from '../../services/quizService';
 import { toast } from '../common/Toast';
 
 const RANKINGS = ['Giỏi', 'Khá', 'Trung bình', 'Chưa đạt'];
@@ -106,7 +106,7 @@ export default function ClassGradebook({ cls }) {
                       <b className="block whitespace-nowrap">{row.student.fullName}</b>
                       <small className="text-slate-500">{row.student.email}</small>
                     </td>
-                    <td className="whitespace-nowrap">{row.progressPercentage}%<small className="block text-slate-500">{row.completedLessons}/{row.totalLessons} bài</small></td>
+                    <td className="whitespace-nowrap">{formatPercent(row.progressPercentage)}<small className="block text-slate-500">{row.completedLessons}/{row.totalLessons} bài</small></td>
                     {row.quizScores.map(q => (
                       <td key={q.quizId} className={q.attempted ? '' : 'text-slate-500'} title={q.attempted ? 'Điểm cao nhất' : 'Chưa làm'}>{q.attempted ? formatScore(q.score) : '0 *'}</td>
                     ))}

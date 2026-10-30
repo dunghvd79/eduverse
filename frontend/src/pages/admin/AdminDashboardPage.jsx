@@ -5,7 +5,7 @@ import { PortalHeader, Button, StatCard, Progress, Card, SectionTitle, Table, Ba
 import { toast } from '../../components/common/Toast';
 import dashboardService, { SERVICE_LABEL, SERVICE_STATUS, ROLE_LABEL } from '../../services/dashboardService';
 import { formatDate } from '../../services/classService';
-import { formatDateTime } from '../../services/quizService';
+import { formatDateTime, formatPercent } from '../../services/quizService';
 
 const formatUptime = (seconds) => {
   const hours = Math.floor(seconds / 3600);
@@ -65,7 +65,7 @@ export default function AdminDashboardPage() {
         <SectionTitle title="Phân bổ người dùng" />
         {roleDistribution.map((item) => (
           <div className="role-bar" key={item.role}>
-            <div><b>{ROLE_LABEL[item.role]}</b><span>{item.count} ({item.percentage}%)</span></div>
+            <div><b>{ROLE_LABEL[item.role]}</b><span>{item.count} ({formatPercent(item.percentage)})</span></div>
             <Progress value={item.percentage} />
           </div>
         ))}

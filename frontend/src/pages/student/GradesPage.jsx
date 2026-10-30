@@ -4,12 +4,12 @@ import { useNavigate } from 'react-router-dom';
 import { PortalHeader, Card, Badge, Progress, Button } from '../../components/portal/PortalUI';
 import classService from '../../services/classService';
 import gradebookService, { ASSIGNMENT_STATE, RANKING_TONE, formulaText } from '../../services/gradebookService';
-import { formatScore } from '../../services/quizService';
+import { formatScore, formatPercent } from '../../services/quizService';
 import { toast } from '../../components/common/Toast';
 
 const Component = ({ label, value, weight }) => (
   <div className="rounded-lg border border-slate-200 p-3">
-    <small className="block text-slate-500">{label}{weight !== undefined && ` · ${Math.round(weight * 1000) / 10}%`}</small>
+    <small className="block text-slate-500">{label}{weight !== undefined && ` · ${formatPercent(weight * 100)}`}</small>
     <b className="text-xl">{value}</b>
   </div>
 );
@@ -36,7 +36,7 @@ function ClassGrades({ cls, data }) {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-4">
         {data.weights.quiz !== undefined && <Component label="TB Bài kiểm tra" value={formatScore(me.quizAverage)} weight={data.weights.quiz} />}
         {data.weights.assignment !== undefined && <Component label="TB Bài tập" value={formatScore(me.assignmentAverage)} weight={data.weights.assignment} />}
-        <Component label={`Tiến độ (${me.completedLessons}/${me.totalLessons} bài)`} value={`${me.progressPercentage}%`} weight={data.weights.progress} />
+        <Component label={`Tiến độ (${me.completedLessons}/${me.totalLessons} bài)`} value={formatPercent(me.progressPercentage)} weight={data.weights.progress} />
       </div>
       <Progress value={me.progressPercentage} />
 

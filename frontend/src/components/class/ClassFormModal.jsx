@@ -28,10 +28,11 @@ export default function ClassFormModal({ cls = null, role, defaultCourseId = '',
 
   useEffect(() => {
     if (isEdit) return;
-    courseService.list({ status: 'published', limit: 100 })
+    // Giảng viên chỉ mở lớp cho khóa học của mình (BR-023); Quản lý/Admin thấy mọi khóa đã công khai
+    courseService.list({ status: 'published', limit: 100, ...(isStaff ? {} : { mine: true }) })
       .then(data => setCourses(data.items || []))
       .catch(error => toast.error(error?.message || 'Không thể tải danh sách khóa học.'));
-  }, [isEdit]);
+  }, [isEdit, isStaff]);
 
   // Giảng viên có thể chọn: chủ của các khóa học đã published (API /users chỉ dành cho Admin)
   const teacherOptions = useMemo(() => {

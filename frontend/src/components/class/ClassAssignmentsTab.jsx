@@ -74,6 +74,11 @@ function ScheduleModal({ cls, item, onClose, onSaved }) {
           <input type="checkbox" checked={form.allowLateSubmission} onChange={e => setForm({ ...form, allowLateSubmission: e.target.checked })} />
           Cho phép nộp muộn sau hạn nộp (bài nộp muộn được đánh dấu)
         </label>
+        <p className="-mt-1 text-xs text-slate-500">
+          {form.allowLateSubmission
+            ? 'Bỏ chọn nếu muốn khóa nộp bài ngay khi hết hạn.'
+            : 'Học viên sẽ không nộp được bài sau thời điểm hạn nộp.'}
+        </p>
         {form.allowLateSubmission && (
           <Field label="Hạn chót nhận bài muộn (để trống = không giới hạn)" type="datetime-local" value={form.cutoffTime} onChange={e => setForm({ ...form, cutoffTime: e.target.value })} />
         )}

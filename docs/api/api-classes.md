@@ -214,7 +214,7 @@
 ### 2.4. Mở lớp học mới
 
 #### `POST /api/v1/classes`
-* **Mô tả chức năng:** Mở lớp học mới dựa trên một khóa học đã được phê duyệt (`status: published`). Giảng viên tự động được gán làm người phụ trách (hoặc Quản lý chỉ định `teacherId`). Nếu không truyền `classCode`, hệ thống tự sinh mã 6 ký tự ngẫu nhiên.
+* **Mô tả chức năng:** Mở lớp học mới dựa trên một khóa học đã được phê duyệt (`status: published`). Giảng viên chỉ mở được lớp cho **khóa học do mình sở hữu** và tự động được gán làm người phụ trách; Quản lý đào tạo/Admin mở lớp cho mọi khóa đã công khai và chỉ định `teacherId` (BR-023). Nếu không truyền `classCode`, hệ thống tự sinh mã 6 ký tự ngẫu nhiên.
 * **Quyền hạn:** `[Roles: teacher, training_manager, admin]`
 * **Headers:**
   * `Authorization: Bearer <access_token>`
@@ -261,6 +261,7 @@
 | `400` | `Bad Request` | Khóa học chưa được công khai | Chỉ được mở lớp cho khóa học có status `published` |
 | `401` | `Unauthorized` | Chưa đăng nhập | Access Token thiếu hoặc hết hạn |
 | `403` | `Forbidden` | Không có quyền tạo lớp học | Tài khoản không có vai trò phù hợp |
+| `403` | `Forbidden` | Giảng viên chỉ được mở lớp cho khóa học của mình... | Giảng viên mở lớp cho khóa học của giảng viên khác (BR-023, *bổ sung 30/10/2026*); Quản lý đào tạo/Admin mở lớp và phân công thay |
 | `409` | `Conflict` | Mã lớp học đã tồn tại | `classCode` bị trùng lặp với một lớp đang hoạt động khác |
 
 ---

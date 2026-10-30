@@ -39,6 +39,7 @@
 | BR-020 | Lớp học là **1 lần tổ chức** của khóa học | 1 khóa học có thể tạo nhiều lớp, mỗi lớp có thời gian và danh sách học viên riêng |
 | BR-021 | Mỗi lớp có **mã tham gia** (class code) | Học viên nhập mã để ghi danh vào lớp |
 | BR-022 | Giảng viên có thể **mời trực tiếp** học viên | Thêm học viên vào lớp bằng email |
+| BR-023 | Giảng viên chỉ **tự mở lớp cho khóa học của mình** | `POST /classes` trả `403` nếu giảng viên mở lớp cho khóa của người khác. Quản lý đào tạo/Admin mở lớp cho mọi khóa đã `published` và phân công bất kỳ giảng viên nào, nên nhiều giảng viên vẫn dạy chung một khóa được (mô hình trường học: phòng đào tạo phân công) (*bổ sung 30/10/2026*) |
 
 ---
 

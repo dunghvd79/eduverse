@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { GraduationCap, LayoutDashboard, BookOpen, UserCircle, LogOut, ChevronDown } from 'lucide-react';
 import { useAuthStore } from '../../stores/useAuthStore';
 import { toast } from '../common/Toast';
+import { getInitials } from '../../utils/initials';
 
 export default function Header() {
   const location = useLocation();
@@ -32,12 +33,6 @@ export default function Header() {
     nav('/', { replace: true });
   };
 
-  const getInitials = (name) => {
-    if (!name) return 'EV';
-    const parts = name.trim().split(' ');
-    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
-    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
-  };
 
   useEffect(() => {
     let scrollTimer = null;

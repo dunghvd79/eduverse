@@ -317,7 +317,8 @@ export const getClassById = async (classId, currentUser) => {
 
 /**
  * POST /classes - mở lớp cho khóa học đã published
- * Giảng viên luôn tự phụ trách; Quản lý/Admin chỉ định teacherId (mặc định: chủ khóa học).
+ * Giảng viên chỉ tự mở lớp cho khóa học của mình và luôn tự phụ trách (BR-023);
+ * Quản lý/Admin mở lớp cho mọi khóa published và chỉ định teacherId (mặc định: chủ khóa học).
  */
 export const createClass = async (data, currentUser) => {
   const course = await Course.findByPk(data.courseId, { attributes: ['id', 'status', 'owner_id'] });
@@ -326,6 +327,9 @@ export const createClass = async (data, currentUser) => {
   }
   if (course.status !== 'published') {
     throw new AppError('Khóa học chưa được công khai', 400, 'Bad Request');
+  }
+  if (currentUser.role === 'teacher' && course.owner_id !== currentUser.id) {
+    throw new AppError('Giảng viên chỉ được mở lớp cho khóa học của mình. Muốn dạy khóa học của giảng viên khác, hãy liên hệ Quản lý đào tạo để được phân công.', 403, 'Forbidden');
   }
 
   let teacherId = currentUser.id;

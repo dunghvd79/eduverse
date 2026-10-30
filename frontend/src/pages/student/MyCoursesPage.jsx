@@ -4,6 +4,8 @@ import { Link, useNavigate } from 'react-router-dom';
 import { PortalHeader, Button, Progress, Card, Badge, Field } from '../../components/portal/PortalUI';
 import classService, { CLASS_STATUS, formatDate, formatRelativeTime, learnUrl } from '../../services/classService';
 import { toast } from '../../components/common/Toast';
+import { formatPercent } from '../../services/quizService';
+import { useUrlSearch } from '../../utils/useUrlSearch';
 
 const allLessonsDone = (cls) => cls.progress?.totalLessons > 0 && cls.progress.completedLessons >= cls.progress.totalLessons;
 // Hoàn thành = lớp đã kết thúc, hoặc học hết bài và không còn bài tập/bài kiểm tra phải làm (việc đã lỡ hạn không chặn)
@@ -31,6 +33,7 @@ export default function MyCoursesPage() {
   const [tab, setTab] = useState('all');
   const [sort, setSort] = useState('recent');
   const [search, setSearch] = useState('');
+  useUrlSearch(setSearch);
   const [showEnroll, setShowEnroll] = useState(false);
   const [code, setCode] = useState('');
   const [enrolling, setEnrolling] = useState(false);
@@ -160,7 +163,7 @@ export default function MyCoursesPage() {
                   <p className="text-sm text-slate-500">{cls.name} · Giảng viên: {cls.teacher?.fullName || '—'}</p>
                   <Progress value={percent} />
                   <small>
-                    {cls.progress?.completedLessons || 0}/{cls.progress?.totalLessons || 0} bài · {percent}% hoàn thành
+                    {cls.progress?.completedLessons || 0}/{cls.progress?.totalLessons || 0} bài · {formatPercent(percent)} hoàn thành
                     {' · '}{cls.progress?.lastActiveAt ? `Học lần cuối ${formatRelativeTime(cls.progress.lastActiveAt)}` : 'Chưa bắt đầu học'}
                   </small>
                 </div>
