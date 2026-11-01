@@ -13,7 +13,7 @@
 | **Unit test** | `backend/tests/unit/*.test.js` | Không (không cần CSDL, mạng) | `npm test` | Công thức tính điểm tổng kết, xếp loại, các trường hợp ngoại lệ E1–E3 của [`grading-policy.md`](../requirements/grading-policy.md) |
 | **Kiểm thử API đầu-cuối** | `backend/tests/e2e/api.e2e.js` | **Có** (backend + CSDL có dữ liệu mẫu) | `npm run test:e2e` | Gọi API thật: đăng nhập 4 vai trò, phân quyền, phân trang, thông báo, bảng điểm lớp, thảo luận trong bài học |
 
-Unit test không đụng dữ liệu. Kiểm thử API **chỉ đọc**, trừ nhóm *Thảo luận* có ghi vài bài thử rồi **tự xóa ngay** (và chỉ do giảng viên mẫu đăng nên không sinh thông báo), nên chạy lại bao nhiêu lần cũng không làm bẩn CSDL.
+Unit test không đụng dữ liệu. Kiểm thử API **chỉ đọc**, trừ nhóm *Thảo luận* có ghi vài bài thử rồi **tự xóa ngay** (và chỉ do giảng viên mẫu đăng nên không sinh thông báo). Ngoại lệ duy nhất không tự dọn được: mỗi lần chạy thêm vài dòng vào **Nhật ký hệ thống** (các lần đăng nhập, một lần đăng nhập sai, một lần xuất CSV) vì nhật ký chỉ thêm; không ảnh hưởng dữ liệu nghiệp vụ. Nhóm *Nhật ký hệ thống* cần bảng `audit_logs` (chạy `npm run db:migrate:audit-logs` nếu CSDL có sẵn dữ liệu).
 
 ---
 
@@ -26,7 +26,7 @@ cd backend
 npm test
 ```
 
-Kết quả mong đợi: `# pass 152`, `# fail 0`.
+Kết quả mong đợi: `# pass 193`, `# fail 0`.
 
 ### 2.2. Kiểm thử API đầu-cuối
 
@@ -61,7 +61,7 @@ Nếu hệ thống chưa bật, test dừng ngay với thông báo `Không kết
 
 ## 3. Nội Dung Kiểm Thử
 
-### 3.1. Unit test (152 test)
+### 3.1. Unit test (193 test)
 
 #### Công thức điểm — `tests/unit/grading.test.js` (35 test)
 
@@ -101,7 +101,18 @@ Quy tắc quyền và chuẩn hóa nội dung của module Thảo luận / Hỏi
 
 Chạy với bản giả của `bullmq`, `ioredis` và `nodemailer` (không cần Redis hay SMTP thật): đúng 4 chế độ; job vào hàng đợi `email` với 5 lần thử lại, chờ tăng dần, xóa job khi xong; Queue và Worker dùng chung một client `ioredis`; Redis lỗi, chưa sẵn sàng, treo quá 3 giây, thiếu thư viện hoặc `REDIS_URL` sai thì chuyển sang gửi trực tiếp (không thêm job khi Redis chưa sẵn sàng để tránh gửi trùng); lỗi Redis/worker lặp lại chỉ ghi log một lần mỗi 60 giây; worker gửi SMTP và ném lỗi để BullMQ thử lại; đóng worker/hàng đợi/transporter an toàn; mọi hàm gửi không bao giờ ném lỗi, kể cả khi đầu vào sai. Phần chưa test tự động: nối Redis và SMTP thật (kiểm tay theo `deployment.md` mục 4.1).
 
-### 3.2. Kiểm thử API — `tests/e2e/api.e2e.js` (51 kiểm tra)
+#### Nhật ký hệ thống và cấu hình nền tảng — `tests/unit/auditRules.test.js` (27 test), `tests/unit/auditRecorder.test.js` (5 test), `tests/unit/platformSettings.test.js` (9 test)
+
+Quy tắc ghi và tra cứu nhật ký nằm trong hàm thuần `backend/src/utils/auditRules.js` và `auditRecorder.js`, cấu hình hiển thị ở `platformSettings.js` ([`api-audit-logs.md`](../api/api-audit-logs.md), BR-080 → BR-085); `Op` của Sequelize được truyền vào nên không cần CSDL:
+- Danh mục hành động: mã dạng `nhóm.hành_động`, đủ nhãn và nhóm; hành động lạ vẫn hiển thị được.
+- Làm sạch `metadata`: bỏ mọi khóa nhạy cảm (mật khẩu, token, OTP, mã băm, header) ở mọi cấp; cắt chuỗi, mảng, độ sâu; dữ liệu quá lớn chỉ giữ cờ `truncated`; không sửa đối tượng đầu vào.
+- Dựng dòng nhật ký: chép email và vai trò người thực hiện, IP (bỏ tiền tố IPv4-mapped), User-Agent; đăng nhập sai chỉ có email đã nhập và kết quả `failed`; cắt trường quá dài cho vừa cột.
+- Điều kiện lọc: theo hành động, nhóm, kết quả, khoảng thời gian; tìm kiếm escape `%`, `_`, `\`.
+- Xuất CSV: BOM UTF-8, CRLF, tiêu đề tiếng Việt, bao ô có dấu phẩy / nháy kép / xuống dòng, chặn chèn công thức Excel (`=`, `+`, `-`, `@`).
+- Bộ ghi nhật ký: lỗi CSDL không ném ra ngoài và có cảnh báo gợi ý chạy migration; cảnh báo lặp chỉ in một lần mỗi khoảng thời gian.
+- Cấu hình nền tảng: giá trị mặc định đúng với code; đủ cấu hình S3, SMTP + hàng đợi, AI; **không bao giờ lộ khóa bí mật, mật khẩu, token, chuỗi kết nối**; 10 giới hạn tần suất giữ đúng số lần và cửa sổ thời gian như trước khi gom về `rateLimitRules.js`.
+
+### 3.2. Kiểm thử API — `tests/e2e/api.e2e.js` (59 kiểm tra)
 
 | Nhóm | Ví dụ kiểm tra |
 |---|---|
@@ -112,6 +123,7 @@ Chạy với bản giả của `bullmq`, `ioredis` và `nodemailer` (không cầ
 | Khóa học công khai | Phân trang đúng; khách và học viên **chỉ thấy khóa `published`** kể cả khi cố lọc `status=draft`; `limit` sai `400`; slug lạ `404` |
 | Dashboard | Cả 4 dashboard trả `stats` |
 | Thông báo | Cần đăng nhập; số chưa đọc là số nguyên không âm; `limit=51` bị chặn; đánh dấu thông báo không phải của mình `404` |
+| Nhật ký hệ thống | 4 đường dẫn admin trả `401` khi chưa đăng nhập và `403` với vai trò khác; danh mục hành động; đăng nhập của Admin được ghi; đăng nhập sai được ghi (`failed`) và **không lộ mật khẩu**; phân trang và bộ lọc; tham số sai `400`; xuất CSV có BOM và việc xuất được ghi (`audit.export`); cấu hình nền tảng đủ các mục và không lộ bí mật |
 | Bảng điểm lớp | Với từng lớp của giảng viên mẫu: tỷ trọng cộng lại bằng 1, điểm trong `[0, 10]`, xếp loại khớp ngưỡng, **điểm tổng kết của từng học viên khớp công thức tính lại từ điểm thành phần**, thống kê tổng hợp khớp; học viên xem bảng điểm cả lớp `403`; Quản lý thấy cùng kết quả với giảng viên; xuất CSV trả tệp đính kèm; xuất `.xlsx` mở được và có đủ 4 sheet (Bảng điểm, Thống kê lớp, Tiến độ học, Quy tắc tính điểm) |
 | Thảo luận | Cần đăng nhập; mã sai định dạng `400`; bài học khác khóa `404`; học viên xem được và `canPost = true`; Quản lý xem được nhưng đăng bài `403`; nội dung rỗng hoặc quá 2000 ký tự `400`; giảng viên đăng, trả lời, sửa, đánh dấu, xóa (xóa câu hỏi xóa luôn câu trả lời); học viên sửa/xóa/đánh dấu hộ `403`; tổng quan lớp cho giảng viên, học viên `403` |
 

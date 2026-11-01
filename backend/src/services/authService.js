@@ -401,7 +401,7 @@ export const resetPassword = async ({ token, newPassword }) => {
     );
   });
 
-  return true;
+  return { userId: user.id, email: user.email };
 };
 
 /**

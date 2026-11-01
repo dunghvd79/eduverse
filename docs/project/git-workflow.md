@@ -116,6 +116,7 @@ npm run db:migrate:quizzes
 npm run db:migrate:assignments
 npm run db:migrate:notifications
 npm run db:migrate:discussions
+npm run db:migrate:audit-logs
 ```
 (trong `frontend/`: `npm install` nếu `package.json` thay đổi)
 

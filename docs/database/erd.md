@@ -21,6 +21,8 @@ erDiagram
     users ||--o{ assignment_submissions : "nộp bài tập"
     users ||--o{ lesson_progress : "ghi nhận tiến độ"
     users ||--o{ lesson_discussions : "đăng câu hỏi / trả lời"
+    users ||--o{ notifications : "nhận thông báo"
+    users ||--o{ audit_logs : "thực hiện thao tác (actor, SET NULL)"
 
     %% Course Structure
     courses ||--o{ chapters : "chứa các chương"
@@ -276,6 +278,31 @@ erDiagram
         timestamptz edited_at "Lần sửa gần nhất"
         timestamptz deleted_at "Xóa mềm"
     }
+
+    notifications {
+        uuid id PK "Khóa chính"
+        uuid user_id FK "Người nhận"
+        varchar type "Mã loại thông báo"
+        varchar title "Tiêu đề"
+        text message "Nội dung"
+        varchar link "Đường dẫn mở trong ứng dụng"
+        boolean is_read "Đã đọc"
+        timestamptz read_at "Thời điểm đọc"
+    }
+
+    audit_logs {
+        uuid id PK "Khóa chính"
+        uuid actor_id FK "Người thực hiện (NULL nếu chưa xác định / đã xóa)"
+        varchar actor_email "Email tại thời điểm thao tác"
+        varchar actor_role "Vai trò tại thời điểm thao tác"
+        varchar action "Mã hành động, ví dụ user.lock"
+        varchar resource_type "Loại đối tượng bị tác động"
+        varchar resource_id "Mã đối tượng (không có khóa ngoại)"
+        varchar result "success hoặc failed"
+        varchar ip "Địa chỉ IP"
+        jsonb metadata "Chi tiết đã lọc dữ liệu nhạy cảm"
+        timestamptz created_at "Thời điểm ghi (chỉ thêm, không sửa)"
+    }
 ```
 
 ---
@@ -299,4 +326,6 @@ erDiagram
 | `assignment_submissions`| `uq_assignment_submissions` | `UNIQUE(class_assignment_id, student_id)` | Mỗi học viên có 1 bản nộp chính thức cho mỗi bài tập |
 | `lesson_progress` | `uq_lesson_progress_unique` | `UNIQUE(class_id, student_id, lesson_id)` | Mỗi bài học chỉ có 1 trạng thái hoàn thành duy nhất cho học viên trong lớp |
 | `lesson_discussions` | `idx_lesson_discussions_thread` | `INDEX(class_id, lesson_id, parent_id, created_at)` | Không phải UNIQUE: một người đăng được nhiều bài; index phục vụ tải khu thảo luận của một bài học trong lớp |
+| `notifications` | `idx_notifications_user_read_created` | `INDEX(user_id, is_read, created_at)` | Không phải UNIQUE: đếm số thông báo chưa đọc và tải danh sách mới nhất của một người |
+| `audit_logs` | `idx_audit_logs_created`, `idx_audit_logs_action_created`, `idx_audit_logs_actor_created`, `idx_audit_logs_resource` | `INDEX(created_at)`, `INDEX(action, created_at)`, `INDEX(actor_id, created_at)`, `INDEX(resource_type, resource_id)` | Không có UNIQUE (nhật ký chỉ thêm): phục vụ danh sách mới nhất trước, lọc theo hành động, theo người thực hiện và theo đối tượng bị tác động |
 

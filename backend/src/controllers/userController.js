@@ -1,5 +1,6 @@
 import * as userService from '../services/userService.js';
 import * as authService from '../services/authService.js';
+import { record as recordAudit } from '../services/auditService.js';
 import { sendSuccess } from '../utils/response.js';
 import { setRefreshCookie } from '../utils/authCookies.js';
 
@@ -38,6 +39,7 @@ export const changePassword = async (req, res, next) => {
       newPassword: req.body.newPassword
     });
     setRefreshCookie(res, refreshToken);
+    await recordAudit({ req, actor: req.user, action: 'auth.password_change', resourceType: 'user', resourceId: req.user.id });
     return sendSuccess(
       res,
       200,
@@ -91,6 +93,10 @@ export const getUserById = async (req, res, next) => {
 export const createUser = async (req, res, next) => {
   try {
     const data = await userService.adminCreateUser(req.body);
+    await recordAudit({
+      req, actor: req.user, action: 'user.create', resourceType: 'user', resourceId: data.id,
+      metadata: { email: data.email, role: data.role }
+    });
     return sendSuccess(
       res,
       201,
@@ -108,6 +114,10 @@ export const createUser = async (req, res, next) => {
 export const updateUser = async (req, res, next) => {
   try {
     const data = await userService.adminUpdateUser(req.params.id, req.user.id, req.body);
+    await recordAudit({
+      req, actor: req.user, action: 'user.update', resourceType: 'user', resourceId: req.params.id,
+      metadata: { fields: Object.keys(req.body), role: data.role }
+    });
     return sendSuccess(res, 200, 'Cập nhật phân quyền người dùng thành công', data);
   } catch (error) {
     next(error);
@@ -120,6 +130,10 @@ export const updateUser = async (req, res, next) => {
 export const updateStatus = async (req, res, next) => {
   try {
     const data = await userService.adminUpdateStatus(req.params.id, req.user.id, req.body);
+    await recordAudit({
+      req, actor: req.user, action: req.body.isActive ? 'user.unlock' : 'user.lock', resourceType: 'user', resourceId: req.params.id,
+      metadata: { reason: req.body.reason }
+    });
     const msg = req.body.isActive
       ? 'Đã mở khóa tài khoản người dùng thành công'
       : 'Đã khóa tài khoản người dùng và thu hồi mọi phiên đăng nhập';
@@ -135,6 +149,7 @@ export const updateStatus = async (req, res, next) => {
 export const resetPassword = async (req, res, next) => {
   try {
     const data = await userService.adminResetPassword(req.params.id);
+    await recordAudit({ req, actor: req.user, action: 'user.reset_password', resourceType: 'user', resourceId: req.params.id });
     return sendSuccess(
       res,
       200,
@@ -152,6 +167,7 @@ export const resetPassword = async (req, res, next) => {
 export const deleteUser = async (req, res, next) => {
   try {
     const data = await userService.adminDeleteUser(req.params.id, req.user.id);
+    await recordAudit({ req, actor: req.user, action: 'user.delete', resourceType: 'user', resourceId: req.params.id });
     return sendSuccess(res, 200, 'Đã xóa mềm tài khoản người dùng thành công', data);
   } catch (error) {
     next(error);

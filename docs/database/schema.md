@@ -6,7 +6,7 @@
 
 ---
 
-## 1. Danh Mục Các Bảng Dữ Liệu (20 Bảng)
+## 1. Danh Mục Các Bảng Dữ Liệu (22 Bảng)
 
 1. [`users`](#1-bảng-users-người-dùng)
 2. [`user_tokens`](#2-bảng-user_tokens-mã-xác-thực--khôi-phục-mật-khẩu)
@@ -28,6 +28,8 @@
 18. [`lesson_progress`](#18-bảng-lesson_progress-tiến-độ-học-tập)
 19. [`categories`](#18b-bảng-categories-danh-mục-khóa-học--bổ-sung-09102026) *(bổ sung 09/10/2026)*
 20. [`lesson_discussions`](#19-bảng-lesson_discussions-thảo-luận--hỏi-đáp-trong-bài-học--bổ-sung-25102026) *(bổ sung 25/10/2026)*
+21. [`notifications`](#20-bảng-notifications-thông-báo-trong-ứng-dụng--bổ-sung-17102026) *(bổ sung 17/10/2026)*
+22. [`audit_logs`](#21-bảng-audit_logs-nhật-ký-hệ-thống--bổ-sung-01112026) *(bổ sung 01/11/2026)*
 
 ---
 
@@ -463,4 +465,55 @@ Lưu câu hỏi và câu trả lời của học viên, giảng viên dưới m�
 - Không có ràng buộc UNIQUE (một người đăng được nhiều bài).
 
 **Migration:** `backend/src/scripts/migrations/20261025-lesson-discussions.js` (`npm run db:migrate:discussions`, idempotent) — chỉ tạo bảng mới, không đụng bảng cũ.
+
+---
+
+### 20. Bảng `notifications` (Thông báo trong ứng dụng) — *bổ sung 17/10/2026*
+
+Thông báo gửi tới từng người dùng (bài tập mới, bài được chấm, câu hỏi/trả lời trong Thảo luận…). Chỉ có `created_at`: không sửa nội dung sau khi tạo, chỉ đổi cờ `is_read` / `read_at` khi người dùng đã xem. Đặc tả API: [`api-notifications.md`](../api/api-notifications.md).
+
+| Tên Cột | Kiểu Dữ Liệu | Nullable | Mặc Định | Ràng Buộc / Mô Tả |
+|---|---|:---:|---|---|
+| `id` | `uuid` | ❌ | `gen_random_uuid()` | Khóa chính (PK) |
+| `user_id` | `uuid` | ❌ | | Khóa ngoại $\rightarrow$ `users(id)` `ON DELETE CASCADE` — người nhận |
+| `type` | `varchar(50)` | ❌ | | Mã loại thông báo, ví dụ `assignment_graded`, `discussion_reply` |
+| `title` | `varchar(255)` | ❌ | | Tiêu đề ngắn |
+| `message` | `text` | ❌ | | Nội dung |
+| `link` | `varchar(500)` | ✔️ | `NULL` | Đường dẫn trong ứng dụng để mở khi nhấn vào thông báo |
+| `is_read` | `boolean` | ❌ | `false` | Đã đọc |
+| `read_at` | `timestamptz` | ✔️ | `NULL` | Thời điểm đọc |
+| `created_at` | `timestamptz` | ❌ | `now()` | Thời điểm tạo |
+
+**Indexes:** ON (`user_id`, `is_read`, `created_at`) — đếm số chưa đọc và tải danh sách mới nhất của một người.
+
+**Migration:** `backend/src/scripts/migrations/20261017-notifications.js` (`npm run db:migrate:notifications`, idempotent).
+
+---
+
+### 21. Bảng `audit_logs` (Nhật ký hệ thống) — *bổ sung 01/11/2026*
+
+Nhật ký **chỉ thêm** (không sửa, không xóa qua API) ghi ai đã làm gì, lúc nào, từ địa chỉ IP nào: đăng nhập, quản lý tài khoản, duyệt khóa học. Đặc tả API: [`api-audit-logs.md`](../api/api-audit-logs.md); quy tắc: BR-080 → BR-085.
+
+| Tên Cột | Kiểu Dữ Liệu | Nullable | Mặc Định | Ràng Buộc / Mô Tả |
+|---|---|:---:|---|---|
+| `id` | `uuid` | ❌ | `gen_random_uuid()` | Khóa chính (PK) |
+| `actor_id` | `uuid` | ✔️ | `NULL` | Khóa ngoại $\rightarrow$ `users(id)` `ON DELETE SET NULL` — người thực hiện. `NULL` khi đăng nhập thất bại (chưa xác định tài khoản) hoặc tài khoản đã bị xóa cứng |
+| `actor_email` | `varchar(255)` | ✔️ | `NULL` | Email người thực hiện **tại thời điểm thao tác** (bản chép, không đổi theo tài khoản; đăng nhập thất bại lưu email đã nhập) |
+| `actor_role` | `varchar(30)` | ✔️ | `NULL` | Vai trò tại thời điểm thao tác |
+| `action` | `varchar(60)` | ❌ | | Mã hành động dạng `nhóm.hành_động`, ví dụ `user.lock`, `auth.login` (danh mục ở mục 3 của `api-audit-logs.md`) |
+| `resource_type` | `varchar(40)` | ✔️ | `NULL` | Loại đối tượng bị tác động: `user`, `course`, `audit_logs`… |
+| `resource_id` | `varchar(64)` | ✔️ | `NULL` | Mã đối tượng (thường là UUID, lưu dạng chuỗi và không có khóa ngoại để nhật ký sống lâu hơn đối tượng) |
+| `result` | `varchar(10)` | ❌ | `success` | `success` hoặc `failed` (kiểm tra bằng `isIn`) |
+| `ip` | `varchar(64)` | ✔️ | `NULL` | Địa chỉ IP máy khách (đã bỏ tiền tố `::ffff:`) |
+| `user_agent` | `varchar(255)` | ✔️ | `NULL` | Trình duyệt / thiết bị, cắt ở 255 ký tự |
+| `metadata` | `jsonb` | ✔️ | `NULL` | Chi tiết nhỏ (lý do khóa, vai trò mới, số dòng xuất…). Đã loại khóa nhạy cảm (mật khẩu, token, OTP, mã băm) và rút gọn |
+| `created_at` | `timestamptz` | ❌ | `now()` | Thời điểm ghi. Bảng không có `updated_at` và `deleted_at` |
+
+**Indexes:**
+- ON (`created_at`) — danh sách mới nhất trước.
+- ON (`action`, `created_at`) — lọc theo hành động / nhóm.
+- ON (`actor_id`, `created_at`) — tra theo người thực hiện.
+- ON (`resource_type`, `resource_id`) — tra theo đối tượng bị tác động.
+
+**Migration:** `backend/src/scripts/migrations/20261101-audit-logs.js` (`npm run db:migrate:audit-logs`, idempotent) — chỉ tạo bảng mới, không đụng bảng cũ.
 

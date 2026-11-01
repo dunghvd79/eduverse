@@ -193,8 +193,8 @@ Hệ thống phân định rành mạch **6 Master Layouts** tương ứng với
 |---|---|---|:---:|---|---|
 | **SCR-34** | Admin Dashboard (`AdminDashboardPage.jsx`) | `/admin/dashboard` | `admin` | SystemMetricCards (Tổng User 4 role, S3 Storage used, API Request count), ServerHealthStatus, DatabaseConnectionIndicator | `GET /api/v1/admin/system-health` |
 | **SCR-35** | Quản lý Người dùng & RBAC (`UserManagementPage.jsx`) | `/admin/users` | `admin` | UserDataTable (Lọc theo 4 role, lọc theo trạng thái Active/Locked), **CreatePrivilegedUserModal** (Tạo tài khoản Giảng viên / Quản lý theo BR-004/005), ToggleLockUserDialog | `GET /api/v1/admin/users`, `POST /api/v1/admin/users`, `PATCH /api/v1/admin/users/:id/status` |
-| **SCR-36** | Nhật ký Hệ thống (`AuditLogsPage.jsx`) | `/admin/audit-logs` | `admin` | AuditLogTable (Theo dõi đăng nhập, cấp/hủy token trong `user_tokens`, giám sát thao tác nhạy cảm), FilterByDateRange | `GET /api/v1/admin/audit-logs` |
-| **SCR-37** | Cấu hình Nền tảng (`PlatformSettingsPage.jsx`) | `/admin/settings` | `admin` | S3ConfigForm, EmailSmtpConfigForm, RateLimitThresholdForm, JwtExpirationSettingForm, SaveSettingsButton | `GET /api/v1/admin/settings`, `PUT /api/v1/admin/settings` |
+| **SCR-36** | Nhật ký Hệ thống (`AuditLogsPage.jsx`) | `/admin/audit-logs` | `admin` | Bộ lọc (nhóm, hành động, kết quả, khoảng ngày, tìm kiếm), bảng nhật ký phân trang, nút Xuất CSV | `GET /api/v1/admin/audit-logs`, `GET /api/v1/admin/audit-logs/actions`, `GET /api/v1/admin/audit-logs/export` |
+| **SCR-37** | Cấu hình Nền tảng (`PlatformSettingsPage.jsx`) | `/admin/settings` | `admin` | Chỉ đọc: tình trạng dịch vụ, bảo mật (JWT, mật khẩu, giới hạn tần suất), lưu trữ và giới hạn tải lên, email, AI (chưa có form lưu) | `GET /api/v1/admin/settings` |
 
 ---
 

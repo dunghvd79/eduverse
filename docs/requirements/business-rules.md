@@ -103,4 +103,17 @@
 
 ---
 
-_Cập nhật lần cuối: 12/10/2026_
+## 7b. Nhật ký hệ thống & Cấu hình nền tảng
+
+| # | Quy tắc | Chi tiết |
+|---|---|---|
+| BR-080 | Chỉ **Admin** xem và xuất nhật ký, xem cấu hình nền tảng | Các vai trò khác nhận `403`; người chưa đăng nhập nhận `401` |
+| BR-081 | Nhật ký **chỉ thêm** | Không có API hay giao diện sửa hoặc xóa dòng nhật ký. Người thực hiện được chép email và vai trò tại thời điểm thao tác nên vẫn đọc được khi tài khoản đổi vai trò hoặc bị xóa |
+| BR-082 | Ghi các thao tác **nhạy cảm** | Đăng ký, kích hoạt email, đăng nhập (kể cả thất bại), đổi hoặc đặt lại mật khẩu, tạo / sửa / khóa / mở khóa / đặt lại mật khẩu / xóa tài khoản, gửi duyệt / duyệt / từ chối / đưa về nháp / xóa khóa học, xuất nhật ký. Chỉ ghi khi thao tác đã thành công, riêng đăng nhập bị từ chối ghi với kết quả `failed` |
+| BR-083 | **Không lưu** mật khẩu, token, OTP, mã băm | Chi tiết (`metadata`) bị loại các khóa nhạy cảm và rút gọn độ dài; xuất CSV chặn chèn công thức Excel và chỉ lấy tối đa 5.000 dòng mới nhất |
+| BR-084 | Lỗi khi ghi nhật ký **không làm hỏng** thao tác chính | Chỉ cảnh báo trong log backend; vì vậy phải chạy migration `db:migrate:audit-logs` sau khi cập nhật code |
+| BR-085 | Cấu hình nền tảng **chỉ xem** | Giá trị nằm trong biến môi trường, đổi trên máy chủ rồi khởi động lại backend; giao diện không có nút lưu và không bao giờ hiển thị khóa bí mật, mật khẩu hay chuỗi kết nối |
+
+---
+
+_Cập nhật lần cuối: 01/11/2026_

@@ -1,5 +1,6 @@
 /**
  * Kiểm thử API đầu-cuối chạy vào hệ thống đang hoạt động (hầu hết chỉ ĐỌC; riêng nhóm Thảo luận có ghi nhưng tự xóa ngay) — docs/testing/automated-tests.md.
+ * Lưu ý: mỗi lần chạy sẽ thêm vài dòng vào Nhật ký hệ thống (đăng nhập, một lần đăng nhập sai, một lần xuất CSV); nhật ký chỉ thêm nên không tự dọn.
  *
  * Cần hệ thống đang chạy với dữ liệu mẫu (docker compose up -d) rồi chạy:  npm run test:e2e
  * Biến môi trường tùy chọn:
@@ -311,6 +312,120 @@ describe('Thông báo trong ứng dụng', () => {
 
   it('đánh dấu đã đọc thông báo không phải của mình (hoặc không tồn tại) → 404', async () => {
     expectFail(await request(`/notifications/${randomUUID()}/read`, { method: 'PATCH', token: sessions.student.token }), 404);
+  });
+});
+
+describe('Nhật ký hệ thống và cấu hình nền tảng (api-audit-logs.md)', () => {
+  const asAdmin = () => ({ token: sessions.admin.token });
+  const ADMIN_PATHS = ['/admin/audit-logs', '/admin/audit-logs/actions', '/admin/audit-logs/export', '/admin/settings'];
+  const logsUrl = (query) => `/admin/audit-logs?${new URLSearchParams(query)}`;
+
+  it('chỉ Admin được xem: không đăng nhập → 401; quản lý, giảng viên, học viên → 403', async () => {
+    for (const path of ADMIN_PATHS) {
+      expectFail(await request(path), 401);
+      for (const name of ['manager', 'teacher', 'student']) {
+        expectFail(await request(path, { token: sessions[name].token }), 403);
+      }
+    }
+  });
+
+  it('danh mục hành động có đủ 4 nhóm và các hành động chính', async () => {
+    const data = expectOk(await request('/admin/audit-logs/actions', asAdmin()));
+    assert.deepEqual(data.categories.map((c) => c.key).sort(), ['auth', 'course', 'system', 'user']);
+    const keys = data.actions.map((a) => a.key);
+    for (const key of ['auth.login', 'user.lock', 'course.approve', 'audit.export']) assert.ok(keys.includes(key), key);
+    assert.ok(data.actions.every((a) => a.label && data.categories.some((c) => c.key === a.category)));
+  });
+
+  it('lần đăng nhập Admin ở bước chuẩn bị đã được ghi lại, đúng người và đối tượng', async () => {
+    const data = expectOk(await request(logsUrl({ action: 'auth.login', result: 'success', search: ACCOUNTS.admin.email, limit: 5 }), asAdmin()));
+    assert.ok(data.items.length >= 1, 'không thấy dòng nhật ký đăng nhập của Admin');
+    const entry = data.items[0];
+    assert.equal(entry.actor.email, ACCOUNTS.admin.email);
+    assert.equal(entry.actor.role, 'admin');
+    assert.equal(entry.actor.id, sessions.admin.user.id);
+    assert.equal(entry.resourceType, 'user');
+    assert.equal(entry.resourceId, sessions.admin.user.id);
+    assert.equal(entry.category, 'auth');
+    assert.equal(entry.actionLabel, 'Đăng nhập');
+    assert.ok(!Number.isNaN(Date.parse(entry.createdAt)));
+  });
+
+  it('đăng nhập sai được ghi (kèm email đã nhập) nhưng không lưu mật khẩu; mới nhất xếp trước', async () => {
+    const email = `e2e-${randomUUID()}@example.com`;
+    const wrongPassword = 'Sai@mat-khau-e2e1';
+    expectFail(await request('/auth/login', { method: 'POST', body: { email, password: wrongPassword } }), 401);
+
+    const data = expectOk(await request(logsUrl({ action: 'auth.login', result: 'failed', search: email }), asAdmin()));
+    assert.equal(data.items.length, 1);
+    const entry = data.items[0];
+    assert.equal(entry.actor.id, null);
+    assert.equal(entry.actor.email, email);
+    assert.equal(entry.result, 'failed');
+    assert.equal(typeof entry.metadata.reason, 'string');
+    assert.equal(JSON.stringify(entry).includes(wrongPassword), false, 'mật khẩu bị lưu vào nhật ký');
+
+    const latest = expectOk(await request(logsUrl({ limit: 2 }), asAdmin()));
+    assert.ok(Date.parse(latest.items[0].createdAt) >= Date.parse(latest.items[1].createdAt), 'nhật ký phải xếp mới nhất trước');
+  });
+
+  it('phân trang, lọc theo nhóm và khoảng thời gian', async () => {
+    const page = expectOk(await request(logsUrl({ limit: 1 }), asAdmin()));
+    assert.equal(page.items.length, 1);
+    assert.equal(page.meta.limit, 1);
+    assert.equal(page.meta.page, 1);
+    assert.ok(page.meta.totalItems >= page.items.length);
+
+    const courses = expectOk(await request(logsUrl({ category: 'course', limit: 100 }), asAdmin()));
+    assert.ok(courses.items.every((i) => i.category === 'course'));
+
+    const future = expectOk(await request(logsUrl({ from: '2999-01-01T00:00:00.000Z' }), asAdmin()));
+    assert.equal(future.meta.totalItems, 0);
+    const past = expectOk(await request(logsUrl({ to: '2000-01-01T00:00:00.000Z' }), asAdmin()));
+    assert.equal(past.meta.totalItems, 0);
+  });
+
+  it('tham số không hợp lệ bị chặn bằng 400', async () => {
+    for (const query of [
+      { limit: 101 }, { page: 0 }, { action: 'khong.co' }, { category: 'x' }, { result: 'khac' }, { from: 'hom-qua' },
+      { from: '2026-10-02T00:00:00Z', to: '2026-10-01T00:00:00Z' }
+    ]) {
+      expectFail(await request(logsUrl(query), asAdmin()), 400);
+    }
+    expectFail(await request(`/admin/audit-logs/export?result=khac`, asAdmin()), 400);
+  });
+
+  it('xuất CSV: tệp UTF-8 có BOM, có tiêu đề tiếng Việt; việc xuất được ghi vào nhật ký', async () => {
+    const response = await fetch(`${API}/admin/audit-logs/export?action=auth.login`, { headers: { Authorization: `Bearer ${sessions.admin.token}` } });
+    assert.equal(response.status, 200);
+    assert.match(response.headers.get('content-type'), /text\/csv/);
+    assert.match(response.headers.get('content-disposition'), /attachment; filename="Nhat_Ky_He_Thong_\d{8}\.csv"/);
+    const bytes = Buffer.from(await response.arrayBuffer());
+    assert.deepEqual([...bytes.subarray(0, 3)], [0xef, 0xbb, 0xbf], 'thiếu BOM UTF-8');
+    const lines = bytes.toString('utf8').replace(/^﻿/, '').split('\r\n');
+    assert.ok(lines[0].startsWith('Thời gian (UTC),Người thực hiện,Vai trò,Hành động'), lines[0]);
+    assert.ok(lines.length >= 3, 'CSV không có dòng dữ liệu nào (cần ít nhất một lần đăng nhập)');
+
+    const logged = expectOk(await request(logsUrl({ action: 'audit.export', search: ACCOUNTS.admin.email, limit: 1 }), asAdmin()));
+    assert.equal(logged.items.length, 1, 'việc xuất CSV chưa được ghi vào nhật ký');
+    assert.equal(logged.items[0].actor.id, sessions.admin.user.id);
+  });
+
+  it('cấu hình nền tảng: đủ nhóm thông tin, 10 giới hạn tần suất, không lộ khóa bí mật hay chuỗi kết nối', async () => {
+    const res = await request('/admin/settings', asAdmin());
+    const data = expectOk(res);
+    assert.equal(typeof data.security.accessTokenTtl, 'string');
+    assert.equal(typeof data.security.refreshTokenTtl, 'string');
+    assert.equal(data.security.rateLimits.length, 10);
+    const login = data.security.rateLimits.find((r) => r.key === 'login');
+    assert.equal(login.max, 5);
+    assert.equal(login.windowMinutes, 5);
+    assert.ok(['s3', 'local'].includes(data.storage.provider));
+    assert.ok(data.storage.limits.some((l) => l.purpose === 'avatar'));
+    assert.ok(['queue_smtp', 'queue_log', 'direct_smtp', 'direct_log'].includes(data.email.mode));
+    assert.equal(typeof data.ai.configured, 'boolean');
+    assert.ok(data.system.services.some((s) => s.key === 'database'));
+    assert.doesNotMatch(res.text, /postgres(ql)?:\/\/|redis:\/\/|AKIA[0-9A-Z]{8}|AIza[0-9A-Za-z_-]{10}|BEGIN (RSA )?PRIVATE KEY/i);
   });
 });
 

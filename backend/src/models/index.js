@@ -21,6 +21,7 @@ import AssignmentSubmission from './AssignmentSubmission.js';
 import LessonProgress from './LessonProgress.js';
 import Notification from './Notification.js';
 import LessonDiscussion from './LessonDiscussion.js';
+import AuditLog from './AuditLog.js';
 
 // ==========================================
 // 🔗 THIẾT LẬP CÁC MỐI QUAN HỆ (ASSOCIATIONS)
@@ -151,6 +152,10 @@ LessonDiscussion.belongsTo(User, { foreignKey: 'author_id', as: 'author' });
 LessonDiscussion.hasMany(LessonDiscussion, { foreignKey: 'parent_id', as: 'replies', onDelete: 'CASCADE' });
 LessonDiscussion.belongsTo(LessonDiscussion, { foreignKey: 'parent_id', as: 'parent' });
 
+// 17. AuditLog (nhật ký hệ thống: chỉ thêm; xóa người thực hiện thì giữ dòng log, actor_id = NULL)
+User.hasMany(AuditLog, { foreignKey: 'actor_id', onDelete: 'SET NULL' });
+AuditLog.belongsTo(User, { foreignKey: 'actor_id', as: 'actor' });
+
 // ==========================================
 // 📦 EXPORTS
 // ==========================================
@@ -158,6 +163,7 @@ export {
   sequelize,
   Notification,
   LessonDiscussion,
+  AuditLog,
   User,
   UserToken,
   Course,
@@ -183,6 +189,7 @@ export default {
   sequelize,
   Notification,
   LessonDiscussion,
+  AuditLog,
   User,
   UserToken,
   Course,

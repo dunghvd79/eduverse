@@ -1,6 +1,7 @@
 import * as courseService from '../services/courseService.js';
 import * as chapterService from '../services/chapterService.js';
 import * as lessonService from '../services/lessonService.js';
+import { record as recordAudit } from '../services/auditService.js';
 import models from '../models/index.js';
 import { AppError } from '../utils/AppError.js';
 import { sendSuccess } from '../utils/response.js';
@@ -58,6 +59,7 @@ export const updateCourse = async (req, res, next) => {
 export const deleteCourse = async (req, res, next) => {
   try {
     await courseService.deleteCourse(req.params.id, req.user);
+    await recordAudit({ req, actor: req.user, action: 'course.delete', resourceType: 'course', resourceId: req.params.id });
     return sendSuccess(res, 200, 'Xóa khóa học thành công', null);
   } catch (error) {
     next(error);
@@ -67,6 +69,7 @@ export const deleteCourse = async (req, res, next) => {
 export const publishRequest = async (req, res, next) => {
   try {
     const data = await courseService.publishRequest(req.params.id, req.user);
+    await recordAudit({ req, actor: req.user, action: 'course.publish_request', resourceType: 'course', resourceId: req.params.id });
     return sendSuccess(res, 200, 'Đã gửi yêu cầu phê duyệt khóa học tới Quản lý đào tạo.', data);
   } catch (error) {
     next(error);
@@ -76,6 +79,7 @@ export const publishRequest = async (req, res, next) => {
 export const approveCourse = async (req, res, next) => {
   try {
     const data = await courseService.approveCourse(req.params.id, req.user.id);
+    await recordAudit({ req, actor: req.user, action: 'course.approve', resourceType: 'course', resourceId: req.params.id });
     return sendSuccess(res, 200, 'Phê duyệt khóa học thành công. Khóa học đã được công khai.', data);
   } catch (error) {
     next(error);
@@ -85,6 +89,10 @@ export const approveCourse = async (req, res, next) => {
 export const rejectCourse = async (req, res, next) => {
   try {
     const data = await courseService.rejectCourse(req.params.id, req.user.id, req.body.reason);
+    await recordAudit({
+      req, actor: req.user, action: 'course.reject', resourceType: 'course', resourceId: req.params.id,
+      metadata: { reason: req.body.reason }
+    });
     return sendSuccess(res, 200, 'Đã từ chối duyệt khóa học và lưu lý do phản hồi.', data);
   } catch (error) {
     next(error);
@@ -94,6 +102,7 @@ export const rejectCourse = async (req, res, next) => {
 export const unpublishCourse = async (req, res, next) => {
   try {
     const data = await courseService.unpublishCourse(req.params.id, req.user);
+    await recordAudit({ req, actor: req.user, action: 'course.unpublish', resourceType: 'course', resourceId: req.params.id });
     return sendSuccess(res, 200, 'Đã chuyển khóa học về trạng thái bản nháp.', data);
   } catch (error) {
     next(error);

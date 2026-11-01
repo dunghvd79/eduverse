@@ -169,6 +169,10 @@ flowchart LR
 #### Luồng phụ / Ngoại lệ:
 - **Phát hiện dấu hiệu tấn công (Brute Force):** Nếu hệ thống ghi nhận một IP có hơn 10 lần `LOGIN_FAILED` trong 5 phút, dòng log được gắn cờ `DANGER` màu đỏ kèm nút *"Khóa tạm thời IP này"*.
 
+> **Triển khai thực tế (01/11/2026)** — API [`api-audit-logs.md`](../api/api-audit-logs.md), trang `/admin/audit-logs`:
+> - **Có:** bảng nhật ký phân trang (mới nhất trước); lọc theo nhóm, hành động, kết quả, khoảng thời gian, từ khóa (email, mã đối tượng, IP); ghi đăng nhập thành công và thất bại (kèm lý do), quản lý tài khoản, duyệt khóa học.
+> - **Chưa có:** mức độ `INFO / WARNING / DANGER`, so sánh dữ liệu trước và sau (Diff JSON), gắn cờ brute-force và nút khóa IP, nhật ký cho điểm số, lớp học, bài thi. Chống dò mật khẩu hiện dựa vào giới hạn tần suất đăng nhập (5 lần sai trong 5 phút cho mỗi email).
+
 ---
 
 ## 4. Đặc Tả Tóm Tắt Các Use Case Còn Lại (Brief Specifications)
@@ -181,6 +185,7 @@ flowchart LR
 
 ### 🔹 UC-ADMIN-006: Xuất báo cáo an ninh (Audit Log Export)
 - **Kịch bản:** Tại màn hình Audit Logs (`UC-ADMIN-005`), Admin nhấn nút **"Xuất nhật ký"** $\rightarrow$ Chọn phạm vi ngày tháng cần xuất $\rightarrow$ Chọn định dạng `.csv` hoặc `.json` $\rightarrow$ Hệ thống mã hóa và nén file nhật ký $\rightarrow$ Tải về máy Admin để phục vụ công tác thanh tra độc lập hoặc kiểm toán an toàn thông tin.
+  - *Triển khai thực tế (01/11/2026):* chỉ có định dạng `.csv` (UTF-8 có BOM), theo bộ lọc đang chọn, tối đa 5.000 dòng mới nhất; không mã hóa hay nén. Bản thân việc xuất cũng được ghi vào nhật ký.
 
 ### 🔹 UC-ADMIN-007: Cấu hình tham số hệ thống (System Settings)
 - **Kịch bản:** Admin vào trang cấu hình $\rightarrow$ Thiết lập các biến môi trường và chính sách vận hành của nền tảng EduVerse gồm:
@@ -188,6 +193,7 @@ flowchart LR
   - Cấu hình AI Service (Google Gemini API Key, Model name — hiện cấu hình qua `GEMINI_MODEL` trong `.env`, mặc định `gemini-flash-latest`).
   - Giới hạn dung lượng tải lên file bài tập (Mặc định 50MB).
   - Cấu hình thời gian hết hạn của Access Token (15 phút) và Refresh Token (7 ngày).
+  - *Triển khai thực tế (01/11/2026):* trang `/admin/settings` hiện **chỉ đọc**: hiển thị cấu hình đang chạy (JWT, chính sách mật khẩu, lưu trữ và giới hạn tải lên, giới hạn tần suất, chế độ email, AI) cùng tình trạng dịch vụ. Chưa có nút "Lưu cấu hình": các giá trị nằm trong biến môi trường (`backend/.env` hoặc `docker-compose.yml`) và đổi trên máy chủ rồi khởi động lại backend. Không bao giờ hiển thị khóa bí mật, mật khẩu hay chuỗi kết nối.
   $\rightarrow$ Nhấn **"Lưu cấu hình"** $\rightarrow$ Hệ thống xác thực và cập nhật ngay vào bảng cấu hình hệ thống mà không cần khởi động lại server.
 
 ### 🔹 UC-ADMIN-008: Sao lưu & Phục hồi dữ liệu (Backup & Restore)

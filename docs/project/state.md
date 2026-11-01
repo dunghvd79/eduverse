@@ -1,12 +1,12 @@
 # 🧭 Trạng Thái Tiến Độ Dự Án (Project State)
 
-> **Cập nhật lần cuối:** 28/10/2026  
+> **Cập nhật lần cuối:** 01/11/2026  
 > **Người cập nhật:** dunghvd79, Hoàng Ngọc Sơn, tuanmanh205 & AI Assistant  
 > **Giai đoạn hiện tại:** Phase 1 ✅ xong · Phase 2 (Excel nâng cao, Thảo luận trong bài học, Email tự động BullMQ + Redis) ✅ xong trên nhánh `feature-manh` · Phase 3 đã có Docker Compose + kiểm thử tự động, còn báo cáo đồ án và triển khai cloud.
 
 ---
 
-## 0. Chốt Phiên Làm Việc Gần Nhất (28/10/2026) — đọc mục này trước
+## 0. Chốt Phiên Làm Việc Gần Nhất (01/11/2026) — đọc mục này trước
 
 **Tình trạng Git:** làm trên nhánh `feature-manh` (repo `dunghvd79/eduverse`), chưa mở PR — Dũng sẽ merge sau. Lịch sử của `feature-manh` khác `main` (hai nhánh không có commit gốc chung); khi merge dùng `git merge origin/feature-manh --allow-unrelated-histories -X theirs` (đã kiểm tra cho ra cây tệp giống hệt `feature-manh`). Toàn bộ commit không-merge của `main` đã có nội dung tương đương trong `feature-manh`.
 
@@ -15,8 +15,9 @@
 2. Phase 3 (22–24/10): Docker Compose (Nginx + backend + PostgreSQL 16), kiểm thử tự động — xem `docs/testing/automated-tests.md`.
 3. Phase 2 (24–27/10): Excel nâng cao, Thảo luận trong bài học, Email tự động BullMQ + Redis (Redis 7 trong Docker Compose).
 4. Đồng bộ tài liệu với code thực tế (28/10): API `unpublish`, `gradebook`, `my-grades`, lưu trữ cục bộ; sitemap, business-rules, git-workflow, project-plan.
+5. Nhật ký hệ thống thật (`/admin/audit-logs`, bảng `audit_logs`, xuất CSV) và trang Cấu hình nền tảng chỉ đọc (`/admin/settings`) thay cho hai trang giả (01/11): xem `docs/api/api-audit-logs.md`.
 
-**Sau khi pull code mới** (trong `backend/`): `npm install` (thư viện mới: `@aws-sdk/*`, `archiver`, `exceljs`, `bullmq`, `nodemailer`, `ioredis`). Migration cho DB riêng hoặc Neon dùng chung: `db:migrate:categories`, `db:migrate:classes`, `db:migrate:quizzes`, `db:migrate:assignments`, `db:migrate:notifications`, `db:migrate:discussions`. Docker: DB trống thì tự tạo bảng; DB đã có dữ liệu thì chạy tay `docker compose exec backend node src/scripts/migrations/<tệp>.js`. Neon dùng chung do Dũng chạy migration — `notifications` và `discussions` cần được chạy trước khi demo bằng DB đó.
+**Sau khi pull code mới** (trong `backend/`): `npm install` (thư viện mới: `@aws-sdk/*`, `archiver`, `exceljs`, `bullmq`, `nodemailer`, `ioredis`). Migration cho DB riêng hoặc Neon dùng chung: `db:migrate:categories`, `db:migrate:classes`, `db:migrate:quizzes`, `db:migrate:assignments`, `db:migrate:notifications`, `db:migrate:discussions`, `db:migrate:audit-logs`. Docker: DB trống thì tự tạo bảng; DB đã có dữ liệu thì chạy tay `docker compose exec backend node src/scripts/migrations/<tệp>.js`. Neon dùng chung do Dũng chạy migration — `notifications`, `discussions` và `audit-logs` cần được chạy trước khi demo bằng DB đó.
 
 **Việc còn mở:** xem mục 3 — S3 thật, `video-stream-url`, CI/CD, HTTPS/cloud, backlog bảo mật Auth, báo cáo đồ án.
 
@@ -64,7 +65,7 @@ _Danh sách migration hiện hành và việc cần làm sau khi pull: xem mục
 ---
 
 ## 1. Tóm Tắt Trạng Thái Hiện Tại
-1. Dự án đã **hoàn thành toàn diện 100% Phase 0 — Đặc Tả Kiến Trúc & Thiết Kế Hệ Thống** (Use Cases, ERD (ban đầu 18 bảng, nay 20 bảng), Sequence Diagrams, 8/8 API Docs, C4 Architecture, Master Frontend Blueprint, Design System Tokens, Wireframes, Sitemap).
+1. Dự án đã **hoàn thành toàn diện 100% Phase 0 — Đặc Tả Kiến Trúc & Thiết Kế Hệ Thống** (Use Cases, ERD (ban đầu 18 bảng, nay 22 bảng), Sequence Diagrams, 8/8 API Docs, C4 Architecture, Master Frontend Blueprint, Design System Tokens, Wireframes, Sitemap).
 2. **Tiến độ Phase 1 (Frontend):** Hoàn thành **100% (37/37 Màn hình)** và **6 Master Layouts**, kiểm thử build 2062 modules không lỗi. Đã tích hợp Zustand Auth Store & Axios Interceptor.
 3. **Tiến độ Phase 1 (Backend & Database):**
    - Khởi tạo kiến trúc mã nguồn Backend Express.js chuẩn ES Modules (`backend/`).
@@ -152,13 +153,14 @@ _Danh sách migration hiện hành và việc cần làm sau khi pull: xem mục
 6. **Phase 3: Triển khai & Demo** — Docker Compose (22/10/2026), hướng dẫn ở `docs/architecture/deployment.md`:
    - [x] `docker-compose.yml` (frontend Nginx + backend + PostgreSQL 16), `backend/Dockerfile`, `frontend/Dockerfile`, `.env.example`; backend tự tạo bảng + nạp dữ liệu mẫu khi CSDL trống (`backend/src/scripts/dockerStart.js`).
    - [x] **Chạy thử trên máy có Docker Desktop** (Windows): build và khởi động không lỗi, 22/10/2026. Image dùng bản Debian (`node:22-slim`, `nginx:1.27`) vì `node:20-alpine` báo `exec format error` trên máy test.
-   - [x] **Kiểm thử tự động** (24/10/2026), hướng dẫn ở `docs/testing/automated-tests.md`: 152 unit test (công thức điểm tổng kết, thống kê lớp cho file Excel, quy tắc quyền của Thảo luận, cấu hình/nội dung/hàng đợi email; `npm test` trong `backend/`, không cần CSDL) và 51 kiểm tra API chạy vào hệ thống đang bật (`npm run test:e2e`; chỉ đọc, trừ nhóm Thảo luận có ghi bài thử rồi tự xóa). Để test được, hàm tính điểm đã tách khỏi `gradebookService.js` sang `backend/src/utils/grading.js` (kết quả tính điểm không đổi: so sánh 500.000 mẫu ngẫu nhiên giữa mã cũ và mã mới, 0 chênh lệch).
+   - [x] **Kiểm thử tự động** (24/10/2026), hướng dẫn ở `docs/testing/automated-tests.md`: 193 unit test (công thức điểm tổng kết, thống kê lớp cho file Excel, quy tắc quyền của Thảo luận, cấu hình/nội dung/hàng đợi email, nhật ký hệ thống và cấu hình nền tảng; `npm test` trong `backend/`, không cần CSDL) và 59 kiểm tra API chạy vào hệ thống đang bật (`npm run test:e2e`; chỉ đọc, trừ nhóm Thảo luận có ghi bài thử rồi tự xóa; mỗi lần chạy thêm vài dòng vào Nhật ký hệ thống). Để test được, hàm tính điểm đã tách khỏi `gradebookService.js` sang `backend/src/utils/grading.js` (kết quả tính điểm không đổi: so sánh 500.000 mẫu ngẫu nhiên giữa mã cũ và mã mới, 0 chênh lệch).
    - [x] Redis 7 trong Docker Compose làm hàng đợi email (27/10/2026).
    - [ ] HTTPS/cloud, CI/CD (chạy test tự động trên GitHub Actions), sao lưu CSDL.
 7. **Phase 2: Tính năng bổ sung** (`docs/project/project-plan.md`), làm lần lượt theo thứ tự:
    - [x] **Xuất Excel nâng cao** (24/10/2026): file `.xlsx` bảng điểm thêm sheet "Thống kê lớp" (tổng quan, phân bố xếp loại, từng bài kiểm tra, từng bài tập, phân bố tiến độ) và "Tiến độ học" (mỗi học viên một dòng); số liệu tính ở `backend/src/utils/gradebookStats.js` (hàm thuần, có unit test). Không đổi API, không cần migration.
    - [x] **Thảo luận / Hỏi đáp trong bài học** (26/10/2026): đặc tả ở `docs/api/api-discussions.md` (BR-070 → BR-078, bảng `lesson_discussions` mục 19 của `schema.md`). Mỗi cuộc thảo luận thuộc một lớp + một bài học, một cấp trả lời, đánh dấu "đã giải đáp", xóa mềm, lớp tạm dừng/kết thúc chỉ đọc, thông báo cho giảng viên (có câu hỏi) và người hỏi (có trả lời). Học viên: khu Thảo luận cuối bài học; giảng viên/quản lý/admin: tab "Thảo luận" của lớp. **Cần chạy migration** `npm run db:migrate:discussions` (Docker đã có dữ liệu thì chạy `docker compose exec backend node src/scripts/migrations/20261025-lesson-discussions.js`; CSDL Neon dùng chung thì báo lead Dũng).
    - [x] **Email tự động qua BullMQ + Redis** (27/10/2026): mã OTP kích hoạt (đăng ký, gửi lại) và link đặt lại mật khẩu được gửi qua Nodemailer (SMTP, ví dụ Gmail App Password) bằng hàng đợi BullMQ `email` (thử lại 5 lần, worker chạy cùng backend). Cấu hình bằng `SMTP_*`, `MAIL_FROM`, `REDIS_URL`; thiếu thì tự lùi về gửi trực tiếp hoặc in ra log như trước; gửi email lỗi không làm hỏng API. Mã ở `backend/src/services/emailService.js`, `utils/mailConfig.js`, `utils/emailTemplates.js`. Hướng dẫn Gmail: `docs/architecture/deployment.md` mục 4.1. **Cần cài thư viện:** `cd backend; npm install bullmq ioredis nodemailer` (cập nhật `package.json` + `package-lock.json`, Dockerfile dùng `npm ci`). BullMQ 6 không tự nạp `ioredis` khi chạy ESM, nên `emailService.js` tự tạo client `ioredis` rồi truyền vào Queue và Worker (thiếu `ioredis` thì worker lỗi lặp vô tận và backend không khỏe trong Docker). Chưa làm: email cho thông báo trong chuông, nhập người dùng hàng loạt, nén ZIP qua BullMQ.
+   - [x] **Nhật ký hệ thống thật và Cấu hình nền tảng chỉ đọc** (01/11/2026): đặc tả ở `docs/api/api-audit-logs.md` (BR-080 → BR-085, bảng `audit_logs` mục 21 của `schema.md`). Ghi nhật ký đăng ký, kích hoạt, đăng nhập (cả thất bại), đổi/đặt lại mật khẩu, quản lý tài khoản, duyệt khóa học; không bao giờ lưu mật khẩu/token; Admin lọc, phân trang và xuất CSV (tối đa 5.000 dòng). Trang `/admin/settings` chỉ xem, lấy từ biến môi trường và nguồn giới hạn tần suất dùng chung `utils/rateLimitRules.js`. **Cần chạy** `npm run db:migrate:audit-logs` trên DB đã có dữ liệu (Neon do Dũng chạy). Chưa có: mức độ nghiêm trọng, Diff JSON, cảnh báo brute-force, tự xóa nhật ký cũ, sửa cấu hình ngay trên giao diện.
 
 ## 4. Ghi Chú Kỹ Thuật Quan Trọng
 - **Migration CSDL:** không chạy `sequelize.sync({ alter: true })` trên DB chung để thêm bảng/cột mới; viết script idempotent trong `backend/src/scripts/migrations/` (mẫu: `20261009-add-categories.js`) và thêm lệnh vào `package.json`. Mỗi thành viên cần chạy `npm run db:migrate:categories` nếu dùng DB riêng.

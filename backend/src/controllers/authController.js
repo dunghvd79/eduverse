@@ -1,4 +1,5 @@
 import * as authService from '../services/authService.js';
+import { record as recordAudit } from '../services/auditService.js';
 import { sendSuccess } from '../utils/response.js';
 import { setRefreshCookie, clearRefreshCookie } from '../utils/authCookies.js';
 
@@ -8,6 +9,7 @@ import { setRefreshCookie, clearRefreshCookie } from '../utils/authCookies.js';
 export const register = async (req, res, next) => {
   try {
     const user = await authService.register(req.body);
+    await recordAudit({ req, actor: user, action: 'auth.register', resourceType: 'user', resourceId: user.id });
     return sendSuccess(
       res,
       201,
@@ -26,6 +28,7 @@ export const verifyOtp = async (req, res, next) => {
   try {
     const { accessToken, refreshToken, user } = await authService.verifyOtp(req.body);
     setRefreshCookie(res, refreshToken);
+    await recordAudit({ req, actor: user, action: 'auth.verify_email', resourceType: 'user', resourceId: user.id });
     return sendSuccess(
       res,
       200,
@@ -61,6 +64,7 @@ export const login = async (req, res, next) => {
   try {
     const { accessToken, refreshToken, user } = await authService.login(req.body);
     setRefreshCookie(res, refreshToken);
+    await recordAudit({ req, actor: user, action: 'auth.login', resourceType: 'user', resourceId: user.id });
     return sendSuccess(
       res,
       200,
@@ -68,6 +72,16 @@ export const login = async (req, res, next) => {
       { accessToken, user }
     );
   } catch (error) {
+    // Đăng nhập thất bại (sai mật khẩu, tài khoản bị khóa, chưa kích hoạt) cũng được ghi lại, kèm email đã nhập — không ghi mật khẩu
+    if (error.statusCode === 401 || error.statusCode === 403) {
+      await recordAudit({
+        req,
+        actorEmail: req.body?.email,
+        action: 'auth.login',
+        result: 'failed',
+        metadata: { reason: error.message }
+      });
+    }
     next(error);
   }
 };
@@ -150,7 +164,8 @@ export const forgotPassword = async (req, res, next) => {
  */
 export const resetPassword = async (req, res, next) => {
   try {
-    await authService.resetPassword(req.body);
+    const account = await authService.resetPassword(req.body);
+    await recordAudit({ req, actorEmail: account.email, action: 'auth.password_reset', resourceType: 'user', resourceId: account.userId });
     return sendSuccess(
       res,
       200,
@@ -174,6 +189,7 @@ export const changePassword = async (req, res, next) => {
     });
     // Phiên hiện tại nhận Refresh Token mới, các thiết bị khác bị thu hồi
     setRefreshCookie(res, refreshToken);
+    await recordAudit({ req, actor: req.user, action: 'auth.password_change', resourceType: 'user', resourceId: req.user.id });
     return sendSuccess(
       res,
       200,
