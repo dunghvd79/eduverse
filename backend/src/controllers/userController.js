@@ -1,5 +1,6 @@
 import * as userService from '../services/userService.js';
 import * as authService from '../services/authService.js';
+import * as userImportService from '../services/userImportService.js';
 import { record as recordAudit } from '../services/auditService.js';
 import { sendSuccess } from '../utils/response.js';
 import { setRefreshCookie } from '../utils/authCookies.js';
@@ -103,6 +104,28 @@ export const createUser = async (req, res, next) => {
       'Khởi tạo tài khoản thành công. Thông tin mật khẩu tạm đã được ghi nhận.',
       data
     );
+  } catch (error) {
+    next(error);
+  }
+};
+
+/**
+ * POST /api/v1/users/bulk-import — nhập tài khoản hàng loạt từ tệp .csv / .xlsx (multipart/form-data)
+ */
+export const bulkImport = async (req, res, next) => {
+  try {
+    const data = await userImportService.bulkImportUsers({ file: req.file, defaultRole: req.body.defaultRole });
+    await recordAudit({
+      req, actor: req.user, action: 'user.bulk_import', resourceType: 'user',
+      metadata: {
+        fileName: req.file?.originalname,
+        defaultRole: req.body.defaultRole,
+        totalRows: data.totalRows,
+        successCount: data.successCount,
+        failureCount: data.failureCount
+      }
+    });
+    return sendSuccess(res, 200, 'Xử lý nhập danh sách người dùng hoàn tất', data);
   } catch (error) {
     next(error);
   }

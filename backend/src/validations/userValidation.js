@@ -133,3 +133,13 @@ export const queryUsersSchema = Joi.object({
     'any.only': 'sortOrder chỉ nhận ASC hoặc DESC'
   })
 });
+
+/**
+ * 7. Admin bulk import schema (các trường chữ đi kèm tệp trong multipart/form-data)
+ */
+export const bulkImportSchema = Joi.object({
+  defaultRole: Joi.string().valid('student', 'teacher').default('student').messages({
+    'any.only': 'defaultRole chỉ nhận student hoặc teacher',
+    'string.empty': 'defaultRole chỉ nhận student hoặc teacher'
+  })
+});

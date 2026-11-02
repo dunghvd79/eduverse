@@ -15,11 +15,21 @@ export const buildResetLink = (clientUrl, token) => {
   return `${base}/reset-password?token=${encodeURIComponent(token)}`;
 };
 
+/** Link trang đăng nhập trỏ về frontend (CLIENT_URL; nhiều giá trị cách nhau dấu phẩy thì lấy giá trị đầu). */
+export const buildLoginLink = (clientUrl) => {
+  const base = String(clientUrl || '').split(',')[0].trim().replace(/\/+$/, '') || 'http://localhost:5173';
+  return `${base}/login`;
+};
+
+const ROLE_LABELS = { student: 'Học viên', teacher: 'Giảng viên', training_manager: 'Quản lý đào tạo', admin: 'Quản trị viên' };
+
 const greeting = (fullName) => (fullName && String(fullName).trim() ? `Chào ${String(fullName).trim()},` : 'Xin chào,');
 
-const wrapHtml = (bodyHtml) => `<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#1c2430;max-width:520px">
+const DEFAULT_FOOTER = 'Email này được gửi tự động từ EduVerse. Nếu bạn không thực hiện yêu cầu này, hãy bỏ qua email.';
+
+const wrapHtml = (bodyHtml, footer = DEFAULT_FOOTER) => `<div style="font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#1c2430;max-width:520px">
 ${bodyHtml}
-<p style="color:#6b7686;font-size:13px;margin-top:24px">Email này được gửi tự động từ EduVerse. Nếu bạn không thực hiện yêu cầu này, hãy bỏ qua email.</p>
+<p style="color:#6b7686;font-size:13px;margin-top:24px">${escapeHtml(footer)}</p>
 </div>`;
 
 /** Email mã OTP kích hoạt tài khoản. */
@@ -60,6 +70,31 @@ export const buildResetPasswordEmail = ({ fullName, link, ttlMinutes = RESET_TTL
 <p><a href="${escapeHtml(link)}" style="display:inline-block;background:#0b5cad;color:#ffffff;text-decoration:none;padding:10px 18px;border-radius:6px;font-weight:600">Đặt lại mật khẩu</a></p>
 <p style="font-size:13px;color:#6b7686">Nếu nút không bấm được, sao chép liên kết này vào trình duyệt:<br>${escapeHtml(link)}</p>
 <p>Liên kết có hiệu lực trong ${ttlMinutes} phút và chỉ dùng được một lần.</p>`
+  );
+  return { subject, text, html };
+};
+
+/** Email thông báo tài khoản do Quản trị viên tạo (có mật khẩu tạm; bắt buộc đổi mật khẩu ở lần đăng nhập đầu). */
+export const buildAccountCreatedEmail = ({ fullName, email, tempPassword, role, loginUrl }) => {
+  const roleLabel = ROLE_LABELS[role] || 'Người dùng';
+  const subject = 'EduVerse: tài khoản của bạn đã được tạo';
+  const text = [
+    greeting(fullName),
+    '',
+    `Quản trị viên đã tạo tài khoản EduVerse cho bạn với vai trò ${roleLabel}.`,
+    `Email đăng nhập: ${email}`,
+    `Mật khẩu tạm thời: ${tempPassword}`,
+    `Đăng nhập tại: ${loginUrl}`,
+    '',
+    'Bạn sẽ được yêu cầu đổi mật khẩu ngay ở lần đăng nhập đầu tiên. Không chia sẻ mật khẩu này cho bất kỳ ai.'
+  ].join('\n');
+  const html = wrapHtml(
+    `<p>${escapeHtml(greeting(fullName))}</p>
+<p>Quản trị viên đã tạo tài khoản EduVerse cho bạn với vai trò <b>${escapeHtml(roleLabel)}</b>.</p>
+<p>Email đăng nhập: <b>${escapeHtml(email)}</b><br>Mật khẩu tạm thời: <b style="font-family:Consolas,monospace;font-size:17px;letter-spacing:1px">${escapeHtml(tempPassword)}</b></p>
+<p><a href="${escapeHtml(loginUrl)}" style="display:inline-block;background:#0b5cad;color:#ffffff;text-decoration:none;padding:10px 18px;border-radius:6px;font-weight:600">Đăng nhập EduVerse</a></p>
+<p>Bạn sẽ được yêu cầu đổi mật khẩu ngay ở lần đăng nhập đầu tiên. Không chia sẻ mật khẩu này cho bất kỳ ai.</p>`,
+    'Email này được gửi tự động từ EduVerse. Nếu bạn không nhận ra tài khoản này, hãy liên hệ quản trị viên.'
   );
   return { subject, text, html };
 };

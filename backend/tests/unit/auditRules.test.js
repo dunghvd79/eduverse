@@ -7,8 +7,9 @@ import {
 
 // Nhật ký hệ thống: docs/api/api-audit-logs.md
 
-// Op giả: đủ để kiểm tra cấu trúc điều kiện mà không cần import sequelize
-const Op = { in: 'in', or: 'or', iLike: 'iLike', gte: 'gte', lte: 'lte' };
+// Op giả: đủ để kiểm tra cấu trúc điều kiện mà không cần import sequelize.
+// Dùng Symbol như Op thật của Sequelize (khóa Symbol không hiện trong Object.keys; từng làm bộ lọc ngày bị bỏ qua mà test không bắt được)
+const Op = { in: Symbol('in'), or: Symbol('or'), iLike: Symbol('iLike'), gte: Symbol('gte'), lte: Symbol('lte') };
 
 describe('danh mục hành động', () => {
   test('mã hành động dạng nhóm.hành_động, có nhãn và thuộc một nhóm đã khai báo', () => {
@@ -34,6 +35,14 @@ describe('danh mục hành động', () => {
     assert.equal(actionLabelOf('x.y'), 'x.y');
     assert.equal(categoryOf('x.y'), null);
     assert.equal(categoryOf('course.approve'), 'course');
+  });
+});
+
+describe('hành động nhập tài khoản hàng loạt', () => {
+  test('user.bulk_import thuộc nhóm user, có nhãn tiếng Việt', () => {
+    assert.equal(categoryOf('user.bulk_import'), 'user');
+    assert.equal(actionLabelOf('user.bulk_import'), 'Nhập tài khoản hàng loạt');
+    assert.ok(actionsOfCategory('user').includes('user.bulk_import'));
   });
 });
 
@@ -197,7 +206,7 @@ describe('buildAuditWhere', () => {
 
   test('lọc theo hành động, theo nhóm (danh sách mã), theo kết quả', () => {
     assert.deepEqual(buildAuditWhere({ action: 'auth.login', result: 'failed' }, Op), { action: 'auth.login', result: 'failed' });
-    assert.deepEqual(buildAuditWhere({ category: 'course' }, Op), { action: { in: actionsOfCategory('course') } });
+    assert.deepEqual(buildAuditWhere({ category: 'course' }, Op), { action: { [Op.in]: actionsOfCategory('course') } });
   });
 
   test('chọn hành động cụ thể thì bỏ qua nhóm', () => {
@@ -207,19 +216,19 @@ describe('buildAuditWhere', () => {
   test('tìm kiếm khớp email, mã đối tượng hoặc IP và escape ký tự đại diện % _ \\', () => {
     const where = buildAuditWhere({ search: ' a_b%c\\d ' }, Op);
     const term = '%a\\_b\\%c\\\\d%';
-    assert.deepEqual(where.or, [
-      { actor_email: { iLike: term } },
-      { resource_id: { iLike: term } },
-      { ip: { iLike: term } }
+    assert.deepEqual(where[Op.or], [
+      { actor_email: { [Op.iLike]: term } },
+      { resource_id: { [Op.iLike]: term } },
+      { ip: { [Op.iLike]: term } }
     ]);
   });
 
   test('khoảng thời gian: chỉ from, chỉ to, cả hai', () => {
     const from = new Date('2026-10-01T00:00:00Z');
     const to = new Date('2026-10-31T23:59:59Z');
-    assert.deepEqual(buildAuditWhere({ from }, Op), { created_at: { gte: from } });
-    assert.deepEqual(buildAuditWhere({ to }, Op), { created_at: { lte: to } });
-    assert.deepEqual(buildAuditWhere({ from, to }, Op), { created_at: { gte: from, lte: to } });
+    assert.deepEqual(buildAuditWhere({ from }, Op), { created_at: { [Op.gte]: from } });
+    assert.deepEqual(buildAuditWhere({ to }, Op), { created_at: { [Op.lte]: to } });
+    assert.deepEqual(buildAuditWhere({ from, to }, Op), { created_at: { [Op.gte]: from, [Op.lte]: to } });
   });
 });
 

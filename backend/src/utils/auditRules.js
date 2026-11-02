@@ -18,6 +18,7 @@ export const AUDIT_ACTIONS = {
   'auth.password_change': { label: 'Đổi mật khẩu', category: 'auth' },
   'auth.password_reset': { label: 'Đặt lại mật khẩu qua email', category: 'auth' },
   'user.create': { label: 'Tạo tài khoản', category: 'user' },
+  'user.bulk_import': { label: 'Nhập tài khoản hàng loạt', category: 'user' },
   'user.update': { label: 'Sửa thông tin / vai trò tài khoản', category: 'user' },
   'user.lock': { label: 'Khóa tài khoản', category: 'user' },
   'user.unlock': { label: 'Mở khóa tài khoản', category: 'user' },
@@ -159,10 +160,12 @@ export const buildAuditWhere = (filters = {}, Op) => {
     ];
   }
 
-  const range = {};
-  if (filters.from) range[Op.gte] = filters.from;
-  if (filters.to) range[Op.lte] = filters.to;
-  if (Object.keys(range).length) where.created_at = range;
+  // Op.gte / Op.lte của Sequelize là Symbol nên Object.keys không thấy: phải kiểm tra theo filters, không theo range
+  if (filters.from || filters.to) {
+    where.created_at = {};
+    if (filters.from) where.created_at[Op.gte] = filters.from;
+    if (filters.to) where.created_at[Op.lte] = filters.to;
+  }
   return where;
 };
 

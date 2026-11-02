@@ -3,13 +3,16 @@ import * as userController from '../controllers/userController.js';
 import { authenticateToken, authorizeRoles } from '../middlewares/authMiddleware.js';
 import { changePasswordLimiter } from '../middlewares/rateLimiter.js';
 import { validateBody, validateQuery, validateIdParam } from '../middlewares/validateMiddleware.js';
+import { receiveFile } from '../middlewares/uploadMiddleware.js';
+import { BULK_IMPORT_MAX_BYTES } from '../utils/bulkImportRules.js';
 import {
     updateMeSchema,
     changeMyPasswordSchema,
     adminCreateUserSchema,
     adminUpdateUserSchema,
     adminUpdateStatusSchema,
-    queryUsersSchema
+    queryUsersSchema,
+    bulkImportSchema
 } from '../validations/userValidation.js';
 
 const router = Router();
@@ -44,6 +47,8 @@ const adminOnly = [authenticateToken, authorizeRoles('admin')];
 router.get('/', ...adminOnly, validateQuery(queryUsersSchema), userController.getUsers);
 // Tạo tài khoản teacher / training_manager / admin, sinh mật khẩu tạm | Role: admin
 router.post('/', ...adminOnly, validateBody(adminCreateUserSchema), userController.createUser);
+// Nhập tài khoản hàng loạt từ tệp .csv / .xlsx (multipart/form-data, tối đa 5MB / 300 dòng), khai báo trước các route '/:id' | Role: admin
+router.post('/bulk-import', ...adminOnly, receiveFile({ field: 'file', maxFileBytes: BULK_IMPORT_MAX_BYTES, tooLargeMessage: 'Dung lượng file vượt quá giới hạn 5MB' }), validateBody(bulkImportSchema), userController.bulkImport);
 // Khóa / mở khóa tài khoản kèm lý do | Role: admin
 router.patch('/:id/status', ...adminOnly, validateIdParam(), validateBody(adminUpdateStatusSchema), userController.updateStatus);
 // Đặt lại mật khẩu khẩn cấp (sinh mật khẩu tạm, bắt đổi khi đăng nhập) | Role: admin

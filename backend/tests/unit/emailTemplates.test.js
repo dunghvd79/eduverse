@@ -6,7 +6,9 @@ import {
   escapeHtml,
   buildResetLink,
   buildOtpEmail,
-  buildResetPasswordEmail
+  buildResetPasswordEmail,
+  buildLoginLink,
+  buildAccountCreatedEmail
 } from '../../src/utils/emailTemplates.js';
 
 // Nội dung email OTP / đặt lại mật khẩu
@@ -95,5 +97,48 @@ describe('buildResetPasswordEmail', () => {
   test('link độc hại không thoát được khỏi thuộc tính href', () => {
     const mail = buildResetPasswordEmail({ fullName: 'B', link: 'http://h/"><script>x</script>' });
     assert.doesNotMatch(mail.html, /<script>/);
+  });
+});
+
+describe('buildLoginLink', () => {
+  test('trỏ về trang đăng nhập của frontend, bỏ / cuối và lấy giá trị đầu khi có nhiều', () => {
+    assert.equal(buildLoginLink('https://eduverse.vn/'), 'https://eduverse.vn/login');
+    assert.equal(buildLoginLink('http://localhost:8080, http://localhost:5173'), 'http://localhost:8080/login');
+    assert.equal(buildLoginLink(''), 'http://localhost:5173/login');
+    assert.equal(buildLoginLink(undefined), 'http://localhost:5173/login');
+  });
+});
+
+describe('buildAccountCreatedEmail', () => {
+  const args = { fullName: 'Nguyễn Văn A', email: 'a@x.vn', tempPassword: 'Ab3$kLm9#Qz2', role: 'teacher', loginUrl: 'http://localhost:8080/login' };
+
+  test('có email đăng nhập, mật khẩu tạm, vai trò, link đăng nhập và lời nhắc đổi mật khẩu', () => {
+    const mail = buildAccountCreatedEmail(args);
+    assert.equal(mail.subject, 'EduVerse: tài khoản của bạn đã được tạo');
+    for (const part of ['Nguyễn Văn A', 'a@x.vn', 'Ab3$kLm9#Qz2', 'Giảng viên', 'http://localhost:8080/login', 'đổi mật khẩu']) {
+      assert.ok(mail.text.includes(part), `bản chữ thiếu: ${part}`);
+      assert.ok(mail.html.includes(part), `bản HTML thiếu: ${part}`);
+    }
+  });
+
+  test('mật khẩu không xuất hiện trong tiêu đề (tiêu đề hay hiện ở thông báo màn hình khóa)', () => {
+    assert.doesNotMatch(buildAccountCreatedEmail(args).subject, /Ab3/);
+  });
+
+  test('mọi dữ liệu người dùng đều bị escape trong HTML', () => {
+    const mail = buildAccountCreatedEmail({ ...args, fullName: '<img src=x onerror=1>', email: 'a"b@x.vn', tempPassword: '<b>&', loginUrl: 'http://h/"><script>' });
+    assert.doesNotMatch(mail.html, /<img|<script>|<b>&|"b@x/);
+    assert.match(mail.html, /&lt;img src=x onerror=1&gt;/);
+  });
+
+  test('vai trò lạ vẫn dựng được email; chân thư riêng cho email tạo tài khoản', () => {
+    const mail = buildAccountCreatedEmail({ ...args, role: 'khac' });
+    assert.match(mail.text, /vai trò Người dùng/);
+    assert.match(mail.html, /liên hệ quản trị viên/);
+    assert.doesNotMatch(mail.html, /không thực hiện yêu cầu/);
+  });
+
+  test('email OTP vẫn giữ chân thư cũ', () => {
+    assert.match(buildOtpEmail({ fullName: 'A', otp: '123456' }).html, /không thực hiện yêu cầu này/);
   });
 });

@@ -1,6 +1,7 @@
 /**
  * Kiểm thử API đầu-cuối chạy vào hệ thống đang hoạt động (hầu hết chỉ ĐỌC; riêng nhóm Thảo luận có ghi nhưng tự xóa ngay) — docs/testing/automated-tests.md.
- * Lưu ý: mỗi lần chạy sẽ thêm vài dòng vào Nhật ký hệ thống (đăng nhập, một lần đăng nhập sai, một lần xuất CSV); nhật ký chỉ thêm nên không tự dọn.
+ * Lưu ý: mỗi lần chạy sẽ thêm vài dòng vào Nhật ký hệ thống (đăng nhập, một lần đăng nhập sai, một lần xuất CSV, một lần nhập người dùng); nhật ký chỉ thêm nên không tự dọn.
+ * Nhóm "Nhập người dùng hàng loạt" chỉ tạo 2 tài khoản thử khi hệ thống chưa bật SMTP thật (email chỉ in ra log), rồi xóa mềm ngay.
  *
  * Cần hệ thống đang chạy với dữ liệu mẫu (docker compose up -d) rồi chạy:  npm run test:e2e
  * Biến môi trường tùy chọn:
@@ -31,7 +32,7 @@ const request = async (path, { method = 'GET', token, body, rawBody, headers = {
   const response = await fetch(`${API}${path}`, {
     method,
     headers: {
-      ...(payload !== undefined ? { 'Content-Type': 'application/json' } : {}),
+      ...(payload !== undefined && !(payload instanceof FormData) ? { 'Content-Type': 'application/json' } : {}),
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
       ...headers
     },
@@ -426,6 +427,113 @@ describe('Nhật ký hệ thống và cấu hình nền tảng (api-audit-logs.m
     assert.equal(typeof data.ai.configured, 'boolean');
     assert.ok(data.system.services.some((s) => s.key === 'database'));
     assert.doesNotMatch(res.text, /postgres(ql)?:\/\/|redis:\/\/|AKIA[0-9A-Z]{8}|AIza[0-9A-Za-z_-]{10}|BEGIN (RSA )?PRIVATE KEY/i);
+  });
+});
+
+describe('Nhập người dùng hàng loạt (api-users.md mục 2.12)', () => {
+  const asAdmin = () => ({ token: sessions.admin.token });
+  const csvForm = (text, { filename = 'ds.csv', fields = {} } = {}) => {
+    const form = new FormData();
+    form.append('file', new Blob([text], { type: 'text/csv' }), filename);
+    for (const [key, value] of Object.entries(fields)) form.append(key, value);
+    return form;
+  };
+  const importCsv = (text, options) => request('/users/bulk-import', { method: 'POST', ...asAdmin(), rawBody: csvForm(text, options) });
+  const createdIds = [];
+
+  after(async () => {
+    for (const id of createdIds) await request(`/users/${id}`, { method: 'DELETE', ...asAdmin() });
+  });
+
+  it('chỉ Admin được nhập: không đăng nhập → 401; quản lý, giảng viên, học viên → 403', async () => {
+    expectFail(await request('/users/bulk-import', { method: 'POST', rawBody: csvForm('email,fullName\n') }), 401);
+    for (const name of ['manager', 'teacher', 'student']) {
+      expectFail(await request('/users/bulk-import', { method: 'POST', token: sessions[name].token, rawBody: csvForm('email,fullName\n') }), 403);
+    }
+  });
+
+  it('yêu cầu sai: không phải multipart, thiếu tệp, sai đuôi, .xlsx giả, vai trò mặc định lạ → 400', async () => {
+    expectFail(await request('/users/bulk-import', { method: 'POST', ...asAdmin(), body: { file: 'x' } }), 400);
+
+    const noFile = new FormData();
+    noFile.append('defaultRole', 'student');
+    expectFail(await request('/users/bulk-import', { method: 'POST', ...asAdmin(), rawBody: noFile }), 400);
+
+    expectFail(await importCsv('email,fullName\n', { filename: 'ds.txt' }), 400);
+    expectFail(await importCsv('đây không phải tệp zip', { filename: 'ds.xlsx' }), 400);
+    expectFail(await importCsv('email,fullName\na@x.vn,An\n', { fields: { defaultRole: 'admin' } }), 400);
+  });
+
+  it('tệp rỗng, chỉ có tiêu đề hoặc thiếu cột bắt buộc → 422', async () => {
+    expectFail(await importCsv(''), 422);
+    expectFail(await importCsv('email,fullName\n'), 422);
+    expectFail(await importCsv('email,phoneNumber\na@x.vn,0981234567\n'), 422);
+  });
+
+  it('mọi dòng đều sai: không tạo gì, báo lỗi đúng số dòng và lý do', async () => {
+    const csv = [
+      'email,fullName,phoneNumber,role',
+      'invalid-email-format,Người Lỗi Một,,',
+      'admin@eduverse.com,Trùng Admin,,student',
+      'ADMIN@eduverse.com,Trùng Trong File,,student',
+      'x1@e2e.invalid,Vai Trò Sai,,admin',
+      'x2@e2e.invalid,Số Máy Sai,123,student',
+      'x3@e2e.invalid,A,,student'
+    ].join('\r\n');
+    const data = expectOk(await importCsv(csv));
+    assert.equal(data.totalRows, 6);
+    assert.equal(data.successCount, 0);
+    assert.equal(data.failureCount, 6);
+    assert.equal(data.emailsQueued, 0);
+    assert.deepEqual(data.errors.map((e) => e.row), [2, 3, 4, 5, 6, 7]);
+    assert.match(data.errors[0].reason, /không đúng định dạng/);
+    assert.equal(data.errors[1].reason, 'Địa chỉ email đã tồn tại trong hệ thống');
+    assert.match(data.errors[2].reason, /trùng trong file.*dòng 3/);
+    assert.match(data.errors[3].reason, /Vai trò không hợp lệ/);
+    assert.match(data.errors[4].reason, /Số điện thoại/);
+    assert.match(data.errors[5].reason, /ít nhất 2 ký tự/);
+    assert.doesNotMatch(JSON.stringify(data), /password|hash/i);
+  });
+
+  it('nhập thật (khi chưa bật SMTP): tạo tài khoản, bắt đổi mật khẩu, nhập lại báo trùng, được ghi nhật ký', async (t) => {
+    const settings = expectOk(await request('/admin/settings', asAdmin()));
+    if (settings.email.transport === 'smtp') return t.skip('Đang bật SMTP thật, bỏ qua để không gửi email tới địa chỉ thử');
+
+    const stamp = Date.now();
+    const first = `e2e.bulk.${stamp}.a@e2e.invalid`;
+    const second = `e2e.bulk.${stamp}.b@e2e.invalid`;
+    // Giả lập tệp do Excel tiếng Việt lưu: BOM, dấu chấm phẩy, tên cột tiếng Việt, số điện thoại mất số 0 đầu
+    const csv = `﻿Email;Họ và tên;Số điện thoại;Vai trò\r\n${first};Người Thử Một;981234567;Giảng viên\r\n${second};Người Thử Hai;;\r\n`;
+    const data = expectOk(await importCsv(csv, { fields: { defaultRole: 'student' } }));
+    assert.equal(data.totalRows, 2);
+    assert.equal(data.successCount, 2);
+    assert.equal(data.failureCount, 0);
+    assert.equal(data.emailsQueued, 2);
+    assert.match(data.emailMode, /_log$/);
+
+    const found = expectOk(await request(`/users?${new URLSearchParams({ search: `e2e.bulk.${stamp}`, limit: '10' })}`, asAdmin()));
+    createdIds.push(...found.items.map((user) => user.id));
+    assert.equal(found.items.length, 2);
+    const byEmail = Object.fromEntries(found.items.map((user) => [user.email, user]));
+    assert.equal(byEmail[first].role, 'teacher');
+    assert.equal(byEmail[first].phoneNumber, '0981234567');
+    assert.equal(byEmail[second].role, 'student');
+    for (const user of found.items) {
+      assert.equal(user.mustChangePassword, true);
+      assert.equal(user.isActive, true);
+      assert.equal(user.passwordHash, undefined);
+    }
+
+    const again = expectOk(await importCsv(csv));
+    assert.equal(again.successCount, 0);
+    assert.equal(again.failureCount, 2);
+    assert.ok(again.errors.every((e) => e.reason === 'Địa chỉ email đã tồn tại trong hệ thống'));
+
+    const logs = expectOk(await request('/admin/audit-logs?action=user.bulk_import&limit=5', asAdmin()));
+    const entry = logs.items.find((item) => item.metadata?.successCount === 2);
+    assert.ok(entry, 'chưa thấy dòng nhật ký user.bulk_import');
+    assert.equal(entry.actor.email, ACCOUNTS.admin.email);
+    assert.equal(entry.result, 'success');
   });
 });
 

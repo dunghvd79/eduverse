@@ -4,7 +4,7 @@ import {
   mailFromOf,
   redisConnectionOf
 } from '../utils/mailConfig.js';
-import { buildOtpEmail, buildResetPasswordEmail, buildResetLink } from '../utils/emailTemplates.js';
+import { buildOtpEmail, buildResetPasswordEmail, buildAccountCreatedEmail, buildResetLink, buildLoginLink } from '../utils/emailTemplates.js';
 
 /**
  * Gửi email tự động (OTP kích hoạt, link đặt lại mật khẩu) qua hàng đợi BullMQ + Redis và Nodemailer (SMTP).
@@ -138,7 +138,9 @@ export const createEmailService = ({
       const { Worker } = await load('bullmq');
       worker = new Worker(QUEUE_NAME, (job) => deliver(job.data), {
         connection: await getRedis(),
-        concurrency: 5
+        concurrency: 5,
+        // Nhập hàng loạt có thể đưa hàng trăm email cùng lúc: tối đa 10 email mỗi giây để nhà cung cấp SMTP không coi là thư rác
+        limiter: { max: 10, duration: 1000 }
       });
       worker.on('failed', (job, error) => logger.warn(`⚠️ Email "${job?.data?.subject}" gửi lỗi (lần ${job?.attemptsMade}/5): ${error.message}`));
       worker.on('error', (error) => warnThrottled(`⚠️ Worker email lỗi: ${error.message}`));
@@ -192,10 +194,21 @@ export const createEmailService = ({
       };
     });
 
-  return { mode, deliver, sendEmail, sendOtpEmail, sendPasswordResetEmail, startWorker, close };
+  /** Email báo tài khoản mới do Admin tạo, kèm mật khẩu tạm (nhập người dùng hàng loạt). */
+  const sendAccountCreatedEmail = (args) =>
+    safely(() => {
+      const { to, fullName, email, tempPassword, role } = args;
+      return {
+        kind: 'account-created',
+        to,
+        ...buildAccountCreatedEmail({ fullName, email: email || to, tempPassword, role, loginUrl: buildLoginLink(env.CLIENT_URL) })
+      };
+    });
+
+  return { mode, deliver, sendEmail, sendOtpEmail, sendPasswordResetEmail, sendAccountCreatedEmail, startWorker, close };
 };
 
 const defaultService = createEmailService();
 
-export const { sendEmail, sendOtpEmail, sendPasswordResetEmail, startWorker: startEmailWorker, close: closeEmail } = defaultService;
+export const { sendEmail, sendOtpEmail, sendPasswordResetEmail, sendAccountCreatedEmail, startWorker: startEmailWorker, close: closeEmail } = defaultService;
 export default defaultService;

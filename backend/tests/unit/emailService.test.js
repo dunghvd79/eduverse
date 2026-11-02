@@ -113,6 +113,17 @@ describe('chế độ log (không cấu hình gì)', () => {
     assert.match(logger.lines.log.join('\n'), /http:\/\/localhost:8080\/reset-password\?token=tok123/);
   });
 
+  test('email tài khoản mới có mật khẩu tạm và link đăng nhập trong log để dev lấy được', async () => {
+    const logger = makeLogger();
+    const service = createEmailService({ env: makeEnv(), load: makeLibs().load, logger });
+    assert.equal(await service.sendAccountCreatedEmail({ to: 'sv@x.vn', fullName: 'Sinh Viên', tempPassword: 'Ab3$kLm9#Qz2', role: 'student' }), 'direct');
+    await tick();
+    const log = logger.lines.log.join('\n');
+    assert.match(log, /sv@x\.vn/);
+    assert.match(log, /Ab3\$kLm9#Qz2/);
+    assert.match(log, /http:\/\/localhost:8080\/login/);
+  });
+
   test('startWorker không làm gì khi chưa có Redis', async () => {
     const { load, calls } = makeLibs();
     const service = createEmailService({ env: makeEnv(), load, logger: makeLogger() });
@@ -331,6 +342,7 @@ describe('worker', () => {
     assert.equal(calls.redis[0].options.password, 'pw');
     assert.equal(calls.redis[0].options.maxRetriesPerRequest, null);
     assert.equal(worker.options.concurrency, 5);
+    assert.deepEqual(worker.options.limiter, { max: 10, duration: 1000 });
 
     await worker.processor({ data: { to: 'a@x.com', subject: 'S', text: 'T', html: '<p>H</p>' } });
     assert.equal(calls.sent.length, 1);
@@ -403,5 +415,6 @@ describe('không bao giờ ném lỗi', () => {
     assert.equal(await service.sendOtpEmail(null), 'failed');
     assert.match(logger.lines.warn.join('\n'), /Không dựng được email/);
     assert.equal(await service.sendPasswordResetEmail(null), 'failed');
+    assert.equal(await service.sendAccountCreatedEmail(null), 'failed');
   });
 });
