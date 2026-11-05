@@ -106,7 +106,16 @@ export default function VerifyOtpPage() {
           Nhập mã OTP 6 chữ số đã được gửi tới địa chỉ:
         </p>
         {initialEmail ? (
-          <p className="font-semibold text-primary mt-0.5">{initialEmail}</p>
+          <>
+            <p className="font-semibold text-primary mt-0.5">{initialEmail}</p>
+            <Link
+              to="/auth/register"
+              state={{ email: initialEmail, fullName: location.state?.fullName }}
+              className="mt-1 inline-block text-xs font-medium text-slate-600 underline hover:text-primary"
+            >
+              Nhập sai email? Sửa lại
+            </Link>
+          </>
         ) : (
           <input
             type="email"
@@ -156,9 +165,11 @@ export default function VerifyOtpPage() {
           {isResending ? 'Đang gửi lại...' : left > 0 ? `Gửi lại mã sau ${left}s` : 'Chưa nhận được mã? Gửi lại'}
         </button>
 
-        <p className="text-xs text-slate-500">
-          💡 <i>Lưu ý trong lúc phát triển: Bạn có thể xem mã OTP trực tiếp tại Terminal Backend Server.</i>
-        </p>
+        {import.meta.env.DEV && (
+          <p className="text-xs text-slate-500">
+            💡 <i>Lưu ý trong lúc phát triển: Bạn có thể xem mã OTP trực tiếp tại Terminal Backend Server.</i>
+          </p>
+        )}
 
         <Link to="/auth/login" className="text-xs text-slate-600 hover:text-primary transition mt-2">
           ← Quay lại trang Đăng nhập

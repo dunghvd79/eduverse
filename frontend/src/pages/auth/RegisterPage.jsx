@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { Eye, EyeOff } from 'lucide-react';
 import { toast } from '../../components/common/Toast';
@@ -21,9 +21,13 @@ const strength = (p = '') => {
 
 export default function RegisterPage() {
   const nav = useNavigate();
+  // Quay lại từ trang OTP để sửa email: giữ họ tên và email vừa nhập (mật khẩu thì nhập lại)
+  const { state: returning } = useLocation();
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
-  const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm();
+  const { register, handleSubmit, watch, setFocus, formState: { errors, isSubmitting } } = useForm({
+    defaultValues: { fullName: returning?.fullName || '', email: returning?.email || '' }
+  });
   const pw = watch('password', '');
   const s = strength(pw);
   // Admin có thể tạm ngừng nhận đăng ký (Cài đặt hệ thống); lỗi đọc cài đặt thì vẫn hiện form, backend sẽ chặn nếu cần
@@ -33,6 +37,8 @@ export default function RegisterPage() {
     settingsService.getPublic({ fresh: true })
       .then((data) => setRegistrationClosed(data?.allowSelfRegistration === false))
       .catch(() => {});
+    if (returning?.email) setFocus('email', { shouldSelect: true });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onSubmit = async (formData) => {
@@ -45,7 +51,7 @@ export default function RegisterPage() {
 
       toast.success('Đăng ký thành công! Vui lòng kiểm tra mã OTP để kích hoạt tài khoản.');
       nav(`/auth/verify-email?email=${encodeURIComponent(formData.email)}`, {
-        state: { email: formData.email }
+        state: { email: formData.email, fullName: formData.fullName }
       });
     } catch (err) {
       console.error('Register error:', err);
