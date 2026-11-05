@@ -511,7 +511,7 @@ export default function TeacherDashboardPage() {
           <Button
             type="button"
             onClick={() => navigate('/teacher/quizzes/ai-generator')}
-            className="!inline-flex !items-center !gap-2 !bg-gradient-to-r !from-purple-600 !to-[#1168bd] !text-white !h-[39px] !px-4 hover:opacity-95 shadow-xs whitespace-nowrap"
+            className="!inline-flex !items-center !gap-2 !bg-[#eaf3ff] hover:!bg-[#dbeafe] !text-[#1168bd] !border !border-[#cfe3fb] !h-[39px] !px-4 whitespace-nowrap"
           >
             <Sparkles size={16} className="flex-none" />
             <span>Tạo đề bằng AI</span>
