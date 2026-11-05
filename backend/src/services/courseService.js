@@ -5,6 +5,7 @@ import { generateUniqueSlug } from '../utils/slugify.js';
 import { assertCategoryAssignable } from './categoryService.js';
 import { notifyUsers, notifyManagers } from './notificationService.js';
 import { deleteReplacedPublicFile } from './storageService.js';
+import { logAudit, courseTarget } from './auditService.js';
 
 const { Course, Category, Chapter, Lesson, LessonProgress, User, Quiz, Assignment, ClassAssignment, ClassModel } = models;
 
@@ -498,6 +499,7 @@ export const deleteCourse = async (courseId, currentUser) => {
   }
 
   await course.destroy();
+  await logAudit('COURSE_DELETED', { target: courseTarget(course), metadata: { status: course.status, ownerId: course.owner_id } });
   return true;
 };
 
@@ -575,6 +577,7 @@ export const approveCourse = async (courseId, managerId) => {
   course.approved_at = new Date();
   course.rejection_reason = null; // Xóa lý do từ chối nếu có từ trước
   await course.save();
+  await logAudit('COURSE_APPROVED', { target: courseTarget(course) });
   await notifyUsers([course.owner_id], {
     type: 'course_approved',
     title: 'Khóa học đã được duyệt',
@@ -607,6 +610,7 @@ export const rejectCourse = async (courseId, managerId, reason) => {
   course.status = 'rejected';
   course.rejection_reason = reason.trim();
   await course.save();
+  await logAudit('COURSE_REJECTED', { target: courseTarget(course), metadata: { reason: course.rejection_reason } });
   await notifyUsers([course.owner_id], {
     type: 'course_rejected',
     title: 'Khóa học bị từ chối',
@@ -653,8 +657,10 @@ export const unpublishCourse = async (courseId, currentUser) => {
     );
   }
 
+  const previousStatus = course.status;
   course.status = 'draft';
   await course.save();
+  await logAudit('COURSE_UNPUBLISHED', { target: courseTarget(course), metadata: { before: previousStatus, after: 'draft' } });
 
   return {
     id: course.id,

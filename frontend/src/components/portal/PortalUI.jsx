@@ -3,6 +3,7 @@ import {Link, NavLink, Navigate, Outlet, useLocation, useNavigate} from 'react-r
 import {BookOpen, LayoutDashboard, GraduationCap, Users, ClipboardCheck, FileText, BarChart3, Settings, ShieldCheck, FolderTree, Sparkles, Menu, X, Search, ChevronRight, LogOut, UserCircle, RefreshCw, Home, Compass} from 'lucide-react';
 import { useAuthStore } from '../../stores/useAuthStore';
 import NotificationBell from './NotificationBell';
+import AnnouncementBanner from '../common/AnnouncementBanner';
 import { getInitials } from '../../utils/initials';
 
 // Ánh xạ role trong DB sang tiền tố URL của portal
@@ -88,7 +89,7 @@ export function PortalLayout({role}) {
   {open&&<div className="sidebar-overlay" onClick={()=>setOpen(false)}/>}
   <section className="portal-main">
    <header className="portal-topbar"><button className="mobile-menu" onClick={()=>setOpen(true)}><Menu/></button><div className="crumb"><Link to="/" className="text-slate-500 hover:text-[#1168bd] no-underline transition-colors font-medium flex items-center gap-1" title="Về trang chủ EduVerse"><span>EduVerse</span></Link><ChevronRight size={15}/><b>{cfg.label}</b></div><div className="top-actions"><GlobalSearch role={role}/><NotificationBell/><div className="top-avatar cursor-pointer overflow-hidden transition-transform hover:scale-105" onClick={()=>nav(`/${role}/profile`)} title="Xem hồ sơ cá nhân">{user?.avatarUrl ? <img src={user.avatarUrl} alt={displayName} className="w-full h-full object-cover" /> : initials}</div></div></header>
-   <main className="portal-content"><Outlet/></main>
+   <AnnouncementBanner/><main className="portal-content"><Outlet/></main>
   </section>
  </div>
 }

@@ -6,7 +6,7 @@
 
 ---
 
-## 1. Danh Mục Các Bảng Dữ Liệu (20 Bảng)
+## 1. Danh Mục Các Bảng Dữ Liệu (22 Bảng)
 
 1. [`users`](#1-bảng-users-người-dùng)
 2. [`user_tokens`](#2-bảng-user_tokens-mã-xác-thực--khôi-phục-mật-khẩu)
@@ -28,6 +28,8 @@
 18. [`lesson_progress`](#18-bảng-lesson_progress-tiến-độ-học-tập)
 19. [`categories`](#18b-bảng-categories-danh-mục-khóa-học--bổ-sung-09102026) *(bổ sung 09/10/2026)*
 20. [`lesson_discussions`](#19-bảng-lesson_discussions-thảo-luận--hỏi-đáp-trong-bài-học--bổ-sung-25102026) *(bổ sung 25/10/2026)*
+21. [`audit_logs`](#20-bảng-audit_logs-nhật-ký-hệ-thống--bổ-sung-30102026) *(bổ sung 30/10/2026)*
+22. [`system_settings`](#21-bảng-system_settings-cài-đặt-nghiệp-vụ--bổ-sung-30102026) *(bổ sung 30/10/2026)*
 
 ---
 
@@ -468,3 +470,52 @@ Lưu câu hỏi và câu trả lời của học viên, giảng viên dưới m�
 - Không có ràng buộc UNIQUE (một người đăng được nhiều bài).
 
 **Migration:** `backend/src/scripts/migrations/20261025-lesson-discussions.js` (`npm run db:migrate:discussions`, idempotent) — chỉ tạo bảng mới, không đụng bảng cũ.
+
+---
+
+### 20. Bảng `audit_logs` (Nhật ký hệ thống) — *bổ sung 30/10/2026*
+
+Ghi lại các thao tác nhạy cảm (đăng nhập, quản trị tài khoản, kiểm duyệt khóa học, xóa lớp, sửa điểm) để Admin giám sát (UC-ADMIN-005). **Chỉ thêm, không sửa/xóa qua API.** Đặc tả API và danh mục hành động: [`api-audit-logs.md`](../api/api-audit-logs.md).
+
+| Tên Cột | Kiểu Dữ Liệu | Nullable | Mặc Định | Ràng Buộc / Mô Tả |
+|---|---|:---:|---|---|
+| `id` | `uuid` | ❌ | `gen_random_uuid()` | Khóa chính (PK) |
+| `actor_id` | `uuid` | ✔️ | `NULL` | Khóa ngoại $
+ightarrow$ `users(id)` `ON DELETE SET NULL` — người thực hiện; `NULL` khi đăng nhập sai bằng email không tồn tại hoặc tài khoản đã bị xóa hẳn |
+| `actor_email` | `varchar(255)` | ✔️ | | Email người thực hiện tại thời điểm đó (hoặc email đã thử khi đăng nhập sai) |
+| `actor_role` | `varchar(30)` | ✔️ | | Vai trò người thực hiện tại thời điểm đó |
+| `action` | `varchar(50)` | ❌ | | Mã hành động, ví dụ `LOGIN_FAILED`, `USER_ROLE_CHANGED`, `GRADE_MODIFIED` |
+| `category` | `varchar(20)` | ❌ | | `auth` \| `user` \| `course` \| `class` \| `grade` |
+| `severity` | `varchar(10)` | ❌ | `'info'` | `info` \| `warning` \| `danger` |
+| `status` | `varchar(10)` | ❌ | `'success'` | `success` \| `failure` |
+| `target_type` | `varchar(30)` | ✔️ | | Loại đối tượng bị tác động: `user`, `course`, `class`, `submission` |
+| `target_id` | `varchar(64)` | ✔️ | | Mã đối tượng (lưu chuỗi, không ràng buộc khóa ngoại để đối tượng bị xóa vẫn giữ nhật ký) |
+| `target_label` | `varchar(255)` | ✔️ | | Tên hiển thị của đối tượng tại thời điểm đó (email, tên khóa học...) |
+| `ip_address` | `varchar(64)` | ✔️ | | IP người gửi request (`req.ip`) |
+| `user_agent` | `varchar(500)` | ✔️ | | Trình duyệt / thiết bị |
+| `metadata` | `jsonb` | ✔️ | | Chi tiết, ví dụ `{ before, after }` khi sửa. Không chứa mật khẩu, token, OTP |
+| `created_at` | `timestamptz` | ❌ | `now()` | Thời điểm xảy ra (không có `updated_at`, `deleted_at`) |
+
+**Indexes & Constraints:**
+- `idx_audit_logs_created` ON (`created_at`) — danh sách mới nhất trước, lọc theo ngày.
+- `idx_audit_logs_action` ON (`action`, `created_at`) — lọc theo hành động.
+- `idx_audit_logs_actor` ON (`actor_id`).
+- `idx_audit_logs_ip_failed` ON (`ip_address`, `action`, `created_at`) — đếm số lần đăng nhập sai của một IP trong 5 phút (phát hiện dò mật khẩu).
+
+**Migration:** `backend/src/scripts/migrations/20261030-audit-logs.js` (`npm run db:migrate:audit-logs`, idempotent) — chỉ tạo bảng mới, không đụng bảng cũ.
+
+---
+
+### 21. Bảng `system_settings` (Cài đặt nghiệp vụ) — *bổ sung 30/10/2026*
+
+Cài đặt Admin sửa được trên trang Cài đặt hệ thống, mỗi dòng một khóa. Khóa bí mật và cấu hình hạ tầng **không** lưu ở đây (nằm trong biến môi trường). Bảng trống = dùng giá trị mặc định. Đặc tả: [`api-settings.md`](../api/api-settings.md).
+
+| Tên Cột | Kiểu Dữ Liệu | Nullable | Mặc Định | Ràng Buộc / Mô Tả |
+|---|---|:---:|---|---|
+| `key` | `varchar(50)` | ❌ | | Khóa chính (PK): `allow_self_registration` (mặc định `true`), `announcement` (mặc định `{ "enabled": false, "message": "", "tone": "info" }`) |
+| `value` | `jsonb` | ❌ | | Giá trị của cài đặt |
+| `updated_by` | `uuid` | ✔️ | `NULL` | Khóa ngoại $
+ightarrow$ `users(id)` `ON DELETE SET NULL` — Admin đổi gần nhất |
+| `updated_at` | `timestamptz` | ❌ | `now()` | Thời điểm đổi gần nhất (lịch sử đầy đủ xem `audit_logs`, hành động `SETTING_CHANGED`) |
+
+**Migration:** `backend/src/scripts/migrations/20261030-system-settings.js` (`npm run db:migrate:settings`, idempotent) — chỉ tạo bảng mới, không đụng bảng cũ.

@@ -16,6 +16,8 @@
     "db:migrate:assignments": "node src/scripts/migrations/20261013-assignments.js",
     "db:migrate:notifications": "node src/scripts/migrations/20261017-notifications.js",
     "db:migrate:discussions": "node src/scripts/migrations/20261025-lesson-discussions.js",
+    "db:migrate:audit-logs": "node src/scripts/migrations/20261030-audit-logs.js",
+    "db:migrate:settings": "node src/scripts/migrations/20261030-system-settings.js",
     "db:migrate:course-landing": "node src/scripts/migrations/20261031-course-landing.js"
   },
   "dependencies": {

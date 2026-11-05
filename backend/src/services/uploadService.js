@@ -33,7 +33,7 @@ export const MIME_BY_EXTENSION = {
   '7z': ['application/x-7z-compressed']
 };
 
-const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp'];
+export const IMAGE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'webp'];
 export const MATERIAL_EXTENSIONS = ['pdf', 'docx', 'pptx', 'zip', 'rar'];
 export const MATERIAL_MAX_SIZE = 50 * MB;
 export const MATERIAL_KEY_PREFIX = 'private/materials';

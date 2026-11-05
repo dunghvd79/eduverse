@@ -1,10 +1,11 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { Eye, EyeOff } from 'lucide-react';
 import { toast } from '../../components/common/Toast';
 import { Field, inputCls, btnCls } from './authUi';
 import { api } from '../../services/api';
+import settingsService from '../../services/settingsService';
 
 // Password policy regex: min 8, max 32, 1 uppercase, 1 lowercase, 1 number, 1 special character
 const passwordPattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#^()_+\-=\[\]{}|;:,.<>])[A-Za-z\d@$!%*?&#^()_+\-=\[\]{}|;:,.<>]{8,32}$/;
@@ -25,6 +26,14 @@ export default function RegisterPage() {
   const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm();
   const pw = watch('password', '');
   const s = strength(pw);
+  // Admin có thể tạm ngừng nhận đăng ký (Cài đặt hệ thống); lỗi đọc cài đặt thì vẫn hiện form, backend sẽ chặn nếu cần
+  const [registrationClosed, setRegistrationClosed] = useState(false);
+
+  useEffect(() => {
+    settingsService.getPublic({ fresh: true })
+      .then((data) => setRegistrationClosed(data?.allowSelfRegistration === false))
+      .catch(() => {});
+  }, []);
 
   const onSubmit = async (formData) => {
     try {
@@ -44,6 +53,23 @@ export default function RegisterPage() {
       toast.error(msg);
     }
   };
+
+  if (registrationClosed) {
+    return (
+      <div className="space-y-4">
+        <div>
+          <h1 className="text-headline-lg font-bold text-slate-900">Tạm ngừng nhận đăng ký</h1>
+          <p className="text-body-md text-slate-600 mt-1">
+            Hệ thống EduVerse đang tạm ngừng nhận đăng ký tài khoản học viên mới. Vui lòng quay lại sau hoặc liên hệ trung tâm đào tạo để được hỗ trợ.
+          </p>
+        </div>
+        <p className="text-center text-body-md text-slate-600">
+          Đã có tài khoản?{' '}
+          <Link to="/auth/login" className="text-primary font-semibold hover:underline">Đăng nhập ngay</Link>
+        </p>
+      </div>
+    );
+  }
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>

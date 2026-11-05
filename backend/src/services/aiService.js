@@ -51,15 +51,22 @@ const RESPONSE_SCHEMA = {
   required: ['questions']
 };
 
+/**
+ * Model Gemini theo thứ tự thử: model chính rồi model dự phòng (dùng chung với trang Cài đặt hệ thống)
+ */
+export const geminiModelsOf = (env = process.env) => {
+  const model = env.GEMINI_MODEL || 'gemini-flash-latest';
+  // Model dự phòng khi model chính quá tải / bị Google ngừng: dòng Flash-Lite nhanh và ít bị quá tải
+  const fallback = env.GEMINI_FALLBACK_MODEL ?? 'gemini-flash-lite-latest';
+  return [...new Set([model, fallback].filter(Boolean))];
+};
+
 const getConfig = () => {
   const apiKey = process.env.GEMINI_API_KEY;
   if (!apiKey) {
     throw new AppError('Tính năng AI chưa được cấu hình (thiếu GEMINI_API_KEY trong backend/.env)', 503, 'Service Unavailable');
   }
-  const model = process.env.GEMINI_MODEL || 'gemini-flash-latest';
-  // Model dự phòng khi model chính quá tải / bị Google ngừng: dòng Flash-Lite nhanh và ít bị quá tải
-  const fallback = process.env.GEMINI_FALLBACK_MODEL ?? 'gemini-flash-lite-latest';
-  return { apiKey, models: [...new Set([model, fallback].filter(Boolean))] };
+  return { apiKey, models: geminiModelsOf() };
 };
 
 export const countWords = (text) => text.trim().split(/\s+/).filter(Boolean).length;

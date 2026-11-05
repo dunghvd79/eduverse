@@ -12,9 +12,11 @@ import {
 } from '../utils/jwt.js';
 import { AppError } from '../utils/AppError.js';
 import { sendOtpEmail, sendPasswordResetEmail } from './emailService.js';
-import { RESET_TTL_MINUTES } from '../utils/emailTemplates.js';
+import { RESET_TTL_MINUTES, OTP_TTL_MINUTES } from '../utils/emailTemplates.js';
+import { assertSelfRegistrationOpen } from './settingsService.js';
+import { logAudit } from './auditService.js';
 
-const OTP_TTL_MS = 10 * 60 * 1000; // 10 minutes
+const OTP_TTL_MS = OTP_TTL_MINUTES * 60 * 1000;
 const REFRESH_TTL_MS = 7 * 24 * 60 * 60 * 1000; // 7 days
 
 /**
@@ -87,6 +89,8 @@ const createEmailOtp = async (userId, transaction) => {
  * 1. Register a new student account
  */
 export const register = async ({ email, password, fullName }) => {
+  // Admin có thể tạm tắt tự đăng ký (trang Cài đặt hệ thống, docs/api/api-settings.md)
+  await assertSelfRegistrationOpen();
   const normalizedEmail = email ? email.trim().toLowerCase() : '';
   const existingUser = await User.findOne({ where: { email: normalizedEmail } });
   if (existingUser) {
@@ -215,25 +219,37 @@ export const resendOtp = async ({ email }) => {
 export const login = async ({ email, password }) => {
   const normalizedEmail = email ? email.trim().toLowerCase() : '';
   const user = await User.findOne({ where: { email: normalizedEmail } });
+  // Nhật ký đăng nhập thất bại (UC-ADMIN-005); lý do chỉ ghi vào nhật ký, thông báo trả về vẫn chung chung
+  const loginFailed = (reason) => logAudit('LOGIN_FAILED', {
+    actor: user || null,
+    actorEmail: normalizedEmail.slice(0, 255) || null,
+    status: 'failure',
+    metadata: { reason }
+  });
   if (!user) {
+    await loginFailed('unknown_email');
     throw new AppError('Email hoặc mật khẩu không chính xác', 401, 'Unauthorized');
   }
 
   const isMatch = await bcrypt.compare(password, user.password_hash);
   if (!isMatch) {
+    await loginFailed('wrong_password');
     throw new AppError('Email hoặc mật khẩu không chính xác', 401, 'Unauthorized');
   }
 
   if (!user.is_active) {
+    await loginFailed('account_blocked');
     const reason = user.block_reason ? `: ${user.block_reason}` : '';
     throw new AppError(`Tài khoản của bạn đã bị khóa${reason}`, 403, 'Forbidden');
   }
 
   if (!user.email_verified) {
+    await loginFailed('email_unverified');
     throw new AppError('Tài khoản chưa được kích hoạt email. Vui lòng xác thực mã OTP.', 403, 'Forbidden');
   }
 
   const { accessToken, refreshToken } = await issueTokenPair(user);
+  await logAudit('LOGIN_SUCCESS', { actor: user });
 
   return {
     accessToken,
@@ -401,6 +417,7 @@ export const resetPassword = async ({ token, newPassword }) => {
     );
   });
 
+  await logAudit('PASSWORD_RESET', { actor: user, target: { type: 'user', id: user.id, label: user.email } });
   return true;
 };
 
@@ -436,6 +453,7 @@ export const changePassword = async ({ user, currentPassword, newPassword }) => 
 
     return issueTokenPair(user, t);
   });
+  await logAudit('PASSWORD_CHANGED', { actor: user, target: { type: 'user', id: user.id, label: user.email } });
 
   return {
     accessToken,

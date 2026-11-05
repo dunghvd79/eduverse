@@ -163,8 +163,8 @@ Layout: `AdminLayout` (Giao diện chuẩn Back-office, tối ưu quản trị n
 | `/admin/users` | **Quản lý Người dùng** | Bảng danh sách toàn bộ tài khoản trong hệ thống, tìm kiếm theo email/tên, lọc theo role (`student`, `teacher`, `training_manager`, `admin`), lọc theo trạng thái (`active`, `inactive`, `locked`). Tạo tài khoản, chỉnh sửa, đặt lại mật khẩu khẩn cấp và khóa/mở khóa đều là hộp thoại ngay trên trang này (không có route riêng). |
 | `/admin/courses` | **Quản lý Khóa học** | Xem mọi khóa học, lọc theo trạng thái, tìm kiếm, xóa mềm khóa không dùng (kiểm duyệt nội dung). |
 | `/admin/classes` | **Quản lý Lớp học** | Danh sách và chi tiết lớp học toàn hệ thống (`/admin/classes/:id`, chấm bài `/admin/classes/:classId/assignments/:assignmentId/grade`). |
-| `/admin/audit-logs` | **Nhật ký Hệ thống (Audit Logs)** | Xem lịch sử đăng nhập, lịch sử cấp phát/thu hồi token trong bảng `user_tokens`, giám sát các thay đổi quyền hạn quan trọng. |
-| `/admin/settings` | **Cấu hình Nền tảng** | Quản lý tham số cấu hình: Giới hạn dung lượng upload S3, chính sách bảo mật mật khẩu, thời gian hết hạn JWT, Rate Limiting thresholds. |
+| `/admin/audit-logs` | **Nhật ký Hệ thống (Audit Logs)** | Nhật ký thao tác nhạy cảm từ bảng `audit_logs`: đăng nhập (kể cả thất bại, cảnh báo dò mật khẩu), quản trị tài khoản, kiểm duyệt khóa học, xóa lớp, sửa điểm; lọc, xem chi tiết trước/sau, xuất CSV (*cập nhật 30/10/2026*, `api-audit-logs.md`). |
+| `/admin/settings` | **Cấu hình Nền tảng** | Tình trạng dịch vụ (CSDL, lưu trữ, email, AI, Redis); chính sách vận hành chỉ xem (thời hạn token, giới hạn tần suất, giới hạn tải tệp); cài đặt sửa được: cho phép tự đăng ký, thông báo toàn hệ thống. Khóa bí mật không hiển thị (*cập nhật 30/10/2026*, `api-settings.md`). |
 
 ---
 

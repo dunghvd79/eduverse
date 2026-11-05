@@ -20,6 +20,8 @@ import ClassAssignment from './ClassAssignment.js';
 import AssignmentSubmission from './AssignmentSubmission.js';
 import LessonProgress from './LessonProgress.js';
 import Notification from './Notification.js';
+import AuditLog from './AuditLog.js';
+import SystemSetting from './SystemSetting.js';
 import LessonDiscussion from './LessonDiscussion.js';
 
 // ==========================================
@@ -151,12 +153,22 @@ LessonDiscussion.belongsTo(User, { foreignKey: 'author_id', as: 'author' });
 LessonDiscussion.hasMany(LessonDiscussion, { foreignKey: 'parent_id', as: 'replies', onDelete: 'CASCADE' });
 LessonDiscussion.belongsTo(LessonDiscussion, { foreignKey: 'parent_id', as: 'parent' });
 
+// 17. AuditLog (nhật ký hệ thống: giữ lại khi xóa người dùng, actor_id -> NULL)
+User.hasMany(AuditLog, { foreignKey: 'actor_id', onDelete: 'SET NULL' });
+AuditLog.belongsTo(User, { foreignKey: 'actor_id', as: 'actor' });
+
+// 18. SystemSetting (cài đặt nghiệp vụ, giữ lại khi xóa người sửa)
+User.hasMany(SystemSetting, { foreignKey: 'updated_by', onDelete: 'SET NULL' });
+SystemSetting.belongsTo(User, { foreignKey: 'updated_by', as: 'updater' });
+
 // ==========================================
 // 📦 EXPORTS
 // ==========================================
 export {
   sequelize,
   Notification,
+  AuditLog,
+  SystemSetting,
   LessonDiscussion,
   User,
   UserToken,
@@ -182,6 +194,8 @@ export {
 export default {
   sequelize,
   Notification,
+  AuditLog,
+  SystemSetting,
   LessonDiscussion,
   User,
   UserToken,

@@ -7,6 +7,8 @@ import { findClassOrFail, canManageClass, isActiveMember } from './classService.
 import { createSignedPutUrl, getFileExtension, isMimeAllowed, sanitizeFileName, UPLOAD_URL_EXPIRES_IN } from './uploadService.js';
 import { checkObjectMetadata, deleteStorageObject, createDownloadGetUrl } from './storageService.js';
 import { notifyAssignmentScheduled, notifySubmissionResult } from './notificationService.js';
+import { logAudit } from './auditService.js';
+import { gradeChangeOf } from '../utils/auditRules.js';
 
 const {
   sequelize, Assignment, ClassAssignment, AssignmentSubmission, Lesson, Chapter, Course,
@@ -775,7 +777,11 @@ export const getSubmissionDetail = async (submissionId, user) => {
   });
 };
 
+/**
+ * Chấm / chấm lại một bài nộp. Trả về { before, after } nếu đây là sửa điểm đã chấm (để ghi nhật ký sau commit), ngược lại null.
+ */
 const applyGrade = async (submission, { grade, feedback }, user, transaction) => {
+  const change = gradeChangeOf(submission.grade, grade);
   submission.grade = grade;
   if (feedback !== undefined) submission.feedback = feedback || null;
   submission.status = 'graded';
@@ -785,17 +791,34 @@ const applyGrade = async (submission, { grade, feedback }, user, transaction) =>
 
   const assignment = await Assignment.findByPk(submission.class_assignment.assignment_id, { attributes: ['lesson_id'], paranoid: false, transaction });
   await markLessonCompleted(submission.class_assignment.class_id, submission.student_id, assignment.lesson_id, transaction);
+  return change;
+};
+
+// Nhật ký "sửa điểm đã chấm" (UC-ADMIN-005): ghi sau khi transaction chấm điểm đã commit
+const logGradeChanges = async (changes) => {
+  for (const { submission, change } of changes) {
+    const [student, assignment] = await Promise.all([
+      User.findByPk(submission.student_id, { attributes: ['email'], paranoid: false }),
+      Assignment.findByPk(submission.class_assignment.assignment_id, { attributes: ['id', 'title'], paranoid: false })
+    ]);
+    await logAudit('GRADE_MODIFIED', {
+      target: { type: 'submission', id: submission.id, label: `${assignment?.title || 'Bài tập'} — ${student?.email || submission.student_id}` },
+      metadata: { ...change, studentId: submission.student_id, classId: submission.class_assignment.class_id, assignmentId: assignment?.id }
+    });
+  }
 };
 
 /**
  * PATCH /assignment-submissions/:id/grade - chấm / chấm lại
  */
 export const gradeSubmission = async (submissionId, user, data) => {
+  let change = null;
   const submission = await sequelize.transaction(async (transaction) => {
     const found = await findSubmissionForGrader(submissionId, user, transaction);
-    await applyGrade(found, data, user, transaction);
+    change = await applyGrade(found, data, user, transaction);
     return found;
   });
+  if (change) await logGradeChanges([{ submission, change }]);
   await notifySubmissionResult(submission, 'graded');
   return {
     id: submission.id,
@@ -848,12 +871,15 @@ export const bulkGrade = async (classId, assignmentId, user, grades) => {
       throw new AppError('Có bài nộp không thuộc bài tập của lớp này', 404, 'Not Found');
     }
     const byId = Object.fromEntries(submissions.map((s) => [s.id, s]));
+    const changes = [];
     for (const item of grades) {
-      await applyGrade(byId[item.submissionId], item, user, transaction);
+      const change = await applyGrade(byId[item.submissionId], item, user, transaction);
+      if (change) changes.push({ submission: byId[item.submissionId], change });
     }
-    return submissions;
+    return { submissions, changes };
   });
-  await notifySubmissionResult(graded, 'graded');
+  await logGradeChanges(graded.changes);
+  await notifySubmissionResult(graded.submissions, 'graded');
   return { totalUpdated: grades.length };
 };
 

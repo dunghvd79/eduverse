@@ -16,6 +16,9 @@ import notificationRoutes from './routes/notificationRoutes.js';
 import quizRoutes from './routes/quizRoutes.js';
 import assignmentRoutes from './routes/assignmentRoutes.js';
 import discussionRoutes from './routes/discussionRoutes.js';
+import auditLogRoutes from './routes/auditLogRoutes.js';
+import settingsRoutes from './routes/settingsRoutes.js';
+import { requestContext } from './middlewares/requestContext.js';
 import { errorHandler } from './middlewares/errorMiddleware.js';
 import { sendError } from './utils/response.js';
 import { AppError } from './utils/AppError.js';
@@ -66,6 +69,8 @@ app.use(morgan('dev'));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
+// Ngữ cảnh request (IP, trình duyệt, người đăng nhập) cho nhật ký hệ thống (auditService)
+app.use(requestContext);
 
 // Health check endpoint
 app.get('/api/v1/health', (req, res) => {
@@ -88,6 +93,8 @@ app.use('/api/v1/categories', categoryRoutes);
 app.use('/api/v1/classes', classRoutes);
 app.use('/api/v1/dashboard', dashboardRoutes);
 app.use('/api/v1/notifications', notificationRoutes);
+app.use('/api/v1/audit-logs', auditLogRoutes);
+app.use('/api/v1/settings', settingsRoutes);
 app.use('/api/v1', courseRoutes);
 app.use('/api/v1', uploadRoutes);
 app.use('/api/v1', quizRoutes);

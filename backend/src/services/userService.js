@@ -4,6 +4,7 @@ import { Op } from 'sequelize';
 import { User, UserToken, Course, ClassModel } from '../models/index.js';
 import { AppError } from '../utils/AppError.js';
 import { deleteReplacedPublicFile } from './storageService.js';
+import { logAudit, userTarget } from './auditService.js';
 
 /**
  * Format user entity to camelCase DTO for API response
@@ -234,6 +235,7 @@ export const adminCreateUser = async ({ email, fullName, role, phoneNumber, pass
   });
 
   console.log(`\n🔑 [ADMIN CREATED USER] Email: ${email} | Role: ${role} | Temp Password: ${tempPassword}\n`);
+  await logAudit('USER_CREATED', { target: userTarget(newUser), metadata: { role } });
 
   return {
     ...formatUser(newUser),
@@ -260,9 +262,14 @@ export const adminUpdateUser = async (targetUserId, currentAdminId, { fullName, 
   if (phoneNumber !== undefined) fieldsToUpdate.phone_number = phoneNumber || null;
 
   const roleChanged = role && role !== user.role;
+  const before = { fullName: user.full_name, phoneNumber: user.phone_number, role: user.role };
   if (role) fieldsToUpdate.role = role;
 
   await user.update(fieldsToUpdate);
+  await logAudit(roleChanged ? 'USER_ROLE_CHANGED' : 'USER_UPDATED', {
+    target: userTarget(user),
+    metadata: { before, after: { fullName: user.full_name, phoneNumber: user.phone_number, role: user.role } }
+  });
 
   // If role changed, revoke all refresh tokens so the user gets updated role claim upon re-login
   if (roleChanged) {
@@ -306,6 +313,7 @@ export const adminUpdateStatus = async (targetUserId, currentAdminId, { isActive
       block_reason: null
     });
   }
+  await logAudit(isActive ? 'USER_UNBLOCKED' : 'USER_BLOCKED', { target: userTarget(user), metadata: isActive ? null : { reason } });
 
   return formatUser(user);
 };
@@ -335,6 +343,7 @@ export const adminResetPassword = async (targetUserId) => {
   );
 
   console.log(`\n🔑 [ADMIN RESET PASSWORD] User: ${user.email} | New Temp Password: ${tempPassword}\n`);
+  await logAudit('USER_PASSWORD_RESET', { target: userTarget(user) });
 
   return {
     id: user.id,
@@ -366,6 +375,7 @@ export const adminDeleteUser = async (targetUserId, currentAdminId) => {
     { is_used: true },
     { where: { user_id: targetUserId, is_used: false } }
   );
+  await logAudit('USER_DELETED', { target: userTarget(user), metadata: { role: user.role } });
 
   return {
     id: targetUserId,

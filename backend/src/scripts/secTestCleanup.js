@@ -25,7 +25,11 @@ const removeLocalFiles = (subdir, ids) => {
 export const cleanupSecTest = async () => {
   const users = await User.findAll({ where: { email: { [Op.like]: 'sec-test-%@example.com' } }, paranoid: false, attributes: ['id'] });
   const ids = users.map((u) => u.id);
-  if (!ids.length) return console.log('Không có dữ liệu thử cần dọn');
+  // Nhật ký đăng nhập sai bằng email thử không tồn tại không gắn với tài khoản nào -> luôn dọn
+  const [, auditResult] = await sequelize.query(
+    "DELETE FROM audit_logs WHERE actor_email LIKE 'sec-test-%@example.com' OR target_label LIKE '%sec-test-%@example.com%'"
+  );
+  if (!ids.length) return console.log(`Không có tài khoản thử cần dọn (đã xóa ${auditResult?.rowCount ?? 0} dòng nhật ký thử)`);
 
   const select = (sql) => sequelize.query(sql, { replacements: { ids }, type: sequelize.QueryTypes.SELECT });
   const courseIds = (await select('SELECT id FROM courses WHERE owner_id IN (:ids)')).map((r) => r.id);
@@ -41,6 +45,11 @@ export const cleanupSecTest = async () => {
     await sequelize.query(
       `DELETE FROM notifications WHERE user_id IN (:ids)${linked.length ? ' OR ' + linked.map((_, i) => `link LIKE :l${i}`).join(' OR ') : ''}`,
       { replacements: { ids, ...Object.fromEntries(linked.map((id, i) => [`l${i}`, `%${id}%`])) } }
+    );
+    // Nhật ký hệ thống của tài khoản thử, hoặc trỏ tới tài khoản/khóa/lớp/bài nộp thử (vd. Admin tạo GV thử, QL duyệt khóa thử)
+    await sequelize.query(
+      'DELETE FROM audit_logs WHERE actor_id IN (:ids) OR target_id IN (:targets)',
+      { replacements: { ids, targets: [...ids, ...courseIds, ...classIds] } }
     );
     await q(`DELETE FROM lesson_discussions WHERE author_id IN (:ids) OR class_id IN ${classes}`);
     await q(`DELETE FROM quiz_attempt_answers WHERE attempt_id IN (SELECT id FROM quiz_attempts WHERE student_id IN (:ids) OR class_quiz_id IN (SELECT id FROM class_quizzes WHERE class_id IN ${classes}))`);

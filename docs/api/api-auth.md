@@ -83,6 +83,7 @@
 | HTTP Code | Error | Message | Nguyên nhân |
 |:---:|---|---|---|
 | `400` | `Bad Request` | Dữ liệu gửi lên không hợp lệ | Thiếu trường bắt buộc, email sai định dạng hoặc mật khẩu yếu |
+| `403` | `Forbidden` | Hệ thống đang tạm ngừng nhận đăng ký tài khoản mới... | Admin đã tắt "Cho phép học viên tự đăng ký" ở trang Cài đặt hệ thống (`api-settings.md`, *bổ sung 30/10/2026*) |
 | `409` | `Conflict` | Địa chỉ email này đã tồn tại trong hệ thống | Email đã được sử dụng bởi một tài khoản đang hoạt động |
 | `503` | `Service Unavailable` | Không thể gửi email xác thực | Hạ tầng SMTP gặp sự cố (Transaction tự động rollback hủy tạo tài khoản) |
 

@@ -3,6 +3,7 @@ import { Op } from 'sequelize';
 import models from '../models/index.js';
 import { AppError } from '../utils/AppError.js';
 import { byLastActiveDesc, nextLessonIdOf } from '../utils/studentTodo.js';
+import { logAudit } from './auditService.js';
 
 const { sequelize, ClassModel, Course, Chapter, Lesson, Enrollment, LessonProgress, User } = models;
 
@@ -404,6 +405,10 @@ export const deleteClass = async (classId, currentUser) => {
     throw new AppError('Không có quyền xóa lớp học này', 403, 'Forbidden');
   }
   await cls.destroy();
+  await logAudit('CLASS_DELETED', {
+    target: { type: 'class', id: cls.id, label: cls.name },
+    metadata: { courseId: cls.course_id, teacherId: cls.teacher_id, status: cls.status }
+  });
   return true;
 };
 

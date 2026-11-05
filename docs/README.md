@@ -42,6 +42,8 @@
 - [API: Tổng quan (Dashboard)](api/api-dashboard.md)
 - [API: Thông báo (Notifications)](api/api-notifications.md)
 - [API: Thảo luận / Hỏi đáp trong bài học (Discussions)](api/api-discussions.md)
+- [API: Nhật ký hệ thống (Audit Logs)](api/api-audit-logs.md)
+- [API: Cài đặt hệ thống (Settings)](api/api-settings.md)
 - [API: Upload & Đa phương tiện (Uploads)](api/api-uploads.md)
 
 ### 🎨 Giao diện

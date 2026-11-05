@@ -364,7 +364,7 @@ const DB_SLOW_MS = 1000;
  * Tình trạng dịch vụ. Chỉ trả trạng thái - không bao giờ trả giá trị biến môi trường hay chi tiết lỗi
  * (thông báo lỗi kết nối có thể chứa host Neon).
  */
-const getSystemStatus = async () => {
+export const getSystemStatus = async () => {
   const startedAt = process.hrtime.bigint();
   let database;
   let timer;
