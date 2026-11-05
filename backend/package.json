@@ -18,7 +18,8 @@
     "db:migrate:discussions": "node src/scripts/migrations/20261025-lesson-discussions.js",
     "db:migrate:audit-logs": "node src/scripts/migrations/20261030-audit-logs.js",
     "db:migrate:settings": "node src/scripts/migrations/20261030-system-settings.js",
-    "db:migrate:course-landing": "node src/scripts/migrations/20261031-course-landing.js"
+    "db:migrate:course-landing": "node src/scripts/migrations/20261031-course-landing.js",
+    "db:migrate:audit-logs-repair": "node src/scripts/migrations/20261105-audit-logs-repair.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1149.0",

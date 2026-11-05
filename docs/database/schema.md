@@ -502,7 +502,7 @@ ightarrow$ `users(id)` `ON DELETE SET NULL` — người thực hiện; `NULL` k
 - `idx_audit_logs_actor` ON (`actor_id`).
 - `idx_audit_logs_ip_failed` ON (`ip_address`, `action`, `created_at`) — đếm số lần đăng nhập sai của một IP trong 5 phút (phát hiện dò mật khẩu).
 
-**Migration:** `backend/src/scripts/migrations/20261030-audit-logs.js` (`npm run db:migrate:audit-logs`, idempotent) — chỉ tạo bảng mới, không đụng bảng cũ.
+**Migration:** `backend/src/scripts/migrations/20261030-audit-logs.js` (`npm run db:migrate:audit-logs`, idempotent) — chỉ tạo bảng mới, không đụng bảng cũ. Bảng từng bị `sequelize.sync({ alter: true })` bằng model khác làm lệch cấu trúc: chạy thêm `20261105-audit-logs-repair.js` (`npm run db:migrate:audit-logs-repair`, idempotent) để đưa về đúng model.
 
 ---
 
