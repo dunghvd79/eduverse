@@ -85,7 +85,7 @@ function MembersTab({ cls, canManageMembers, onChanged }) {
     try {
       setAdding(true);
       const member = await classService.addMember(cls.id, email.trim());
-      toast.success(`Đã thêm ${member.fullName} vào lớp.`);
+      toast.success(`Đã thêm ${member.fullName} vào lớp và báo cho học viên qua thông báo và email.`);
       setEmail('');
       await load();
       onChanged();

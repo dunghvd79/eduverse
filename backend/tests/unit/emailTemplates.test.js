@@ -8,7 +8,9 @@ import {
   buildOtpEmail,
   buildResetPasswordEmail,
   buildLoginLink,
-  buildAccountCreatedEmail
+  buildAccountCreatedEmail,
+  buildClassLink,
+  buildClassAddedEmail
 } from '../../src/utils/emailTemplates.js';
 
 // Nội dung email OTP / đặt lại mật khẩu
@@ -140,5 +142,73 @@ describe('buildAccountCreatedEmail', () => {
 
   test('email OTP vẫn giữ chân thư cũ', () => {
     assert.match(buildOtpEmail({ fullName: 'A', otp: '123456' }).html, /không thực hiện yêu cầu này/);
+  });
+});
+
+describe('buildClassLink', () => {
+  test('ghép CLIENT_URL với trang lớp của học viên, bỏ dấu / cuối, lấy giá trị đầu khi có nhiều', () => {
+    assert.equal(buildClassLink('http://localhost:8080', 'c1'), 'http://localhost:8080/student/classes/c1');
+    assert.equal(buildClassLink('https://eduverse.vn//', 'c1'), 'https://eduverse.vn/student/classes/c1');
+    assert.equal(buildClassLink('http://localhost:8080, http://localhost:5173', 'c1'), 'http://localhost:8080/student/classes/c1');
+  });
+
+  test('thiếu CLIENT_URL thì dùng địa chỉ dev của Vite; mã lớp được mã hóa URL', () => {
+    assert.equal(buildClassLink(undefined, 'c1'), 'http://localhost:5173/student/classes/c1');
+    assert.equal(buildClassLink('http://h', 'a/b?c'), 'http://h/student/classes/a%2Fb%3Fc');
+  });
+});
+
+describe('buildClassAddedEmail', () => {
+  const args = {
+    fullName: 'Lê Thị B',
+    className: 'Lập trình Web K45',
+    courseTitle: 'Lập trình Web',
+    teacherName: 'Nguyễn Văn An',
+    addedByName: 'Nguyễn Văn An',
+    classUrl: 'http://localhost:8080/student/classes/c1'
+  };
+
+  test('có tên học viên, lớp, khóa học, giảng viên và link lớp ở cả bản chữ lẫn HTML', () => {
+    const mail = buildClassAddedEmail(args);
+    assert.equal(mail.subject, 'EduVerse: bạn đã được thêm vào lớp Lập trình Web K45');
+    for (const part of ['Lê Thị B', 'Lập trình Web K45', 'khóa học "Lập trình Web"', 'Nguyễn Văn An', 'http://localhost:8080/student/classes/c1']) {
+      assert.ok(mail.text.includes(part), `bản chữ thiếu: ${part}`);
+    }
+    for (const part of ['Lê Thị B', 'Lập trình Web K45', 'Lập trình Web', 'Nguyễn Văn An', 'http://localhost:8080/student/classes/c1']) {
+      assert.ok(mail.html.includes(part), `bản HTML thiếu: ${part}`);
+    }
+  });
+
+  test('thiếu khóa học và giảng viên thì bỏ hai dòng đó; thiếu người thêm thì gọi là Giảng viên', () => {
+    const mail = buildClassAddedEmail({ fullName: 'B', className: 'Lớp A', classUrl: 'http://h/x' });
+    assert.doesNotMatch(mail.text, /khóa học|Giảng viên phụ trách/);
+    assert.doesNotMatch(mail.html, /khóa học|Giảng viên phụ trách/);
+    assert.match(mail.text, /Giảng viên đã thêm bạn vào lớp "Lớp A"/);
+  });
+
+  test('tên lớp nhiều dòng hoặc rất dài không phá tiêu đề thư', () => {
+    const mail = buildClassAddedEmail({ ...args, className: `Lớp\r\nBcc: x@y.z ${'a'.repeat(300)}` });
+    assert.doesNotMatch(mail.subject, /[\r\n]/);
+    assert.ok(mail.subject.length <= 'EduVerse: bạn đã được thêm vào lớp '.length + 100);
+    assert.match(mail.subject, /…$/);
+  });
+
+  test('mọi dữ liệu người dùng đều bị escape trong HTML', () => {
+    const mail = buildClassAddedEmail({
+      fullName: '<img src=x onerror=1>',
+      className: '<script>alert(1)</script>',
+      courseTitle: '"><s>',
+      teacherName: '<i>GV</i>',
+      addedByName: '<u>Ai</u>',
+      classUrl: 'http://h/"><script>'
+    });
+    assert.doesNotMatch(mail.html, /<img|<script|<s>|<i>|<u>|"><script/);
+    assert.match(mail.html, /&lt;script&gt;alert\(1\)&lt;\/script&gt;/);
+  });
+
+  test('chân thư riêng cho email thêm vào lớp, không dùng câu "không thực hiện yêu cầu"', () => {
+    const mail = buildClassAddedEmail(args);
+    assert.match(mail.html, /khi bạn được thêm vào một lớp học/);
+    assert.doesNotMatch(mail.html, /không thực hiện yêu cầu/);
   });
 });

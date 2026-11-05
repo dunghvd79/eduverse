@@ -4,10 +4,10 @@ import {
   mailFromOf,
   redisConnectionOf
 } from '../utils/mailConfig.js';
-import { buildOtpEmail, buildResetPasswordEmail, buildAccountCreatedEmail, buildResetLink, buildLoginLink } from '../utils/emailTemplates.js';
+import { buildOtpEmail, buildResetPasswordEmail, buildAccountCreatedEmail, buildResetLink, buildLoginLink, buildClassLink, buildClassAddedEmail } from '../utils/emailTemplates.js';
 
 /**
- * Gửi email tự động (OTP kích hoạt, link đặt lại mật khẩu) qua hàng đợi BullMQ + Redis và Nodemailer (SMTP).
+ * Gửi email tự động (OTP kích hoạt, link đặt lại mật khẩu, tài khoản mới, thêm vào lớp) qua hàng đợi BullMQ + Redis và Nodemailer (SMTP).
  * Chọn chế độ theo biến môi trường, xem utils/mailConfig.js. Không cấu hình gì thì in email ra log như trước.
  *
  * Nguyên tắc: gửi email là phần phụ của nghiệp vụ, các hàm gửi KHÔNG BAO GIỜ ném lỗi và không làm chậm API
@@ -205,10 +205,21 @@ export const createEmailService = ({
       };
     });
 
-  return { mode, deliver, sendEmail, sendOtpEmail, sendPasswordResetEmail, sendAccountCreatedEmail, startWorker, close };
+  /** Email báo học viên được giảng viên/Quản trị viên thêm vào lớp (BR-022). */
+  const sendClassAddedEmail = (args) =>
+    safely(() => {
+      const { to, fullName, classId, className, courseTitle, teacherName, addedByName } = args;
+      return {
+        kind: 'class-added',
+        to,
+        ...buildClassAddedEmail({ fullName, className, courseTitle, teacherName, addedByName, classUrl: buildClassLink(env.CLIENT_URL, classId) })
+      };
+    });
+
+  return { mode, deliver, sendEmail, sendOtpEmail, sendPasswordResetEmail, sendAccountCreatedEmail, sendClassAddedEmail, startWorker, close };
 };
 
 const defaultService = createEmailService();
 
-export const { sendEmail, sendOtpEmail, sendPasswordResetEmail, sendAccountCreatedEmail, startWorker: startEmailWorker, close: closeEmail } = defaultService;
+export const { sendEmail, sendOtpEmail, sendPasswordResetEmail, sendAccountCreatedEmail, sendClassAddedEmail, startWorker: startEmailWorker, close: closeEmail } = defaultService;
 export default defaultService;

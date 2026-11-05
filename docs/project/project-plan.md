@@ -50,7 +50,7 @@
 
 ### Phase 3: Hoàn thiện & Demo
 
-- [x] Testing & Bug fixes — 193 unit test + 59 kiểm tra E2E (24/10–01/11/2026), xem `docs/testing/automated-tests.md`
+- [x] Testing & Bug fixes — 268 unit test + 68 kiểm tra E2E (24/10–02/11/2026), xem `docs/testing/automated-tests.md`
 - [ ] Viết báo cáo đồ án liên ngành
 - [x] Triển khai bằng Docker Compose (22/10/2026), hướng dẫn ở `docs/architecture/deployment.md`
 - [ ] Cloud hosting (HTTPS) & chuẩn bị Demo
@@ -82,8 +82,10 @@ _Bảng được tổng hợp từ lịch sử các nhánh; cập nhật lại s
 | 24–27/10/2026 | Phase 3: Docker Compose + kiểm thử tự động (152 unit test, 51 kiểm tra E2E). Phase 2: Excel nâng cao, Thảo luận trong bài học, Email tự động BullMQ + Redis — hoàn thành trên nhánh `feature-manh` |
 | 28/10/2026 | Rà soát tài liệu so với code thực tế và đồng bộ lại: API `unpublish`, `gradebook`, `my-grades`, lưu trữ cục bộ, sitemap, quy tắc nghiệp vụ, quy trình Git |
 | 01/11/2026 | Nhật ký hệ thống thật (bảng `audit_logs`, xem và xuất CSV) và trang Cấu hình nền tảng chỉ đọc cho Admin; thêm 41 unit test và 8 kiểm tra E2E |
+| 02/11/2026 | Nhập tài khoản hàng loạt từ file `.csv` / `.xlsx` cho Admin (`POST /users/bulk-import`, mật khẩu tạm gửi qua email BullMQ); thêm 61 unit test và 5 kiểm tra E2E |
+| 02/11/2026 | Thông báo trong chuông và email khi giảng viên thêm học viên vào lớp (`POST /classes/:id/members`, BR-022); thêm 14 unit test và 4 kiểm tra E2E |
 
 ---
 
-_Cập nhật lần cuối: 01/11/2026_
+_Cập nhật lần cuối: 02/11/2026_
 

@@ -2,6 +2,8 @@ import crypto from 'crypto';
 import { Op } from 'sequelize';
 import models from '../models/index.js';
 import { AppError } from '../utils/AppError.js';
+import { notifyClassMemberAdded } from './notificationService.js';
+import { sendClassAddedEmail } from './emailService.js';
 
 const { sequelize, ClassModel, Course, Chapter, Lesson, Enrollment, LessonProgress, User } = models;
 
@@ -494,6 +496,19 @@ export const addMember = async (classId, email, currentUser) => {
   }
 
   const enrollment = await enrollStudent(cls, student.id, 'Học viên đã có trong danh sách lớp');
+
+  // Báo học viên (chuông + email, BR-022). Cả hai hàm không bao giờ ném lỗi nên dù Redis, SMTP hay bảng
+  // notifications trục trặc thì việc thêm học viên vẫn thành công. Email không chờ để API không bị chậm.
+  await notifyClassMemberAdded(cls, student, currentUser);
+  sendClassAddedEmail({
+    to: student.email,
+    fullName: student.full_name,
+    classId: cls.id,
+    className: cls.name,
+    courseTitle: cls.course?.title,
+    teacherName: cls.teacher?.full_name,
+    addedByName: currentUser.full_name
+  });
 
   return {
     studentId: student.id,

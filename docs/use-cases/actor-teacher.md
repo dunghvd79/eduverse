@@ -299,6 +299,8 @@ flowchart LR
 ### 🔹 UC-CLASS-003: Mời học viên vào lớp qua Email (Invite Students)
 - **Kịch bản:** Giảng viên mở giao diện lớp học $\rightarrow$ Chọn "Mời học viên" $\rightarrow$ Nhập danh sách các địa chỉ email học viên (ngăn cách bằng dấu phẩy) $\rightarrow$ Nhấn "Gửi lời mời" $\rightarrow$ Hệ thống gọi Email Service gửi thư chứa mã lớp và liên kết ghi danh trực tiếp đến hòm thư của từng học viên.
 
+> **Triển khai thực tế (02/11/2026):** hệ thống thêm **từng học viên một** bằng email (`POST /classes/:id/members`, ô "Email học viên cần thêm" ở tab Thành viên); học viên vào lớp ngay, không cần chấp nhận lời mời. Học viên nhận thông báo trong chuông (loại `class_member_added`, bấm để mở lớp) và một email có tên lớp, khóa học, giảng viên và link tới lớp; email không kèm mã lớp. Chưa có: thêm nhiều email một lần, lời mời chờ chấp nhận, mời email chưa có tài khoản. Xem [`api-classes.md`](../api/api-classes.md) mục 2.10.
+
 ### 🔹 UC-CLASS-005: Xem danh sách học viên trong lớp
 - **Kịch bản:** Giảng viên truy cập tab "Thành viên" của lớp $\rightarrow$ Hệ thống hiển thị bảng danh sách học viên gồm: Họ tên, Email, Ngày tham gia lớp, % Tiến độ học tập và Điểm trung bình hiện tại. Giảng viên có thể lọc hoặc tìm kiếm theo tên học viên.
 

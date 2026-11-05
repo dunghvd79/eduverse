@@ -56,6 +56,16 @@ export const userService = {
   adminDeleteUser: async (id) => {
     const res = await api.delete(`/users/${id}`);
     return res.data;
+  },
+
+  // Nhập tài khoản hàng loạt từ file .csv / .xlsx (api-users.md mục 2.12).
+  // Phải đặt Content-Type multipart/form-data: instance axios mặc định là application/json và sẽ biến FormData thành JSON.
+  adminBulkImportUsers: async (file, defaultRole = 'student') => {
+    const form = new FormData();
+    form.append('file', file);
+    form.append('defaultRole', defaultRole);
+    const res = await api.post('/users/bulk-import', form, { headers: { 'Content-Type': 'multipart/form-data' } });
+    return res.data; // { totalRows, successCount, failureCount, errors, emailsQueued, emailMode }
   }
 };
 

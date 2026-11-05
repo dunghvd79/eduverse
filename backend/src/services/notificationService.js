@@ -1,5 +1,6 @@
 import models from '../models/index.js';
 import { AppError } from '../utils/AppError.js';
+import { buildClassAddedNotice } from '../utils/classAddedRules.js';
 
 const { Notification, Enrollment, User, Assignment } = models;
 
@@ -181,6 +182,25 @@ export const notifyDiscussionReply = async (cls, lesson, courseId, replier, reci
   }
 };
 
+/**
+ * Giảng viên/Quản trị viên thêm học viên vào lớp bằng email -> báo học viên đó (BR-022, UC-CLASS-003).
+ * Chỉ gọi ở POST /classes/:id/members; học viên tự vào bằng mã lớp thì không cần báo.
+ * `student` là User (cần id), `addedBy` là người thêm (cần full_name); `cls` kèm course.
+ */
+export const notifyClassMemberAdded = async (cls, student, addedBy) => {
+  try {
+    return await notifyUsers([student.id], buildClassAddedNotice({
+      classId: cls.id,
+      className: cls.name,
+      courseTitle: cls.course?.title,
+      addedByName: addedBy?.full_name
+    }));
+  } catch (error) {
+    console.warn('⚠️ Không tạo được thông báo thêm vào lớp:', error.message);
+    return 0;
+  }
+};
+
 // ==========================================
 // 2. API CHO NGƯỜI DÙNG (GET/PATCH /notifications)
 // ==========================================
@@ -255,6 +275,7 @@ export default {
   notifySubmissionResult,
   notifyDiscussionQuestion,
   notifyDiscussionReply,
+  notifyClassMemberAdded,
   getNotifications,
   getUnreadCount,
   markAsRead,

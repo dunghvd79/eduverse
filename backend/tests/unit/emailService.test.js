@@ -124,6 +124,17 @@ describe('chế độ log (không cấu hình gì)', () => {
     assert.match(log, /http:\/\/localhost:8080\/login/);
   });
 
+  test('email thêm vào lớp có tên lớp và link trang lớp trong log', async () => {
+    const logger = makeLogger();
+    const service = createEmailService({ env: makeEnv(), load: makeLibs().load, logger });
+    assert.equal(await service.sendClassAddedEmail({ to: 'sv@x.vn', fullName: 'Sinh Viên', classId: 'c1', className: 'Lớp A', courseTitle: 'Khóa 1', teacherName: 'GV An', addedByName: 'GV An' }), 'direct');
+    await tick();
+    const log = logger.lines.log.join('\n');
+    assert.match(log, /sv@x\.vn/);
+    assert.match(log, /bạn đã được thêm vào lớp Lớp A/);
+    assert.match(log, /http:\/\/localhost:8080\/student\/classes\/c1/);
+  });
+
   test('startWorker không làm gì khi chưa có Redis', async () => {
     const { load, calls } = makeLibs();
     const service = createEmailService({ env: makeEnv(), load, logger: makeLogger() });
@@ -224,6 +235,16 @@ describe('hàng đợi BullMQ (có REDIS_URL)', () => {
     await service.sendPasswordResetEmail({ to: 'b@x.com', fullName: 'B', token: 't' });
     assert.equal(calls.queues.length, 1);
     assert.deepEqual(calls.added.map((job) => job.name), ['otp', 'password-reset']);
+  });
+
+  test('email thêm vào lớp vào hàng đợi với kind "class-added" và đủ dữ liệu', async () => {
+    const { load, calls } = makeLibs();
+    const service = createEmailService({ env, load, logger: makeLogger() });
+    assert.equal(await service.sendClassAddedEmail({ to: 'sv@x.vn', fullName: 'SV', classId: 'c1', className: 'Lớp A', addedByName: 'GV' }), 'queued');
+    assert.deepEqual(calls.added.map((job) => job.name), ['class-added']);
+    assert.equal(calls.added[0].data.to, 'sv@x.vn');
+    assert.equal(calls.added[0].data.kind, 'class-added');
+    assert.match(calls.added[0].data.text, /http:\/\/localhost:8080\/student\/classes\/c1/);
   });
 
   test('Redis lỗi khi thêm job: chuyển sang gửi trực tiếp, vẫn không ném lỗi', async () => {
@@ -416,5 +437,7 @@ describe('không bao giờ ném lỗi', () => {
     assert.match(logger.lines.warn.join('\n'), /Không dựng được email/);
     assert.equal(await service.sendPasswordResetEmail(null), 'failed');
     assert.equal(await service.sendAccountCreatedEmail(null), 'failed');
+    assert.equal(await service.sendClassAddedEmail(null), 'failed');
+    assert.equal(await service.sendClassAddedEmail({ to: 'a@x.com' }), 'direct');
   });
 });

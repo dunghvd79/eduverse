@@ -21,6 +21,12 @@ export const buildLoginLink = (clientUrl) => {
   return `${base}/login`;
 };
 
+/** Link trang lớp học của học viên trỏ về frontend (CLIENT_URL; nhiều giá trị cách nhau dấu phẩy thì lấy giá trị đầu). */
+export const buildClassLink = (clientUrl, classId) => {
+  const base = String(clientUrl || '').split(',')[0].trim().replace(/\/+$/, '') || 'http://localhost:5173';
+  return `${base}/student/classes/${encodeURIComponent(classId)}`;
+};
+
 const ROLE_LABELS = { student: 'Học viên', teacher: 'Giảng viên', training_manager: 'Quản lý đào tạo', admin: 'Quản trị viên' };
 
 const greeting = (fullName) => (fullName && String(fullName).trim() ? `Chào ${String(fullName).trim()},` : 'Xin chào,');
@@ -95,6 +101,36 @@ export const buildAccountCreatedEmail = ({ fullName, email, tempPassword, role, 
 <p><a href="${escapeHtml(loginUrl)}" style="display:inline-block;background:#0b5cad;color:#ffffff;text-decoration:none;padding:10px 18px;border-radius:6px;font-weight:600">Đăng nhập EduVerse</a></p>
 <p>Bạn sẽ được yêu cầu đổi mật khẩu ngay ở lần đăng nhập đầu tiên. Không chia sẻ mật khẩu này cho bất kỳ ai.</p>`,
     'Email này được gửi tự động từ EduVerse. Nếu bạn không nhận ra tài khoản này, hãy liên hệ quản trị viên.'
+  );
+  return { subject, text, html };
+};
+
+const oneLine = (value) => String(value ?? '').replace(/\s+/g, ' ').trim();
+
+/** Email báo học viên đã được giảng viên/Quản trị viên thêm vào một lớp (BR-022). */
+export const buildClassAddedEmail = ({ fullName, className, courseTitle, teacherName, addedByName, classUrl }) => {
+  const name = oneLine(className) || 'lớp học';
+  const course = oneLine(courseTitle);
+  const teacher = oneLine(teacherName);
+  const by = oneLine(addedByName) || 'Giảng viên';
+  // Tên lớp do người dùng nhập: gộp xuống một dòng và cắt ngắn để không phá tiêu đề thư
+  const subject = `EduVerse: bạn đã được thêm vào lớp ${name.length > 100 ? `${name.slice(0, 99)}…` : name}`;
+  const text = [
+    greeting(fullName),
+    '',
+    `${by} đã thêm bạn vào lớp "${name}"${course ? ` của khóa học "${course}"` : ''}.`,
+    ...(teacher ? [`Giảng viên phụ trách: ${teacher}`] : []),
+    `Xem lớp tại: ${classUrl}`,
+    '',
+    'Nếu bạn không biết lớp học này, hãy liên hệ giảng viên hoặc quản trị viên.'
+  ].join('\n');
+  const html = wrapHtml(
+    `<p>${escapeHtml(greeting(fullName))}</p>
+<p>${escapeHtml(by)} đã thêm bạn vào lớp <b>${escapeHtml(name)}</b>${course ? ` của khóa học <b>${escapeHtml(course)}</b>` : ''}.</p>
+${teacher ? `<p>Giảng viên phụ trách: ${escapeHtml(teacher)}</p>\n` : ''}<p><a href="${escapeHtml(classUrl)}" style="display:inline-block;background:#0b5cad;color:#ffffff;text-decoration:none;padding:10px 18px;border-radius:6px;font-weight:600">Xem lớp học</a></p>
+<p style="font-size:13px;color:#6b7686">Nếu nút không bấm được, sao chép liên kết này vào trình duyệt:<br>${escapeHtml(classUrl)}</p>
+<p>Nếu bạn không biết lớp học này, hãy liên hệ giảng viên hoặc quản trị viên.</p>`,
+    'Email này được gửi tự động từ EduVerse khi bạn được thêm vào một lớp học.'
   );
   return { subject, text, html };
 };

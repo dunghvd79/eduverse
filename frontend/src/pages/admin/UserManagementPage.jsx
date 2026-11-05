@@ -3,6 +3,9 @@ import {
   Users,
   Search,
   UserPlus,
+  Upload,
+  FileSpreadsheet,
+  Download,
   Lock,
   Unlock,
   KeyRound,
@@ -58,6 +61,10 @@ export default function UserManagementPage() {
   // Reset Password Modal
   const [resetModal, setResetModal] = useState({ isOpen: false, user: null, newTempPassword: null });
   const [isResetting, setIsResetting] = useState(false);
+
+  // Import Modal (nhập tài khoản hàng loạt từ file)
+  const [importModal, setImportModal] = useState({ isOpen: false, file: null, defaultRole: 'student', result: null, error: '' });
+  const [isImporting, setIsImporting] = useState(false);
 
   // Delete Modal
   const [deleteModal, setDeleteModal] = useState({ isOpen: false, user: null });
@@ -138,6 +145,51 @@ export default function UserManagementPage() {
       showToast('error', err?.message || 'Khởi tạo tài khoản thất bại.');
     } finally {
       setIsCreating(false);
+    }
+  };
+
+  // 1b. Nhập tài khoản hàng loạt từ file .csv / .xlsx
+  const IMPORT_MAX_BYTES = 5 * 1024 * 1024;
+  const IMPORT_MAX_ROWS = 300;
+
+  const closeImportModal = () => setImportModal({ isOpen: false, file: null, defaultRole: 'student', result: null, error: '' });
+
+  const downloadImportTemplate = () => {
+    const csv = '\uFEFFemail,fullName,phoneNumber,role\r\nsv2026001@eduverse.vn,Nguyễn Văn A,0981234567,student\r\nsv2026002@eduverse.vn,Trần Thị B,0987654321,student\r\n';
+    const url = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'Mau_Nhap_Nguoi_Dung.csv';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  const handlePickImportFile = (e) => {
+    const file = e.target.files?.[0] || null;
+    let error = '';
+    if (file && !/\.(csv|xlsx)$/i.test(file.name)) error = 'Chỉ nhận file .csv hoặc .xlsx.';
+    else if (file && file.size > IMPORT_MAX_BYTES) error = 'Dung lượng file vượt quá giới hạn 5MB.';
+    if (error) e.target.value = '';
+    setImportModal((prev) => ({ ...prev, file: error ? null : file, error, result: null }));
+  };
+
+  const handleImportUsers = async (e) => {
+    e.preventDefault();
+    if (!importModal.file) {
+      setImportModal((prev) => ({ ...prev, error: 'Hãy chọn file .csv hoặc .xlsx cần nhập.' }));
+      return;
+    }
+    setIsImporting(true);
+    try {
+      const result = await userService.adminBulkImportUsers(importModal.file, importModal.defaultRole);
+      setImportModal((prev) => ({ ...prev, result, error: '' }));
+      if (result.successCount > 0) fetchUsers();
+    } catch (err) {
+      setImportModal((prev) => ({ ...prev, error: err?.message || 'Nhập danh sách người dùng thất bại.' }));
+    } finally {
+      setIsImporting(false);
     }
   };
 
@@ -228,9 +280,14 @@ export default function UserManagementPage() {
         title="Quản lý Người Dùng"
         desc="Quản lý tài khoản, phân cấp vai trò hệ thống và giám sát quyền truy cập của cán bộ, giảng viên và sinh viên."
         actions={
-          <Button onClick={() => { setShowCreateModal(true); setCreatedTempPassword(null); }}>
-            <UserPlus size={17} /> Tạo tài khoản
-          </Button>
+          <>
+            <Button variant="secondary" onClick={() => setImportModal({ isOpen: true, file: null, defaultRole: 'student', result: null, error: '' })}>
+              <Upload size={17} /> Nhập từ file
+            </Button>
+            <Button onClick={() => { setShowCreateModal(true); setCreatedTempPassword(null); }}>
+              <UserPlus size={17} /> Tạo tài khoản
+            </Button>
+          </>
         }
       />
 
@@ -613,6 +670,139 @@ export default function UserManagementPage() {
                   </Button>
                   <Button type="submit" disabled={isCreating}>
                     {isCreating ? 'Đang tạo...' : 'Tạo tài khoản'}
+                  </Button>
+                </div>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* =========================================
+          MODAL: NHẬP TÀI KHOẢN HÀNG LOẠT TỪ FILE
+      ========================================= */}
+      {importModal.isOpen && (
+        <div className="modal-backdrop">
+          <div className="modal max-w-[640px]">
+            <div className="modal-head">
+              <h2>Nhập tài khoản từ file</h2>
+              <button onClick={closeImportModal}>×</button>
+            </div>
+
+            {importModal.result ? (
+              <div className="py-1">
+                <div className="grid grid-cols-3 gap-3 mb-4 text-center">
+                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                    <div className="text-xl font-bold text-slate-800">{importModal.result.totalRows}</div>
+                    <div className="text-xs text-slate-500">Dòng dữ liệu</div>
+                  </div>
+                  <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200">
+                    <div className="text-xl font-bold text-emerald-700">{importModal.result.successCount}</div>
+                    <div className="text-xs text-emerald-700">Đã tạo</div>
+                  </div>
+                  <div className={`p-3 rounded-lg border ${importModal.result.failureCount > 0 ? 'bg-red-50 border-red-200' : 'bg-slate-50 border-slate-200'}`}>
+                    <div className={`text-xl font-bold ${importModal.result.failureCount > 0 ? 'text-red-700' : 'text-slate-800'}`}>{importModal.result.failureCount}</div>
+                    <div className={`text-xs ${importModal.result.failureCount > 0 ? 'text-red-700' : 'text-slate-500'}`}>Bị bỏ qua</div>
+                  </div>
+                </div>
+
+                {importModal.result.successCount > 0 && (
+                  String(importModal.result.emailMode).endsWith('_log') ? (
+                    <div className="flex gap-2 p-3 mb-4 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-xs">
+                      <AlertCircle size={16} className="flex-shrink-0 mt-0.5" />
+                      <span>
+                        Máy chủ chưa cấu hình SMTP nên <b>email chưa được gửi đi</b>. Mật khẩu tạm của từng tài khoản chỉ hiện trong log backend
+                        (<code>docker compose logs backend</code>). Hãy cấu hình SMTP rồi dùng "Đặt lại mật khẩu" nếu cần cấp lại.
+                      </span>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2 p-3 mb-4 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs">
+                      <Mail size={16} className="flex-shrink-0 mt-0.5" />
+                      <span>
+                        Đã xếp <b>{importModal.result.emailsQueued}</b> email chứa mật khẩu tạm vào hàng đợi gửi. Mỗi người phải đổi mật khẩu ở lần đăng nhập đầu tiên.
+                      </span>
+                    </div>
+                  )
+                )}
+
+                {importModal.result.errors.length > 0 && (
+                  <>
+                    <p className="text-xs font-semibold text-slate-600 mb-2">Các dòng bị bỏ qua (sửa trong file rồi nhập lại, chỉ cần giữ các dòng này):</p>
+                    <div className="max-h-64 overflow-auto border border-slate-200 rounded-lg">
+                      <table style={{ minWidth: 0 }}>
+                        <thead>
+                          <tr><th>Dòng</th><th>Email</th><th>Lý do</th></tr>
+                        </thead>
+                        <tbody>
+                          {importModal.result.errors.map((item) => (
+                            <tr key={`${item.row}-${item.email}`}>
+                              <td><b>{item.row}</b></td>
+                              <td className="break-all">{item.email || '—'}</td>
+                              <td>{item.reason}</td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </>
+                )}
+
+                <div className="modal-actions">
+                  <Button variant="secondary" type="button" onClick={() => setImportModal((prev) => ({ ...prev, file: null, result: null, error: '' }))}>
+                    Nhập file khác
+                  </Button>
+                  <Button type="button" onClick={closeImportModal}>Đóng</Button>
+                </div>
+              </div>
+            ) : (
+              <form onSubmit={handleImportUsers}>
+                <p className="text-xs text-slate-500 -mt-2 mb-3">
+                  Tạo nhiều tài khoản cùng lúc từ file <b>.csv</b> hoặc <b>.xlsx</b> (tối đa 5MB, {IMPORT_MAX_ROWS} dòng mỗi lần). Hệ thống sinh mật khẩu tạm
+                  ngẫu nhiên và gửi qua email cho từng người; mỗi người phải đổi mật khẩu ở lần đăng nhập đầu tiên.
+                </p>
+
+                <div className="p-3 mb-4 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-600">
+                  <div className="font-semibold text-slate-700 mb-1">Dòng đầu là tiêu đề cột:</div>
+                  <code>email</code> (bắt buộc), <code>fullName</code> (bắt buộc), <code>phoneNumber</code>, <code>role</code> (student, teacher, training_manager).
+                  CSV phải lưu dạng UTF-8.
+                  <button
+                    type="button"
+                    onClick={downloadImportTemplate}
+                    className="flex items-center gap-1 mt-2 text-blue-600 hover:underline bg-transparent border-0 p-0 cursor-pointer text-xs"
+                  >
+                    <Download size={13} /> Tải file mẫu (.csv)
+                  </button>
+                </div>
+
+                <label className="field">
+                  <span>File danh sách *</span>
+                  <input type="file" accept=".csv,.xlsx" onChange={handlePickImportFile} />
+                </label>
+                {importModal.file && (
+                  <p className="flex items-center gap-1.5 text-xs text-slate-500 -mt-2 mb-3">
+                    <FileSpreadsheet size={14} /> {importModal.file.name} ({Math.max(1, Math.round(importModal.file.size / 1024))} KB)
+                  </p>
+                )}
+
+                <label className="field">
+                  <span>Vai trò cho các dòng không ghi cột role</span>
+                  <select value={importModal.defaultRole} onChange={(e) => setImportModal((prev) => ({ ...prev, defaultRole: e.target.value }))}>
+                    <option value="student">Học viên (Student)</option>
+                    <option value="teacher">Giảng viên (Teacher)</option>
+                  </select>
+                </label>
+
+                {importModal.error && (
+                  <div className="flex gap-2 p-3 mb-2 rounded-lg bg-red-50 border border-red-200 text-red-700 text-xs">
+                    <AlertCircle size={16} className="flex-shrink-0 mt-0.5" />
+                    <span>{importModal.error}</span>
+                  </div>
+                )}
+
+                <div className="modal-actions">
+                  <Button variant="secondary" type="button" onClick={closeImportModal}>Hủy</Button>
+                  <Button type="submit" disabled={isImporting || !importModal.file}>
+                    {isImporting ? 'Đang xử lý (có thể mất vài chục giây)...' : 'Nhập danh sách'}
                   </Button>
                 </div>
               </form>

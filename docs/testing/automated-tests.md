@@ -13,7 +13,7 @@
 | **Unit test** | `backend/tests/unit/*.test.js` | Không (không cần CSDL, mạng) | `npm test` | Công thức tính điểm tổng kết, xếp loại, các trường hợp ngoại lệ E1–E3 của [`grading-policy.md`](../requirements/grading-policy.md) |
 | **Kiểm thử API đầu-cuối** | `backend/tests/e2e/api.e2e.js` | **Có** (backend + CSDL có dữ liệu mẫu) | `npm run test:e2e` | Gọi API thật: đăng nhập 4 vai trò, phân quyền, phân trang, thông báo, bảng điểm lớp, thảo luận trong bài học |
 
-Unit test không đụng dữ liệu. Kiểm thử API **chỉ đọc**, trừ nhóm *Thảo luận* có ghi vài bài thử rồi **tự xóa ngay** (và chỉ do giảng viên mẫu đăng nên không sinh thông báo). Ngoại lệ duy nhất không tự dọn được: mỗi lần chạy thêm vài dòng vào **Nhật ký hệ thống** (các lần đăng nhập, một lần đăng nhập sai, một lần xuất CSV) vì nhật ký chỉ thêm; không ảnh hưởng dữ liệu nghiệp vụ. Nhóm *Nhật ký hệ thống* cần bảng `audit_logs` (chạy `npm run db:migrate:audit-logs` nếu CSDL có sẵn dữ liệu).
+Unit test không đụng dữ liệu. Kiểm thử API **chỉ đọc**, trừ nhóm *Thảo luận* và *Nhập người dùng hàng loạt* có ghi dữ liệu thử rồi **tự xóa ngay** (và chỉ do giảng viên mẫu đăng nên không sinh thông báo). Ngoại lệ không tự dọn được: mỗi lần chạy thêm vài dòng vào **Nhật ký hệ thống** (các lần đăng nhập, một lần đăng nhập sai, một lần xuất CSV) vì nhật ký chỉ thêm; không ảnh hưởng dữ liệu nghiệp vụ. Nhóm *Nhật ký hệ thống* cần bảng `audit_logs` (chạy `npm run db:migrate:audit-logs` nếu CSDL có sẵn dữ liệu). Nhóm *Nhập người dùng hàng loạt* chỉ tạo 2 tài khoản thử khi chưa bật SMTP thật (email chỉ in ra log; địa chỉ thử có đuôi `@e2e.invalid`) rồi **xóa mềm** ngay; bật SMTP thật thì nhóm này bỏ qua phần tạo tài khoản để không gửi thư tới địa chỉ thử. Nhóm *Thêm học viên vào lớp* chỉ ghi khi chưa bật SMTP thật (để không gửi thư tới địa chỉ của học viên mẫu): thêm học viên mẫu vào một lớp của giảng viên mẫu rồi **gỡ ngay**, để lại 1 thông báo đã đọc và 1 bản ghi ghi danh đã xóa mềm; bật SMTP thật thì chỉ chạy các ca bị từ chối (không ghi gì).
 
 ---
 
@@ -26,7 +26,7 @@ cd backend
 npm test
 ```
 
-Kết quả mong đợi: `# pass 193`, `# fail 0`.
+Kết quả mong đợi: `# pass 268`, `# fail 0`.
 
 ### 2.2. Kiểm thử API đầu-cuối
 
@@ -61,7 +61,7 @@ Nếu hệ thống chưa bật, test dừng ngay với thông báo `Không kết
 
 ## 3. Nội Dung Kiểm Thử
 
-### 3.1. Unit test (193 test)
+### 3.1. Unit test (268 test)
 
 #### Công thức điểm — `tests/unit/grading.test.js` (35 test)
 
@@ -92,16 +92,20 @@ Quy tắc quyền và chuẩn hóa nội dung của module Thảo luận / Hỏi
 - Tác giả sửa bài của mình; giảng viên phụ trách, Quản lý, Admin xóa và đánh dấu "đã giải đáp" được; câu trả lời không đánh dấu được.
 - Lớp `paused` hoặc `closed` là chỉ đọc với học viên, riêng giảng viên, Quản lý, Admin vẫn xóa và đánh dấu để kiểm duyệt.
 
-#### Cấu hình và nội dung email — `tests/unit/mailConfig.test.js` (23 test), `tests/unit/emailTemplates.test.js` (14 test)
+#### Cấu hình và nội dung email — `tests/unit/mailConfig.test.js` (23 test), `tests/unit/emailTemplates.test.js` (27 test)
 
 - Chọn chế độ gửi theo biến môi trường (4 tổ hợp `REDIS_URL` × `SMTP_HOST`; chuỗi rỗng do docker compose truyền vào coi như chưa cấu hình); tùy chọn SMTP (cổng 465 TLS, 587 STARTTLS, bỏ khoảng trắng trong mật khẩu ứng dụng Gmail, không gửi `auth` khi thiếu user/pass); người gửi `MAIL_FROM`; đọc `REDIS_URL` (mật khẩu, db, `rediss://`, từ chối giao thức khác).
-- Nội dung email OTP và đặt lại mật khẩu: tiêu đề có mã, link ghép từ `CLIENT_URL` (bỏ `/` cuối, lấy giá trị đầu khi có nhiều, mã hóa token), tên người dùng và link bị escape để không chèn được HTML.
+- Nội dung email OTP, đặt lại mật khẩu, tài khoản mới (có mật khẩu tạm, không để mật khẩu trong tiêu đề) và thêm vào lớp (tên lớp nhiều dòng hoặc quá dài không phá tiêu đề thư): tiêu đề có mã, link ghép từ `CLIENT_URL` (bỏ `/` cuối, lấy giá trị đầu khi có nhiều, mã hóa token), tên người dùng và link bị escape để không chèn được HTML.
 
-#### Dịch vụ gửi email — `tests/unit/emailService.test.js` (26 test)
+#### Dịch vụ gửi email — `tests/unit/emailService.test.js` (29 test)
 
-Chạy với bản giả của `bullmq`, `ioredis` và `nodemailer` (không cần Redis hay SMTP thật): đúng 4 chế độ; job vào hàng đợi `email` với 5 lần thử lại, chờ tăng dần, xóa job khi xong; Queue và Worker dùng chung một client `ioredis`; Redis lỗi, chưa sẵn sàng, treo quá 3 giây, thiếu thư viện hoặc `REDIS_URL` sai thì chuyển sang gửi trực tiếp (không thêm job khi Redis chưa sẵn sàng để tránh gửi trùng); lỗi Redis/worker lặp lại chỉ ghi log một lần mỗi 60 giây; worker gửi SMTP và ném lỗi để BullMQ thử lại; đóng worker/hàng đợi/transporter an toàn; mọi hàm gửi không bao giờ ném lỗi, kể cả khi đầu vào sai. Phần chưa test tự động: nối Redis và SMTP thật (kiểm tay theo `deployment.md` mục 4.1).
+Chạy với bản giả của `bullmq`, `ioredis` và `nodemailer` (không cần Redis hay SMTP thật): đúng 4 chế độ; job vào hàng đợi `email` với 5 lần thử lại, chờ tăng dần, xóa job khi xong; Queue và Worker dùng chung một client `ioredis`; Redis lỗi, chưa sẵn sàng, treo quá 3 giây, thiếu thư viện hoặc `REDIS_URL` sai thì chuyển sang gửi trực tiếp (không thêm job khi Redis chưa sẵn sàng để tránh gửi trùng); lỗi Redis/worker lặp lại chỉ ghi log một lần mỗi 60 giây; worker gửi SMTP và ném lỗi để BullMQ thử lại; đóng worker/hàng đợi/transporter an toàn; mọi hàm gửi không bao giờ ném lỗi, kể cả khi đầu vào sai. Worker giới hạn 10 email mỗi giây; email cấp tài khoản mới có mật khẩu tạm trong log ở chế độ log; email thêm vào lớp có tên lớp và link lớp, vào hàng đợi với tên job `class-added`. Phần chưa test tự động: nối Redis và SMTP thật (kiểm tay theo `deployment.md` mục 4.1).
 
-#### Nhật ký hệ thống và cấu hình nền tảng — `tests/unit/auditRules.test.js` (27 test), `tests/unit/auditRecorder.test.js` (5 test), `tests/unit/platformSettings.test.js` (9 test)
+#### Thông báo thêm học viên vào lớp — `tests/unit/classAddedRules.test.js` (5 test)
+
+Nội dung thông báo trong chuông khi giảng viên thêm học viên bằng email ([`api-notifications.md`](../api/api-notifications.md) mục 3, BR-022) do hàm thuần `backend/src/utils/classAddedRules.js` dựng: loại `class_member_added`, link `/student/classes/:id`, tiêu đề và nội dung có tên lớp, khóa học và người thêm; thiếu khóa học hoặc người thêm vẫn dựng được; xuống dòng và khoảng trắng thừa trong tên lớp được gộp lại. Phần ghi vào bảng `notifications` và gọi gửi email nằm ở service nên chỉ được kiểm bằng nhóm E2E "Thêm học viên vào lớp".
+
+#### Nhật ký hệ thống và cấu hình nền tảng — `tests/unit/auditRules.test.js` (28 test), `tests/unit/auditRecorder.test.js` (5 test), `tests/unit/platformSettings.test.js` (9 test)
 
 Quy tắc ghi và tra cứu nhật ký nằm trong hàm thuần `backend/src/utils/auditRules.js` và `auditRecorder.js`, cấu hình hiển thị ở `platformSettings.js` ([`api-audit-logs.md`](../api/api-audit-logs.md), BR-080 → BR-085); `Op` của Sequelize được truyền vào nên không cần CSDL:
 - Danh mục hành động: mã dạng `nhóm.hành_động`, đủ nhãn và nhóm; hành động lạ vẫn hiển thị được.
@@ -112,7 +116,17 @@ Quy tắc ghi và tra cứu nhật ký nằm trong hàm thuần `backend/src/uti
 - Bộ ghi nhật ký: lỗi CSDL không ném ra ngoài và có cảnh báo gợi ý chạy migration; cảnh báo lặp chỉ in một lần mỗi khoảng thời gian.
 - Cấu hình nền tảng: giá trị mặc định đúng với code; đủ cấu hình S3, SMTP + hàng đợi, AI; **không bao giờ lộ khóa bí mật, mật khẩu, token, chuỗi kết nối**; 10 giới hạn tần suất giữ đúng số lần và cửa sổ thời gian như trước khi gom về `rateLimitRules.js`.
 
-### 3.2. Kiểm thử API — `tests/e2e/api.e2e.js` (59 kiểm tra)
+#### Nhập người dùng hàng loạt — `tests/unit/multipartParser.test.js` (16 test), `tests/unit/bulkImportRules.test.js` (37 test)
+
+Tự đọc `multipart/form-data` và quy tắc nhập tệp ([`api-users.md`](../api/api-users.md) mục 2.12, BR-008, BR-009) nằm trong hàm thuần `backend/src/utils/multipartParser.js` và `bulkImportRules.js`, kiểm tra không cần CSDL, Redis hay thư viện Excel:
+- Multipart: tách tệp và trường chữ; dữ liệu nhị phân chứa `0x00`, CRLF và `--` vẫn nguyên vẹn; tên tệp tiếng Việt, `filename*`, boundary có ngoặc kép; body cắt cụt, thiếu `Content-Disposition`, quá nhiều phần đều là lỗi 400; gom luồng dừng ngay khi vượt giới hạn dung lượng.
+- CSV: ngoặc kép, ngoặc kép đôi và xuống dòng trong ô; dấu phân cách `,` `;` tab tự nhận; BOM; CRLF/LF/CR; dòng trống vẫn được đếm để số dòng báo lỗi khớp tệp; ngoặc chưa đóng báo lỗi; từ chối CSV mã ANSI và tệp nhị phân; nhận diện `.xlsx` giả (đuôi `.xlsx` nhưng không phải ZIP).
+- Cột và dòng: tên cột tiếng Anh/Việt không phân biệt hoa thường và dấu, thứ tự bất kỳ; thiếu `email`/`fullName`, tệp rỗng hoặc chỉ có tiêu đề → 422; đúng 300 dòng được, 301 dòng → 422; số dòng tính theo tệp; giá trị ô Excel (số, ngày, công thức, siêu liên kết, rich text) thành chuỗi.
+- Kiểm tra từng dòng: định dạng email (kể cả giới hạn độ dài), họ tên 2–150 ký tự, số điện thoại (khôi phục số `0` đầu bị Excel làm mất), vai trò (nhận tên Việt, **không bao giờ nhận `admin`**), email trùng trong file không phân biệt hoa thường, email đã có trong hệ thống, dòng sai không "chiếm" email của dòng đúng sau đó.
+- Mật khẩu tạm: 3.000 lần sinh ngẫu nhiên thật đều đủ 12 ký tự, đúng chính sách mật khẩu, không có ký tự dễ nhầm, không trùng nhau; vẫn đúng khi bộ sinh số cho giá trị cực trị.
+- Chèn theo lô: đúng kích thước lô; lô trùng email hoặc sai ràng buộc được thử lại từng dòng; lỗi hệ thống chỉ làm hỏng lô đó và các lô sau vẫn chạy; kết quả tóm tắt không chứa mật khẩu hay mã băm.
+
+### 3.2. Kiểm thử API — `tests/e2e/api.e2e.js` (68 kiểm tra)
 
 | Nhóm | Ví dụ kiểm tra |
 |---|---|
@@ -124,6 +138,8 @@ Quy tắc ghi và tra cứu nhật ký nằm trong hàm thuần `backend/src/uti
 | Dashboard | Cả 4 dashboard trả `stats` |
 | Thông báo | Cần đăng nhập; số chưa đọc là số nguyên không âm; `limit=51` bị chặn; đánh dấu thông báo không phải của mình `404` |
 | Nhật ký hệ thống | 4 đường dẫn admin trả `401` khi chưa đăng nhập và `403` với vai trò khác; danh mục hành động; đăng nhập của Admin được ghi; đăng nhập sai được ghi (`failed`) và **không lộ mật khẩu**; phân trang và bộ lọc; tham số sai `400`; xuất CSV có BOM và việc xuất được ghi (`audit.export`); cấu hình nền tảng đủ các mục và không lộ bí mật |
+| Nhập người dùng hàng loạt | Cần Admin (`401`/`403`); không phải multipart, thiếu tệp, sai đuôi, `.xlsx` giả, `defaultRole` lạ `400`; tệp rỗng / chỉ có tiêu đề / thiếu cột `422`; tệp toàn dòng sai: không tạo gì, báo đúng số dòng và lý do (email sai, đã tồn tại, trùng trong file, vai trò `admin`, số điện thoại, họ tên); khi chưa bật SMTP thật: tạo 2 tài khoản (CSV kiểu Excel tiếng Việt: BOM, dấu `;`, cột tiếng Việt), bắt đổi mật khẩu, nhập lại báo trùng, được ghi nhật ký `user.bulk_import`, rồi xóa mềm |
+| Thêm học viên vào lớp | Không đăng nhập `401`, học viên `403`, mã lớp sai định dạng `400`; email sai định dạng `400`, chưa đăng ký `404`, không phải học viên `400`; học viên đã có trong lớp `409` và không phát sinh thông báo; khi chưa bật SMTP thật: thêm học viên mẫu vào một lớp, số thông báo chưa đọc tăng 1, thông báo `class_member_added` có đúng link và tên lớp, thêm lần hai `409`, gỡ khỏi lớp |
 | Bảng điểm lớp | Với từng lớp của giảng viên mẫu: tỷ trọng cộng lại bằng 1, điểm trong `[0, 10]`, xếp loại khớp ngưỡng, **điểm tổng kết của từng học viên khớp công thức tính lại từ điểm thành phần**, thống kê tổng hợp khớp; học viên xem bảng điểm cả lớp `403`; Quản lý thấy cùng kết quả với giảng viên; xuất CSV trả tệp đính kèm; xuất `.xlsx` mở được và có đủ 4 sheet (Bảng điểm, Thống kê lớp, Tiến độ học, Quy tắc tính điểm) |
 | Thảo luận | Cần đăng nhập; mã sai định dạng `400`; bài học khác khóa `404`; học viên xem được và `canPost = true`; Quản lý xem được nhưng đăng bài `403`; nội dung rỗng hoặc quá 2000 ký tự `400`; giảng viên đăng, trả lời, sửa, đánh dấu, xóa (xóa câu hỏi xóa luôn câu trả lời); học viên sửa/xóa/đánh dấu hộ `403`; tổng quan lớp cho giảng viên, học viên `403` |
 

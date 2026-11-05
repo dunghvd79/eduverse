@@ -27,7 +27,7 @@ flowchart LR
 | `frontend` | build từ `frontend/Dockerfile` (Node build → `nginx:1.27`) | Phục vụ giao diện, chuyển tiếp `/api` và `/uploads` tới backend nên trình duyệt chỉ làm việc với **một địa chỉ** | `FRONTEND_PORT` (mặc định `8080`) |
 | `backend` | build từ `backend/Dockerfile` (`node:22-slim`) | API Express. Lần đầu tự tạo bảng + nạp dữ liệu mẫu | Không (chỉ trong mạng nội bộ) |
 | `postgres` | `postgres:16-alpine` | CSDL riêng của stack Docker | Không |
-| `redis` | `redis:7-alpine` (bật `appendonly`, volume `redis-data`) | Hàng đợi BullMQ cho email tự động (OTP, đặt lại mật khẩu). Email đang chờ gửi không mất khi khởi động lại | Không |
+| `redis` | `redis:7-alpine` (bật `appendonly`, volume `redis-data`) | Hàng đợi BullMQ cho email tự động (OTP, đặt lại mật khẩu, cấp tài khoản mới, thêm vào lớp). Email đang chờ gửi không mất khi khởi động lại | Không |
 
 Redis hiện **chỉ dùng cho hàng đợi email**. Rate limiter và job nén ZIP vẫn chạy trong bộ nhớ của backend. Backend không cần Redis để chạy: thiếu Redis thì email được gửi trực tiếp (xem mục 4.1).
 
@@ -87,7 +87,7 @@ File `.env` **không được commit** (đã nằm trong `.gitignore`). Biến `
 
 > Biến đã đặt sẵn trong terminal (ví dụ `AWS_ACCESS_KEY_ID` do AWS CLI) sẽ **ghi đè** giá trị cùng tên trong `.env`.
 
-### 4.1. Gửi email thật (OTP kích hoạt, đặt lại mật khẩu)
+### 4.1. Gửi email thật (OTP kích hoạt, đặt lại mật khẩu, cấp tài khoản mới, thêm vào lớp)
 
 Mặc định (không điền `SMTP_*`), email **không được gửi đi** mà in ra log backend (`docker compose logs backend`, tìm dòng `[EMAIL → LOG]`) để dev lấy mã OTP. Muốn gửi thật bằng Gmail:
 
@@ -100,6 +100,10 @@ Mặc định (không điền `SMTP_*`), email **không được gửi đi** mà
    - Cổng mặc định 465 (TLS). Muốn dùng cổng 587 thì thêm `SMTP_PORT=587` (STARTTLS).
 3. Khởi động lại backend: `docker compose up -d --build`.
 4. Thử: đăng ký tài khoản mới bằng email thật, mã OTP sẽ về hộp thư (gmail giới hạn khoảng 500 thư/ngày, đủ cho đồ án). Nếu không thấy thì xem mục 8.
+
+Nhập tài khoản hàng loạt gửi một email cho mỗi tài khoản: 300 dòng dùng gần hết hạn mức khoảng 500 thư mỗi ngày của Gmail, nên chia nhỏ file nếu trong ngày còn cần gửi OTP.
+
+Giảng viên thêm học viên vào lớp bằng email cũng gửi một email cho học viên đó (mỗi lần thêm một thư, không đáng kể so với hạn mức).
 
 > **Bảo mật:** mật khẩu ứng dụng cho phép gửi thư thay tài khoản của bạn. Không commit, không dán vào chat/issue. Nếu lộ, thu hồi ở trang Mật khẩu ứng dụng rồi tạo cái mới.
 

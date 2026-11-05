@@ -2,6 +2,7 @@
  * Kiểm thử API đầu-cuối chạy vào hệ thống đang hoạt động (hầu hết chỉ ĐỌC; riêng nhóm Thảo luận có ghi nhưng tự xóa ngay) — docs/testing/automated-tests.md.
  * Lưu ý: mỗi lần chạy sẽ thêm vài dòng vào Nhật ký hệ thống (đăng nhập, một lần đăng nhập sai, một lần xuất CSV, một lần nhập người dùng); nhật ký chỉ thêm nên không tự dọn.
  * Nhóm "Nhập người dùng hàng loạt" chỉ tạo 2 tài khoản thử khi hệ thống chưa bật SMTP thật (email chỉ in ra log), rồi xóa mềm ngay.
+ * Nhóm "Thêm học viên vào lớp" chỉ thêm thật khi chưa bật SMTP thật: thêm học viên mẫu vào một lớp của giảng viên mẫu rồi gỡ ngay, để lại 1 thông báo đã đọc và 1 bản ghi ghi danh đã xóa mềm.
  *
  * Cần hệ thống đang chạy với dữ liệu mẫu (docker compose up -d) rồi chạy:  npm run test:e2e
  * Biến môi trường tùy chọn:
@@ -745,5 +746,76 @@ describe('Thảo luận / hỏi đáp trong bài học (api-discussions.md)', ()
     expectFail(await request(`/discussions/${questionId}`, asTeacher({ method: 'PATCH', body: { content: 'x' } })), 404);
     expectFail(await request(`/discussions/${replyId}`, asTeacher({ method: 'DELETE' })), 404);
     questionId = null;
+  });
+});
+
+describe('Thêm học viên vào lớp và thông báo cho học viên (api-classes.md mục 2.10, BR-022)', () => {
+  const asTeacher = (extra = {}) => ({ token: sessions.teacher.token, ...extra });
+  const asStudent = (extra = {}) => ({ token: sessions.student.token, ...extra });
+  const addMember = (classId, email, who = asTeacher()) => request(`/classes/${classId}/members`, { method: 'POST', body: { email }, ...who });
+  const unreadOfStudent = async () => expectOk(await request('/notifications/unread-count', asStudent())).unreadCount;
+  const listOf = (data) => (Array.isArray(data) ? data : data.items);
+  let activeClasses = [];
+  let studentClassIds = new Set();
+  let added = null; // lớp mà bài thử thêm thật đã thêm học viên mẫu vào, để dọn nếu một bước ở giữa bị lỗi
+
+  before(async () => {
+    // Lớp đang hoạt động do chính giảng viên mẫu phụ trách, và các lớp học viên mẫu đang học
+    activeClasses = listOf(expectOk(await request('/classes/my-classes', asTeacher()))).filter((cls) => cls.status === 'active');
+    studentClassIds = new Set(listOf(expectOk(await request('/classes/my-classes', asStudent()))).map((cls) => cls.id));
+  });
+
+  after(async () => {
+    if (added) await request(`/classes/${added}/members/${sessions.student.user.id}`, asTeacher({ method: 'DELETE' }));
+  });
+
+  it('không đăng nhập → 401; học viên → 403; mã lớp không phải UUID → 400', async () => {
+    const body = { email: 'bat.ky@e2e.invalid' };
+    expectFail(await request(`/classes/${randomUUID()}/members`, { method: 'POST', body }), 401);
+    expectFail(await request(`/classes/${randomUUID()}/members`, { method: 'POST', body, ...asStudent() }), 403);
+    expectFail(await request('/classes/abc/members', { method: 'POST', body, ...asTeacher() }), 400);
+  });
+
+  it('email sai định dạng → 400; email chưa đăng ký → 404; tài khoản không phải học viên → 400 (không ghi gì)', async (t) => {
+    if (activeClasses.length === 0) return t.skip('Giảng viên mẫu chưa có lớp đang hoạt động');
+    const classId = activeClasses[0].id;
+    expectFail(await addMember(classId, 'khong-phai-email'), 400);
+    expectFail(await addMember(classId, `khong.ton.tai.${Date.now()}@e2e.invalid`), 404);
+    expectFail(await addMember(classId, ACCOUNTS.manager.email), 400);
+  });
+
+  it('học viên đã có trong lớp → 409 và không phát sinh thông báo', async (t) => {
+    const cls = activeClasses.find((c) => studentClassIds.has(c.id));
+    if (!cls) return t.skip('Học viên mẫu chưa học lớp đang hoạt động nào của giảng viên mẫu');
+    const before = await unreadOfStudent();
+    expectFail(await addMember(cls.id, ACCOUNTS.student.email), 409);
+    assert.equal(await unreadOfStudent(), before);
+  });
+
+  it('thêm thật: học viên nhận thông báo trong chuông, rồi gỡ khỏi lớp (khi chưa bật SMTP)', async (t) => {
+    const settings = expectOk(await request('/admin/settings', { token: sessions.admin.token }));
+    if (settings.email.transport === 'smtp') return t.skip('Đang bật SMTP thật, bỏ qua để không gửi email tới địa chỉ của học viên mẫu');
+    const cls = activeClasses.find((c) => !studentClassIds.has(c.id));
+    if (!cls) return t.skip('Học viên mẫu đã học mọi lớp đang hoạt động của giảng viên mẫu nên không còn lớp để thêm vào');
+
+    const unreadBefore = await unreadOfStudent();
+    const data = expectOk(await addMember(cls.id, ACCOUNTS.student.email.toUpperCase()), 201);
+    added = cls.id;
+    assert.equal(data.studentId, sessions.student.user.id);
+    assert.equal(data.email, ACCOUNTS.student.email);
+
+    assert.equal(await unreadOfStudent(), unreadBefore + 1);
+    const latest = expectOk(await request('/notifications?limit=5', asStudent())).items[0];
+    assert.equal(latest.type, 'class_member_added');
+    assert.equal(latest.isRead, false);
+    assert.equal(latest.link, `/student/classes/${cls.id}`);
+    assert.ok(latest.message.includes(`"${cls.name}"`), 'nội dung thông báo thiếu tên lớp');
+    assert.match(latest.title, /^Bạn đã được thêm vào lớp: /);
+    expectOk(await request(`/notifications/${latest.id}/read`, asStudent({ method: 'PATCH' })));
+
+    expectFail(await addMember(cls.id, ACCOUNTS.student.email), 409);
+    expectOk(await request(`/classes/${cls.id}/members/${sessions.student.user.id}`, asTeacher({ method: 'DELETE' })));
+    added = null;
+    assert.equal(await unreadOfStudent(), unreadBefore);
   });
 });

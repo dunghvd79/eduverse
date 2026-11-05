@@ -147,6 +147,7 @@ Giá trị thật nằm trong biến môi trường (`backend/.env` hoặc `dock
 | `auth.password_change` | `auth` | Đổi mật khẩu | `PATCH /auth/change-password` hoặc `PATCH /users/me/password` thành công |
 | `auth.password_reset` | `auth` | Đặt lại mật khẩu qua email | `POST /auth/reset-password` thành công |
 | `user.create` | `user` | Tạo tài khoản | Admin `POST /users` (`metadata`: email, role mới) |
+| `user.bulk_import` | `user` | Nhập tài khoản hàng loạt | Admin `POST /users/bulk-import` (`metadata`: tên tệp, vai trò mặc định, số dòng, số tạo được, số bị bỏ qua) |
 | `user.update` | `user` | Sửa thông tin / vai trò tài khoản | Admin `PATCH /users/:id` (`metadata`: tên các trường đã gửi, role sau khi sửa) |
 | `user.lock` / `user.unlock` | `user` | Khóa / Mở khóa tài khoản | Admin `PATCH /users/:id/status` (`metadata.reason`) |
 | `user.reset_password` | `user` | Đặt lại mật khẩu khẩn cấp | Admin `POST /users/:id/reset-password` |

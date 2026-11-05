@@ -575,6 +575,15 @@
   | `sv2026001@eduverse.vn` | `Nguyễn Văn A` | `0981234567` | `student` |
   | `sv2026002@eduverse.vn` | `Trần Thị B` | `0987654321` | `student` |
 
+> **Triển khai thực tế (02/11/2026)** — giao diện: nút **"Nhập từ file"** trên `/admin/users` (có nút tải file mẫu `.csv`).
+> - **Tệp:** `.csv` (phải lưu UTF-8; nhận dấu phân cách `,` `;` hoặc tab nên file xuất từ Excel tiếng Việt vẫn đọc được) hoặc `.xlsx` (đọc sheet đầu tiên). Tối đa 5MB và **300 dòng dữ liệu mỗi lần**, nhiều hơn thì chia nhỏ file. Backend tự đọc `multipart/form-data`, không cần thư viện `multer`.
+> - **Cột:** dòng đầu là tiêu đề. Nhận tên cột tiếng Anh hoặc tiếng Việt, không phân biệt hoa thường và dấu (`email`, `fullName` / `Họ và tên`, `phoneNumber` / `Số điện thoại`, `role` / `Vai trò`); cột đứng thứ tự nào cũng được, cột lạ bị bỏ qua. `role` nhận `student`, `teacher`, `training_manager` (hoặc `Học viên`, `Giảng viên`, `Quản lý đào tạo`) và **không bao giờ tạo `admin`**; để trống thì dùng `defaultRole`.
+> - **Kiểm tra từng dòng:** email đúng định dạng, họ tên 2–150 ký tự, số điện thoại đúng định dạng (số `0` đầu bị Excel làm mất sẽ được khôi phục), email không trùng trong file (giữ dòng đầu tiên) và chưa có trong hệ thống. Dòng sai chỉ bị bỏ qua và báo trong `errors`, các dòng đúng vẫn được tạo. `row` là số dòng trong tệp (dòng tiêu đề là dòng 1).
+> - **Xử lý:** ngay trong request, không dùng worker nền. Sinh mật khẩu tạm ngẫu nhiên 12 ký tự (đúng chính sách mật khẩu), băm bcrypt, tạo tài khoản theo lô 100 dòng (mỗi lô một giao dịch) với `email_verified = true`, `must_change_password = true`. Lô lỗi do tranh chấp trùng email được thử lại từng dòng. Mỗi tài khoản phải băm bcrypt nên 300 dòng có thể mất vài chục giây (nginx cho chờ tối đa 120 giây).
+> - **Email:** mỗi tài khoản mới nhận một email gồm email đăng nhập, mật khẩu tạm và link đăng nhập; email được đưa vào hàng đợi BullMQ ở nền sau khi đã trả phản hồi (worker gửi tối đa 10 email mỗi giây). **Mật khẩu tạm không có trong phản hồi API và không bị ghi log.** Ngoại lệ: khi chưa cấu hình SMTP, email (gồm cả mật khẩu) được in ra log backend để máy dev lấy được; hãy cấu hình SMTP rồi dùng "Đặt lại mật khẩu" nếu cần cấp lại.
+> - **Phản hồi bổ sung:** `emailsQueued` (số email đã xếp để gửi, bằng `successCount`) và `emailMode` (`queue_smtp`, `queue_log`, `direct_smtp` hoặc `direct_log`; đuôi `_log` nghĩa là chưa cấu hình SMTP nên email không được gửi đi). Giao diện dùng hai trường này để cảnh báo.
+> - **Nhật ký:** mỗi lần nhập ghi một dòng `user.bulk_import` (tên tệp, `defaultRole`, số dòng, số tạo được, số bị bỏ qua) vào [Nhật ký hệ thống](api-audit-logs.md).
+
 #### Response Thành Công (`200 OK`):
 ```json
 {
@@ -585,6 +594,8 @@
     "totalRows": 50,
     "successCount": 48,
     "failureCount": 2,
+    "emailsQueued": 48,
+    "emailMode": "queue_smtp",
     "errors": [
       {
         "row": 12,
@@ -607,7 +618,12 @@
 |:---:|---|---|---|
 | `400` | `Bad Request` | Định dạng file không hợp lệ | File tải lên không phải đuôi `.xlsx` hoặc `.csv` |
 | `400` | `Bad Request` | Dung lượng file vượt quá giới hạn 5MB | Tệp tải lên quá lớn |
+| `400` | `Bad Request` | Thiếu tệp tải lên (trường "file") | Multipart không có phần `file` |
+| `400` | `Bad Request` | Yêu cầu phải gửi dạng multipart/form-data kèm trường "file" | Gửi JSON hoặc `Content-Type` khác |
+| `400` | `Bad Request` | File CSV phải được lưu bằng mã hóa UTF-8 … | CSV lưu mã ANSI (Excel "CSV (Comma delimited)"); chọn "CSV UTF-8" khi lưu |
+| `400` | `Bad Request` | Dữ liệu gửi lên không hợp lệ | `defaultRole` không phải `student` hoặc `teacher` |
 | `422` | `Unprocessable Entity` | File rỗng hoặc thiếu các cột tiêu đề bắt buộc | File không có các cột `email`, `fullName` |
+| `422` | `Unprocessable Entity` | Mỗi lần chỉ nhập tối đa 300 dòng … | File có hơn 300 dòng dữ liệu |
 
 ---
 
@@ -632,6 +648,7 @@
   1. Fast-parse file Excel và kiểm tra sơ bộ định dạng các dòng.
   2. Batch Insert các bản ghi người dùng hợp lệ vào Database bằng một Transaction duy nhất (`chunkSize: 100`).
   3. Bắn các Task gửi email chứa mật khẩu khởi tạo qua Mail Worker có giới hạn tốc độ (Rate Limiting SMTP) để không bị nhà cung cấp email chặn thư rác (Spam Filter).
+  > **Triển khai thực tế:** bước 1–2 chạy ngay trong request (giới hạn 300 dòng mỗi lần để không treo), chỉ bước 3 chạy nền qua BullMQ. Chi tiết ở ghi chú cuối mục 2.12.
 
 ### 3.4. Thứ tự Khai báo Route trong Express Router (Route Precedence)
 - **Lưu ý sống còn khi code Backend Express.js:** Do cơ chế Route Matching từ trên xuống dưới theo thứ tự đăng ký middleware, các route tĩnh phải được định nghĩa **TRƯỚC** các route có path parameter `:id`:

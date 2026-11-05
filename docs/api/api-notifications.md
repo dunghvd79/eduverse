@@ -71,6 +71,9 @@
 | `course_rejected` | Quản lý từ chối khóa học, kèm lý do | Chủ khóa học | `/teacher/courses/:courseId/curriculum` |
 | `discussion_question` | Học viên đặt câu hỏi mới trong bài học (`POST /classes/:classId/lessons/:lessonId/discussions`); giảng viên tự đăng thì không báo | Giảng viên phụ trách lớp | `/teacher/classes/:classId?tab=discussions` |
 | `discussion_reply` | Có người trả lời câu hỏi (`POST /discussions/:id/replies`), trừ khi chính người hỏi trả lời | Người đặt câu hỏi | Học viên: `/student/courses/:courseId/learn/:lessonId?classId=:classId`; giảng viên: `/teacher/classes/:classId?tab=discussions` |
+| `class_member_added` | Giảng viên phụ trách hoặc Admin thêm học viên vào lớp bằng email (`POST /classes/:id/members`, BR-022); học viên tự vào bằng mã lớp (`POST /classes/enroll`) thì không báo | Học viên được thêm | `/student/classes/:classId` |
+
+> **Email kèm theo (02/11/2026):** riêng `class_member_added` còn gửi một email tới học viên, tiêu đề `EduVerse: bạn đã được thêm vào lớp <tên lớp>`, có tên lớp, khóa học, giảng viên phụ trách và link `/student/classes/:classId` ghép từ `CLIENT_URL`. Email đi qua cùng hàng đợi BullMQ như OTP (xem [`deployment.md`](../architecture/deployment.md) mục 4.1) và không được chờ kết quả gửi để API không bị chậm. Chưa bật SMTP thật thì nội dung email chỉ in ra log backend. Thông báo và email đều **không bao giờ làm hỏng việc thêm học viên**: bảng `notifications`, Redis hay SMTP lỗi chỉ ghi cảnh báo trong log.
 
 ---
 
@@ -106,7 +109,7 @@ Tạo bảng bằng migration idempotent: `npm run db:migrate:notifications` (tr
 
 ## 6. Trạng Thái Triển Khai (17/10/2026)
 
-- ✅ 4 endpoint, bảng `notifications`, 6 loại sự kiện ở mục 3.
+- ✅ 4 endpoint, bảng `notifications`, 9 loại sự kiện ở mục 3 (`class_member_added` thêm 02/11/2026).
 - ✅ Chuông thông báo ở giao diện (18/10/2026): hỏi `unread-count` mỗi 30 giây, danh sách thả xuống, bấm vào thông báo để đánh dấu đã đọc và chuyển tới `link`, nút "Đánh dấu tất cả đã đọc".
 - ✅ Email OTP kích hoạt và link đặt lại mật khẩu gửi qua BullMQ + Nodemailer (27/10/2026, xem `deployment.md` mục 4.1).
-- ⏳ Chưa làm: email cho các thông báo trong chuông, Socket.IO push, thông báo đề kiểm tra mới/đề được chấm, xóa/dọn thông báo cũ.
+- ⏳ Chưa làm: email cho các loại thông báo còn lại trong chuông (hiện chỉ `class_member_added` có email kèm), Socket.IO push, thông báo đề kiểm tra mới/đề được chấm, xóa/dọn thông báo cũ.

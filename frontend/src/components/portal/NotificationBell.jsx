@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, CheckCircle2, ClipboardCheck, FileText, RotateCcw, XCircle } from 'lucide-react';
+import { Bell, CheckCircle2, ClipboardCheck, FileText, RotateCcw, UserPlus, XCircle } from 'lucide-react';
 import { useAuthStore } from '../../stores/useAuthStore';
 import notificationService from '../../services/notificationService';
 
@@ -13,6 +13,7 @@ const TYPE_STYLE = {
   assignment_assigned: { icon: FileText, tone: 'bg-blue-50 text-blue-600' },
   assignment_graded: { icon: CheckCircle2, tone: 'bg-green-50 text-green-600' },
   assignment_resubmission: { icon: RotateCcw, tone: 'bg-orange-50 text-orange-600' },
+  class_member_added: { icon: UserPlus, tone: 'bg-blue-50 text-blue-600' },
   course_pending: { icon: ClipboardCheck, tone: 'bg-blue-50 text-blue-600' },
   course_approved: { icon: CheckCircle2, tone: 'bg-green-50 text-green-600' },
   course_rejected: { icon: XCircle, tone: 'bg-red-50 text-red-600' }

@@ -465,7 +465,7 @@
 ### 2.10. Thêm học viên thủ công vào lớp
 
 #### `POST /api/v1/classes/:id/members`
-* **Mô tả chức năng:** Giảng viên phụ trách hoặc Quản trị viên thêm trực tiếp một học viên vào lớp thông qua địa chỉ email của học viên đó mà không cần học viên tự nhập mã.
+* **Mô tả chức năng:** Giảng viên phụ trách hoặc Quản trị viên thêm trực tiếp một học viên vào lớp thông qua địa chỉ email của học viên đó mà không cần học viên tự nhập mã. Học viên được báo ngay trong chuông (loại `class_member_added`) và qua email; cả hai không bao giờ làm hỏng việc thêm (xem [`api-notifications.md`](api-notifications.md) mục 3).
 * **Quyền hạn:** `[Roles: teacher, admin]`
 * **Headers:**
   * `Authorization: Bearer <access_token>`
@@ -499,6 +499,9 @@
 #### Các lỗi thường gặp:
 | HTTP Code | Error | Message | Nguyên nhân |
 |:---:|---|---|---|
+| `400` | `Bad Request` | Lớp học đã kết thúc, không thể thêm học viên | Lớp có trạng thái `closed` |
+| `400` | `Bad Request` | Chỉ có thể thêm tài khoản học viên vào lớp | Email thuộc tài khoản giảng viên, quản lý hoặc Admin |
+| `400` | `Bad Request` | Tài khoản học viên này đang bị khóa | Tài khoản học viên bị khóa |
 | `401` | `Unauthorized` | Chưa đăng nhập | Access Token thiếu hoặc hết hạn |
 | `403` | `Forbidden` | Không có quyền thêm học viên | Không phải giảng viên phụ trách lớp |
 | `404` | `Not Found` | Không tìm thấy tài khoản với email này | Email chưa đăng ký tài khoản trên hệ thống |
@@ -753,7 +756,7 @@
 | Endpoint | Trạng thái | Ghi chú |
 |---|:---:|---|
 | 7 endpoint quản lý lớp (`GET/POST/PATCH/DELETE /classes`, `my-classes`, `:id`, `regenerate-code`) | ✅ | |
-| `POST /classes/enroll`, 3 endpoint `/classes/:id/members` | ✅ | |
+| `POST /classes/enroll`, 3 endpoint `/classes/:id/members` | ✅ | Từ 02/11/2026 `POST /classes/:id/members` báo học viên qua chuông và email |
 | `GET /classes/:id/progress` | ✅ | |
 | `GET /classes/:id/grades/export-excel` | ✅ | Xong 13/10/2026 — `?format=xlsx` (mặc định) hoặc `csv`, công thức theo [`grading-policy.md`](../requirements/grading-policy.md) |
 | `GET /classes/:id/gradebook` *(bổ sung)* | ✅ | Bảng điểm JSON cho trang Sổ điểm — GV phụ trách, Quản lý, Admin |

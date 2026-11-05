@@ -141,6 +141,8 @@ flowchart LR
 - **4a. Email đã tồn tại:** Hệ thống thông báo lỗi: *"Email [email] đã được đăng ký trong hệ thống. Vui lòng kiểm tra lại"* $\rightarrow$ quay lại bước 3.
 - **7a. Gửi email thất bại (Lỗi SMTP):** Hệ thống tạo tài khoản thành công nhưng hiển thị cảnh báo: *"Tài khoản đã tạo nhưng gửi email thất bại. Đây là mật khẩu tạm thời của nhân sự: [Mật khẩu]"* để Admin sao chép gửi thủ công.
 
+> **Triển khai thực tế (02/11/2026):** ngoài biểu mẫu tạo từng tài khoản, trang `/admin/users` có nút **"Nhập từ file"** để cấp hàng loạt từ file `.csv` / `.xlsx` (tối đa 300 dòng, tạo được cả học viên; BR-008, BR-009). Lỗi được báo theo từng dòng thay cho ngoại lệ 4a. Email chứa mật khẩu tạm đi qua hàng đợi nên giao diện không có cảnh báo 7a từng người, chỉ cảnh báo chung khi chưa cấu hình SMTP. Đặc tả: [`api-users.md`](../api/api-users.md) mục 2.12.
+
 ---
 
 ### 📄 UC-ADMIN-005: Xem nhật ký hoạt động hệ thống (System Audit Logs)

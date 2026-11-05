@@ -70,7 +70,7 @@ graph TD
     Root --> Admin["🛡️ Quản trị viên (Admin Console)"]
     Admin --> A_Dash["Dashboard hệ thống /admin/dashboard"]
     Admin --> A_Users["Quản lý Người dùng /admin/users"]
-    A_Users --> A_CreateUser["Tạo / sửa / khóa tài khoản (hộp thoại trên /admin/users)"]
+    A_Users --> A_CreateUser["Tạo / nhập từ file / sửa / khóa tài khoản (hộp thoại trên /admin/users)"]
     Admin --> A_Courses["Quản lý Khóa học /admin/courses"]
     Admin --> A_Classes["Quản lý Lớp học /admin/classes và /admin/classes/:id"]
     Admin --> A_Audit["Nhật ký hệ thống (Audit Logs) /admin/audit-logs"]
@@ -160,7 +160,7 @@ Layout: `AdminLayout` (Giao diện chuẩn Back-office, tối ưu quản trị n
 | URL Path | Tên Màn hình | Mục đích & Chức năng chính |
 |---|---|---|
 | `/admin/dashboard` | **Admin Dashboard** | Thống kê vĩ mô: Tổng người dùng (chia theo 4 role), dung lượng lưu trữ S3 đã dùng, số request API, trạng thái kết nối DB/Redis/SMTP. |
-| `/admin/users` | **Quản lý Người dùng** | Bảng danh sách toàn bộ tài khoản trong hệ thống, tìm kiếm theo email/tên, lọc theo role (`student`, `teacher`, `training_manager`, `admin`), lọc theo trạng thái (`active`, `inactive`, `locked`). Tạo tài khoản, chỉnh sửa, đặt lại mật khẩu khẩn cấp và khóa/mở khóa đều là hộp thoại ngay trên trang này (không có route riêng). |
+| `/admin/users` | **Quản lý Người dùng** | Bảng danh sách toàn bộ tài khoản trong hệ thống, tìm kiếm theo email/tên, lọc theo role (`student`, `teacher`, `training_manager`, `admin`), lọc theo trạng thái (`active`, `inactive`, `locked`). Tạo tài khoản, nhập hàng loạt từ file `.csv` / `.xlsx`, chỉnh sửa, đặt lại mật khẩu khẩn cấp và khóa/mở khóa đều là hộp thoại ngay trên trang này (không có route riêng). |
 | `/admin/courses` | **Quản lý Khóa học** | Xem mọi khóa học, lọc theo trạng thái, tìm kiếm, xóa mềm khóa không dùng (kiểm duyệt nội dung). |
 | `/admin/classes` | **Quản lý Lớp học** | Danh sách và chi tiết lớp học toàn hệ thống (`/admin/classes/:id`, chấm bài `/admin/classes/:classId/assignments/:assignmentId/grade`). |
 | `/admin/audit-logs` | **Nhật ký Hệ thống (Audit Logs)** | Tra cứu ai làm gì, lúc nào, từ IP nào (đăng nhập thành công và thất bại, quản lý tài khoản, duyệt khóa học); lọc theo nhóm, hành động, kết quả, thời gian, từ khóa; xuất CSV. Đặc tả: [`api-audit-logs.md`](../api/api-audit-logs.md). |
