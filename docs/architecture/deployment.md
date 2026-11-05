@@ -80,6 +80,7 @@ Tạo chuỗi ngẫu nhiên cho `JWT_SECRET` / `REFRESH_TOKEN_SECRET` (chạy 2 
 | `NODE_ENV` | | `development` | `production` đặt cookie đăng nhập ở chế độ chỉ-HTTPS nên chỉ dùng khi có HTTPS |
 | `DB_AUTO_INIT` | | `true` | `false` = không tự tạo bảng/nạp dữ liệu mẫu |
 | `GEMINI_API_KEY`, `GEMINI_MODEL` | | trống | AI sinh câu hỏi. Trống thì API `/ai/*` trả 503 |
+| `GEMINI_FALLBACK_MODEL` | | `gemini-3.1-flash-lite,gemini-flash-lite-latest` | Model dự phòng theo thứ tự thử, cách nhau dấu phẩy. Mỗi model trước model cuối chờ tối đa 20 giây, tổng tối đa 60 giây |
 | `AWS_REGION`, `S3_BUCKET`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` | | trống | Để trống `AWS_REGION` hoặc `S3_BUCKET` thì tệp lưu trong volume `uploads-data` |
 | `SMTP_HOST`, `SMTP_PORT`, `SMTP_SECURE`, `SMTP_USER`, `SMTP_PASS`, `MAIL_FROM` | | trống | Gửi email thật. Để trống `SMTP_HOST` thì OTP và link đặt lại mật khẩu được in ra log backend. Xem mục 4.1 |
 

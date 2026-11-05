@@ -41,7 +41,7 @@ Lý do: sửa khóa và hạ tầng trên web vừa dễ lộ (khóa hiện ra t
     "services": [
       { "key": "database", "status": "ok", "latencyMs": 49, "detail": "PostgreSQL · phản hồi 49 ms" },
       { "key": "storage", "status": "local_storage", "detail": "Lưu cục bộ trên máy chủ (backend/uploads)" },
-      { "key": "ai", "status": "configured", "detail": "Gemini · gemini-flash-latest → gemini-flash-lite-latest" },
+      { "key": "ai", "status": "configured", "detail": "Gemini · gemini-flash-latest → gemini-3.1-flash-lite → gemini-flash-lite-latest" },
       { "key": "email", "status": "dev_console", "detail": "Chưa cấu hình SMTP: ..." },
       { "key": "queue", "status": "not_configured", "detail": "Chưa có REDIS_URL: ..." }
     ],

@@ -26,6 +26,8 @@ export default function QuizFormModal({ quiz = null, lesson = null, onClose, onS
   const [courseId, setCourseId] = useState('');
   const [lessons, setLessons] = useState([]);
   const [lessonId, setLessonId] = useState(lesson?.id || '');
+  const [chapters, setChapters] = useState([]);
+  const [chapterId, setChapterId] = useState(''); // khóa chưa có bài Quiz trống: tạo bài Quiz mới trong chương này
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
@@ -40,11 +42,17 @@ export default function QuizFormModal({ quiz = null, lesson = null, onClose, onS
     if (lesson) return;
     setLessonId('');
     setLessons([]);
+    setChapters([]);
+    setChapterId('');
     if (!courseId) return;
     courseService.curriculum(courseId)
-      .then(data => setLessons((data.chapters || []).flatMap(ch => (ch.lessons || [])
-        .filter(l => l.lessonType === 'quiz' && !l.quizId)
-        .map(l => ({ ...l, chapterTitle: ch.title })))))
+      .then(data => {
+        setChapters(data.chapters || []);
+        setChapterId(data.chapters?.[0]?.id || '');
+        setLessons((data.chapters || []).flatMap(ch => (ch.lessons || [])
+          .filter(l => l.lessonType === 'quiz' && !l.quizId)
+          .map(l => ({ ...l, chapterTitle: ch.title }))));
+      })
       .catch(error => toast.error(error?.message || 'Không thể tải đề cương.'));
   }, [courseId]);
 
@@ -52,7 +60,8 @@ export default function QuizFormModal({ quiz = null, lesson = null, onClose, onS
 
   const submit = async (event) => {
     event.preventDefault();
-    if (!isEdit && !lessonId) {
+    const createsLesson = !isEdit && !lesson && !lessonId && lessons.length === 0 && Boolean(chapterId);
+    if (!isEdit && !lessonId && !createsLesson) {
       toast.error('Vui lòng chọn bài học loại Quiz.');
       return;
     }
@@ -70,7 +79,15 @@ export default function QuizFormModal({ quiz = null, lesson = null, onClose, onS
     };
     try {
       setSaving(true);
-      const saved = isEdit ? await quizService.update(quiz.id, payload) : await quizService.create({ ...payload, lessonId });
+      let targetLessonId = lessonId;
+      if (createsLesson) {
+        const created = await courseService.createLesson(chapterId, { title: payload.title, lessonType: 'quiz' });
+        targetLessonId = created.id;
+        // Tạo đề lỗi thì lần bấm sau dùng lại bài vừa tạo, không sinh thêm bài trùng
+        setLessons([{ ...created, chapterTitle: chapters.find(ch => ch.id === chapterId)?.title }]);
+        setLessonId(created.id);
+      }
+      const saved = isEdit ? await quizService.update(quiz.id, payload) : await quizService.create({ ...payload, lessonId: targetLessonId });
       toast.success(isEdit ? 'Đã cập nhật cấu hình bài kiểm tra.' : 'Đã tạo bài kiểm tra. Hãy thêm câu hỏi.');
       onSaved(saved);
     } catch (error) {
@@ -106,8 +123,18 @@ export default function QuizFormModal({ quiz = null, lesson = null, onClose, onS
                 {lessons.map(l => <option key={l.id} value={l.id}>{l.chapterTitle} › {l.title}</option>)}
               </select>
             </Field>
+            {courseId && lessons.length === 0 && chapters.length > 0 && (
+              <Field label="Tự tạo bài Quiz mới trong chương">
+                <select value={chapterId} onChange={e => setChapterId(e.target.value)}>
+                  {chapters.map(ch => <option key={ch.id} value={ch.id}>{ch.title}</option>)}
+                </select>
+              </Field>
+            )}
+            {courseId && chapters.length === 0 && (
+              <p className="text-xs text-amber-700">Khóa học chưa có chương nào. Hãy thêm chương trong trang Soạn đề cương trước.</p>
+            )}
             {courses.length === 0 && (
-              <p className="text-xs text-slate-500">Chỉ tạo được đề cho khóa học đang ở trạng thái Bản nháp / Bị từ chối. Thêm bài học loại "Quiz" trong trang Soạn đề cương trước.</p>
+              <p className="text-xs text-slate-500">Chỉ tạo được đề cho khóa học đang ở trạng thái Bản nháp / Bị từ chối.</p>
             )}
           </>
         )}

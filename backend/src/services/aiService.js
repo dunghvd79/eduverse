@@ -9,6 +9,8 @@ import { validateChoices } from './quizService.js';
  */
 const API_BASE = 'https://generativelanguage.googleapis.com/v1beta/models';
 const REQUEST_TIMEOUT_MS = 60 * 1000;
+// Model chưa phải model cuối chỉ được chờ tối đa chừng này: model treo không phản hồi thì còn thời gian cho model dự phòng
+const MODEL_TIMEOUT_MS = 20 * 1000;
 const RETRY_DELAYS_MS = [1000, 3000];
 const MIN_WORDS = 100;
 
@@ -56,9 +58,9 @@ const RESPONSE_SCHEMA = {
  */
 export const geminiModelsOf = (env = process.env) => {
   const model = env.GEMINI_MODEL || 'gemini-flash-latest';
-  // Model dự phòng khi model chính quá tải / bị Google ngừng: dòng Flash-Lite nhanh và ít bị quá tải
-  const fallback = env.GEMINI_FALLBACK_MODEL ?? 'gemini-flash-lite-latest';
-  return [...new Set([model, fallback].filter(Boolean))];
+  // Model dự phòng khi model chính quá tải / bị Google ngừng, cách nhau dấu phẩy: dòng Flash-Lite nhanh và ít bị quá tải
+  const fallbacks = (env.GEMINI_FALLBACK_MODEL ?? 'gemini-3.1-flash-lite,gemini-flash-lite-latest').split(',').map((name) => name.trim());
+  return [...new Set([model, ...fallbacks].filter(Boolean))];
 };
 
 const getConfig = () => {
@@ -127,21 +129,31 @@ const requestModel = async (model, apiKey, prompt, signal) => {
 
 /**
  * Gọi Gemini và trả về { questions, model }.
- * Model chính vẫn quá tải sau khi thử lại (hoặc không còn tồn tại - 404) -> chuyển sang model dự phòng.
+ * Model chính vẫn quá tải sau khi thử lại, không còn tồn tại (404) hoặc treo quá MODEL_TIMEOUT_MS -> chuyển sang model dự phòng.
  */
 const callGemini = async (prompt) => {
   const { apiKey, models } = getConfig();
-  // Mọi lần thử dùng chung 1 hạn chót để request của giảng viên không treo quá lâu
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  // Mọi model dùng chung 1 hạn chót để request của giảng viên không treo quá lâu
+  const deadline = Date.now() + REQUEST_TIMEOUT_MS;
 
   let response;
   let model;
   try {
     for (const [index, candidate] of models.entries()) {
       model = candidate;
-      response = await requestModel(model, apiKey, prompt, controller.signal);
       const hasNext = index < models.length - 1;
+      const remaining = deadline - Date.now();
+      const controller = new AbortController();
+      const timer = setTimeout(() => controller.abort(), hasNext ? Math.min(MODEL_TIMEOUT_MS, remaining) : remaining);
+      try {
+        response = await requestModel(model, apiKey, prompt, controller.signal);
+      } catch (error) {
+        if (!hasNext) throw error;
+        console.warn(`⚠️ Gemini ${model} không phản hồi (${error.name}) -> chuyển sang model dự phòng ${models[index + 1]}`);
+        continue;
+      } finally {
+        clearTimeout(timer);
+      }
       if (!hasNext || ![404, 500, 503].includes(response.status)) break;
       const detail = await response.text().catch(() => '');
       console.warn(`⚠️ Gemini ${model} HTTP ${response.status} -> chuyển sang model dự phòng ${models[index + 1]}`, response.status === 404 ? detail.slice(0, 200) : '');
@@ -149,8 +161,6 @@ const callGemini = async (prompt) => {
   } catch (error) {
     console.error('⚠️ Không gọi được Gemini API:', error.name, error.message);
     throw new AppError('Dịch vụ AI đang bận hoặc không phản hồi, vui lòng thử lại sau', 503, 'Service Unavailable');
-  } finally {
-    clearTimeout(timer);
   }
 
   if (response.status === 429) {
