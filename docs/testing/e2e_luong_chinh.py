@@ -469,6 +469,13 @@ def step7_student_quiz_and_submit(hv):
         expect(p.locator('.lesson-item.active')).to_contain_text(L3, timeout=10000)
     except AssertionError:
         issue('dữ liệu', f'"Tiếp tục" không mở bài kế tiếp chưa học (bài quiz), đang ở: {p.locator(".lesson-item.active").all_inner_texts()}')
+    # BR-016: bài quiz không có nút tự đánh dấu, gọi thẳng API cũng bị chặn
+    if p.get_by_role('button', name='Đánh dấu đã hoàn thành').count():
+        issue('dữ liệu', 'Bài quiz vẫn hiện nút tự đánh dấu hoàn thành')
+    lesson_id = re.search(r'/learn/([0-9a-f-]{36})', p.url).group(1)
+    status, _ = api('POST', f'/classes/{ctx["classId"]}/lessons/{lesson_id}/progress', api_login(STUDENT, PASS), {'isCompleted': True})
+    if status != 409:
+        issue('dữ liệu', f'API cho học viên tự đánh dấu bài quiz (mã {status}, mong đợi 409)')
     p.get_by_role('button', name='Làm bài kiểm tra').click()
     p.wait_for_load_state('networkidle')
     p.get_by_role('button', name=re.compile('Bắt đầu làm bài')).click()

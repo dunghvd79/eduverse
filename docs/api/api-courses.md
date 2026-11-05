@@ -785,7 +785,7 @@
 ### 2.20. Đánh dấu hoàn thành / hủy hoàn thành bài học (Lesson Progress)
 
 #### `POST /api/v1/classes/:classId/lessons/:lessonId/progress`
-* **Mô tả chức năng:** Học viên bấm nút **"Đánh dấu đã hoàn thành"** (hoặc bỏ tích) sau khi xem xong video hoặc đọc xong bài lý thuyết. Hệ thống thực hiện Upsert vào bảng `lesson_progress` trên cặp `(class_id, student_id, lesson_id)` với `is_completed = isCompleted` và `completed_at = now()`. Tự động cập nhật tức thì tỷ lệ hoàn thành khóa học của học viên.
+* **Mô tả chức năng:** Học viên bấm nút **"Đánh dấu đã hoàn thành"** (hoặc bỏ tích) sau khi xem xong video hoặc đọc xong bài lý thuyết. Chỉ áp dụng cho bài `theory`, `video` (BR-016); bài `quiz`, `assignment` do hệ thống tự đánh dấu khi đạt điểm / nộp bài, gọi API này trả `409`. Hệ thống thực hiện Upsert vào bảng `lesson_progress` trên cặp `(class_id, student_id, lesson_id)` với `is_completed = isCompleted` và `completed_at = now()`. Tự động cập nhật tức thì tỷ lệ hoàn thành khóa học của học viên.
 * **Quyền hạn:** `[Roles: student]` (Thành viên lớp học)
 * **Headers:**
   * `Authorization: Bearer <access_token>`
@@ -829,6 +829,7 @@
 #### Các lỗi thường gặp:
 | HTTP Code | Error | Message | Nguyên nhân |
 |:---:|---|---|---|
+| `409` | `Conflict` | Bài kiểm tra/Bài tập được tính hoàn thành tự động..., không thể tự đánh dấu. | Bài học loại `quiz` hoặc `assignment` (BR-016, *bổ sung 05/11/2026*) |
 | `403` | `Forbidden` | Bạn không phải là thành viên của lớp học này | Học viên chưa ghi danh vào lớp |
 | `404` | `Not Found` | Không tìm thấy bài học hoặc lớp học | ID không tồn tại |
 

@@ -29,6 +29,7 @@
 | BR-013 | Cấu trúc nội dung **3 cấp** | Khóa học → Chương (Chapter) → Bài học (Lesson) |
 | BR-014 | Mỗi khóa học có **1 chủ sở hữu** (owner) | Là giảng viên tạo ra khóa học, có toàn quyền chỉnh sửa |
 | BR-015 | Không đưa khóa về `draft` khi **còn lớp đang học** | `PATCH /courses/:id/unpublish` trả `409` nếu khóa còn lớp `active` hoặc `paused` (mọi vai trò, kể cả Admin). Lý do: ở `draft` được xóa bài học, mà bài học bị xóa hẳn kéo theo tiến độ, lượt làm quiz, bài nộp và thảo luận của học viên; học viên đang học cũng sẽ không mở được bài (khóa chưa công khai). Muốn sửa thì kết thúc lớp (`closed`) trước (*bổ sung 30/10/2026*) |
+| BR-016 | **Điều kiện hoàn thành** bài học theo loại | Lý thuyết, Video: học viên tự đánh dấu. Quiz: tự động khi đạt điểm yêu cầu. Bài tập: tự động khi nộp bài. Học viên không tự đánh dấu hay bỏ đánh dấu được bài quiz/bài tập (API trả `409`) vì tiến độ tính vào điểm tổng kết. Giảng viên cần giao đủ bài cho lớp, bài chưa giao vẫn tính vào tổng số bài (*bổ sung 05/11/2026*) |
 
 ---
 

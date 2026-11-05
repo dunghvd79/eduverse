@@ -55,6 +55,7 @@ export default function ClassroomPage() {
   const assignmentId = flatLessons[currentIndex]?.assignmentId;
   const isAssignmentScheduled = flatLessons[currentIndex]?.isAssignmentScheduled;
   const lessonUrl = (id) => learnUrl(courseId, id, classId);
+  const selfCompletable = lesson?.lessonType === 'theory' || lesson?.lessonType === 'video';
 
   const setProgress = async (isCompleted) => {
     if (!classId) {
@@ -211,20 +212,27 @@ export default function ClassroomPage() {
             </Card>
           )}
 
-          <div className="flex flex-wrap justify-between items-center gap-2">
-            {isCompleted ? (
-              <>
-                <span className="text-sm font-semibold text-emerald-600">✓ Đã hoàn thành bài học này</span>
-                <Button variant="secondary" onClick={() => setProgress(false)} disabled={updating || !classId}>
-                  <RotateCcw size={15}/> Bỏ đánh dấu hoàn thành
+          {/* BR-016: lý thuyết, video học viên tự đánh dấu; quiz, bài tập do hệ thống đánh dấu khi đạt điểm / nộp bài */}
+          {selfCompletable ? (
+            <div className="flex flex-wrap justify-between items-center gap-2">
+              {isCompleted ? (
+                <>
+                  <span className="text-sm font-semibold text-emerald-600">✓ Đã hoàn thành bài học này</span>
+                  <Button variant="secondary" onClick={() => setProgress(false)} disabled={updating || !classId}>
+                    <RotateCcw size={15}/> Bỏ đánh dấu hoàn thành
+                  </Button>
+                </>
+              ) : (
+                <Button onClick={() => setProgress(true)} disabled={updating || !classId}>
+                  <CheckCircle2 size={17}/> {updating ? 'Đang lưu...' : 'Đánh dấu đã hoàn thành'}
                 </Button>
-              </>
-            ) : (
-              <Button onClick={() => setProgress(true)} disabled={updating || !classId}>
-                <CheckCircle2 size={17}/> {updating ? 'Đang lưu...' : 'Đánh dấu đã hoàn thành'}
-              </Button>
-            )}
-          </div>
+              )}
+            </div>
+          ) : isCompleted && (
+            <p className="text-sm font-semibold text-emerald-600">
+              ✓ Đã hoàn thành: {lesson.lessonType === 'quiz' ? 'bạn đã đạt bài kiểm tra' : 'bạn đã nộp bài tập'}
+            </p>
+          )}
           {!classId && (
             <p className="text-sm text-slate-500">Vào bài học từ trang lớp học để hệ thống ghi nhận tiến độ.</p>
           )}

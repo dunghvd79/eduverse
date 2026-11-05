@@ -4,6 +4,7 @@ import * as lessonService from '../services/lessonService.js';
 import models from '../models/index.js';
 import { AppError } from '../utils/AppError.js';
 import { sendSuccess } from '../utils/response.js';
+import { isSelfCompletable, autoCompletionMessageOf } from '../utils/lessonProgressRules.js';
 
 const { LessonProgress, Enrollment, ClassModel, Lesson } = models;
 
@@ -230,6 +231,11 @@ export const updateLessonProgress = async (req, res, next) => {
 
     if (!classRecord || classRecord.course_id !== lesson.chapter?.course_id) {
       throw new AppError('Bài học không thuộc khóa học của lớp này', 400, 'Bad Request');
+    }
+
+    // BR-016: quiz và bài tập chỉ hệ thống đánh dấu (đạt điểm / nộp bài), học viên không tự đổi được
+    if (!isSelfCompletable(lesson.lesson_type)) {
+      throw new AppError(autoCompletionMessageOf(lesson.lesson_type), 409, 'Conflict');
     }
 
     const [progress] = await LessonProgress.findOrCreate({
