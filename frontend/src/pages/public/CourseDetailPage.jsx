@@ -5,10 +5,15 @@ import courseService, { COURSE_LEVEL } from '../../services/courseService';
 
 const LESSON_TYPE = { theory: 'Lý thuyết', video: 'Video', quiz: 'Bài kiểm tra', assignment: 'Bài tập' };
 import { toast } from '../../components/common/Toast';
+import { useAuthStore } from '../../stores/useAuthStore';
+
+// Học viên vào lớp bằng mã do trung tâm cấp (BR-021); chưa có luồng tự ghi danh hay thanh toán
+const ENROLL_PATH = '/student/my-courses?enroll=1';
 
 export default function CourseDetailPage() {
   const { id } = useParams();
   const nav = useNavigate();
+  const { user, isAuthenticated } = useAuthStore();
   const [course, setCourse] = useState(null);
   const [curriculum, setCurriculum] = useState(null);
   const [open, setOpen] = useState(0);
@@ -48,8 +53,8 @@ export default function CourseDetailPage() {
   }
 
   const enroll = () => {
-    toast.info('Chức năng ghi danh lớp sẽ được kết nối ở phần Classes/Enrollments.');
-    nav('/auth/login');
+    if (isAuthenticated) nav(ENROLL_PATH);
+    else nav('/auth/login', { state: { from: ENROLL_PATH } });
   };
 
   return (
@@ -142,9 +147,16 @@ export default function CourseDetailPage() {
         <div className="text-3xl font-extrabold text-primary">
           {Number(course.price) === 0 ? 'Miễn phí' : `${Number(course.price).toLocaleString('vi-VN')}đ`}
         </div>
-        <button onClick={enroll} className="w-full h-11 rounded-lg bg-primary hover:bg-primary-hover text-white font-semibold">
-          Đăng ký học ngay
-        </button>
+        {isAuthenticated && user?.role !== 'student' ? (
+          <p className="text-body-md text-slate-600">Chỉ tài khoản học viên mới nhập được mã lớp.</p>
+        ) : (
+          <>
+            <button onClick={enroll} className="w-full h-11 rounded-lg bg-primary hover:bg-primary-hover text-white font-semibold">
+              Nhập mã lớp
+            </button>
+            <p className="text-sm text-slate-600">Dùng mã lớp do trung tâm cung cấp để vào học.</p>
+          </>
+        )}
         <ul className="text-body-md text-slate-600 space-y-2">
           <li>✓ {course.totalLessons || 0} bài học</li>
           {course.level && <li><BarChart3 size={15} className="inline mr-1" /> Trình độ: {COURSE_LEVEL[course.level] || course.level}</li>}

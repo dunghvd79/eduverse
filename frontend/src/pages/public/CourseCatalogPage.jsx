@@ -69,9 +69,6 @@ export default function CourseCatalogPage() {
     price: Number(course.price) === 0 ? 'Miễn phí' : `${Number(course.price).toLocaleString('vi-VN')}đ`,
     originalPrice: course.original_price ? `${Number(course.original_price).toLocaleString('vi-VN')}đ` : null,
     discount: course.discount || null,
-    rating: course.rating || '4.9',
-    reviewCount: course.review_count || '120',
-    studentCount: course.student_count ? `${course.student_count.toLocaleString()} Học viên` : 'Học viên tích cực',
     badge: course.badge || course.category?.name || (course.status === 'published' ? 'Đang mở' : null),
     badgeType: course.badgeType || 'brand'
   })), [courses]);
@@ -113,7 +110,7 @@ export default function CourseCatalogPage() {
           </h1>
 
           <p className="text-slate-600 text-xs sm:text-[15px] max-w-2xl mx-auto leading-relaxed">
-            Hơn 200+ chương trình học bản quyền, ôn luyện bám sát ma trận thi mới của Bộ GD&amp;ĐT cùng chứng chỉ IELTS, TOEIC &amp; ĐGNL 2026.
+            Các chương trình học và ôn luyện bám sát ma trận thi mới của Bộ GD&amp;ĐT cùng chứng chỉ IELTS, TOEIC &amp; ĐGNL 2026.
           </p>
 
           {/* Ô Tìm Kiếm Cao Cấp Mang Thương Hiệu EduVerse */}

@@ -9,8 +9,8 @@ export default function CourseCard({ course }) {
     badge = 'Bestseller',
     badgeType = 'rose', // rose, emerald, amber, brand
     lessonCount = '68 bài giảng',
-    rating = '4.9',
-    reviewCount = '1.450',
+    rating = null,
+    reviewCount = 0,
     title = 'Khóa học chất lượng cao',
     instructor = 'Đội ngũ Giảng viên EduVerse',
     price = '1.490.000đ',
@@ -52,8 +52,12 @@ export default function CourseCard({ course }) {
       <div className="p-4 flex-1 flex flex-col justify-between">
         <div>
           <div className="flex items-center gap-1.5 text-xs mb-1.5 flex-wrap">
-            <span className="text-amber-500 font-bold">★ {rating}</span>
-            <span className="text-slate-400">({reviewCount})</span>
+            {Number(rating) > 0 && (
+              <>
+                <span className="text-amber-500 font-bold">★ {rating}</span>
+                <span className="text-slate-500">({reviewCount})</span>
+              </>
+            )}
             {course?.studentCount && (
               <span className="text-slate-500 text-[11px] font-medium ml-auto">
                 {course.studentCount}

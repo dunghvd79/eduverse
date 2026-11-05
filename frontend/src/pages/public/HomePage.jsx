@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import CourseCard from '../../components/course/CourseCard';
 import courseService from '../../services/courseService';
-import heroStudentCutout from '../../assets/hero_student_cutout.png';
+import heroClassroom from '../../assets/hero_classroom.jpg';
 
 export default function HomePage() {
   const navigate = useNavigate();
@@ -43,9 +43,6 @@ export default function HomePage() {
       badge: 'Bestseller',
       badgeType: 'rose',
       lessonCount: '68 bài giảng',
-      rating: '4.9',
-      reviewCount: '260',
-      studentCount: '194,637 Học viên',
       formatTag: 'Phần mềm online & Video',
       title: '[Complete IELTS 7.0+] Chiến lược làm bài 4 kỹ năng - Chữa đề - Luyện nghe với Dictation [Tặng AI Writing & Speaking]',
       instructor: 'Đội ngũ Cựu Examiner',
@@ -61,9 +58,6 @@ export default function HomePage() {
       badge: 'Phổ biến',
       badgeType: 'emerald',
       lessonCount: '52 chuyên đề',
-      rating: '4.9',
-      reviewCount: '211',
-      studentCount: '107,175 Học viên',
       formatTag: 'Phần mềm online & Video',
       title: '[Complete TOEIC 850+] Chiến lược bứt phá Reading & Listening - Phản xạ từ vựng Spaced Repetition',
       instructor: 'ThS. Nguyễn Thu Hằng',
@@ -79,9 +73,6 @@ export default function HomePage() {
       badge: 'Trọng điểm',
       badgeType: 'amber',
       lessonCount: '56 chuyên đề',
-      rating: '4.9',
-      reviewCount: '184',
-      studentCount: '82,450 Học viên',
       formatTag: 'Khóa học Video & Đề thi thử',
       title: '[Toán 12 Bứt Phá 9+] Tổng ôn ma trận mới 2026 - Kỹ thuật Casio & Tư duy giải nhanh trắc nghiệm đúng/sai',
       instructor: 'ThS. Trần Hoàng Nam',
@@ -97,9 +88,6 @@ export default function HomePage() {
       badge: 'Mới ra mắt',
       badgeType: 'brand',
       lessonCount: '75 đề thực chiến',
-      rating: '5.0',
-      reviewCount: '176',
-      studentCount: '54,200 Học viên',
       formatTag: 'Phần mềm luyện đề thi thử',
       title: '[HSA & APT Master] Luyện thi Đánh giá Năng lực ĐHQG Hà Nội & TP.HCM - Tư duy định lượng, định tính & Khoa học',
       instructor: 'Ban Chuyên môn EduVerse',
@@ -131,10 +119,7 @@ export default function HomePage() {
               thumbnail: c.thumbnailUrl || c.thumbnail_url || 'https://images.unsplash.com/photo-1516321318423-f06f85e504b3?w=800&auto=format&fit=crop&q=80',
               badge: c.badge || (c.category?.name ? c.category.name : (Number(c.price) === 0 ? 'Miễn phí' : 'Nổi bật')),
               badgeType: c.category?.slug === 'english' ? 'rose' : (c.category?.slug === 'math' ? 'amber' : (c.category?.slug === 'exam' ? 'brand' : 'emerald')),
-              lessonCount: c.totalLessons ? `${c.totalLessons} bài học` : (c.lesson_count ? `${c.lesson_count} bài học` : '50+ bài giảng'),
-              rating: c.rating || '4.9',
-              reviewCount: c.review_count || '180',
-              studentCount: c.student_count ? `${c.student_count.toLocaleString()} Học viên` : '15,200+ Học viên',
+              lessonCount: `${c.totalLessons || 0} bài học`,
               formatTag: c.format_tag || 'Khóa học video & Đề thi',
               title: c.title,
               instructor: c.owner?.fullName || c.owner?.full_name || c.owner?.name || 'Giảng viên EduVerse',
@@ -258,7 +243,7 @@ export default function HomePage() {
                     </svg>
                   </div>
                   <span className="leading-relaxed">
-                    <strong className="text-slate-900 font-semibold">Ngân hàng 3,000+ đề thi:</strong> Đề thi thử THPT Quốc gia &amp; Đánh giá năng lực (HSA, APT, V-SAT).
+                    <strong className="text-slate-900 font-semibold">Ngân hàng đề thi:</strong> Đề thi thử THPT Quốc gia &amp; Đánh giá năng lực (HSA, APT, V-SAT).
                   </span>
                 </li>
 
@@ -302,13 +287,13 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Cột hình ảnh minh họa (Nữ sinh EduVerse với 2 huy hiệu tròn nổi bật) */}
+            {/* Cột hình ảnh minh họa: ảnh Unsplash, photo-1571260899304-425eee4c7efc */}
             <div className="lg:col-span-5 flex justify-center lg:justify-end relative items-center">
               <div className="relative w-full max-w-[390px] sm:max-w-[430px] lg:max-w-[460px] transition-transform duration-300 hover:scale-[1.02]">
                 <img
-                  alt="Học viên luyện thi trực tuyến tại EduVerse"
-                  className="w-full h-auto object-contain filter drop-shadow-xl"
-                  src={heroStudentCutout}
+                  alt="Học viên đang học trong lớp"
+                  className="w-full h-auto rounded-3xl object-cover shadow-xl"
+                  src={heroClassroom}
                 />
               </div>
             </div>
@@ -373,34 +358,8 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Chân thẻ: 3 Cột thống kê & Nút CTA full-width */}
+              {/* Chân thẻ: Nút CTA full-width */}
               <div className="px-5 sm:px-6 pb-5 sm:pb-6 pt-2">
-                <div className="grid grid-cols-3 gap-2 mb-3.5">
-                  <div className="bg-slate-50/90 rounded-xl py-2 px-1 text-center border border-slate-100/70">
-                    <div className="text-[13px] sm:text-sm font-extrabold text-slate-900 leading-tight">
-                      1,250+
-                    </div>
-                    <span className="text-[10px] sm:text-[10.5px] text-slate-500 font-medium block mt-0.5 whitespace-nowrap">
-                      Đề &amp; bài
-                    </span>
-                  </div>
-                  <div className="bg-slate-50/90 rounded-xl py-2 px-1 text-center border border-slate-100/70">
-                    <div className="text-[13px] sm:text-sm font-extrabold text-primary leading-tight">
-                      AI
-                    </div>
-                    <span className="text-[10px] sm:text-[10.5px] text-slate-500 font-medium block mt-0.5 whitespace-nowrap">
-                      Chấm bài
-                    </span>
-                  </div>
-                  <div className="bg-slate-50/90 rounded-xl py-2 px-1 text-center border border-slate-100/70">
-                    <div className="text-[13px] sm:text-sm font-extrabold text-slate-900 leading-tight">
-                      3
-                    </div>
-                    <span className="text-[10px] sm:text-[10.5px] text-slate-500 font-medium block mt-0.5 whitespace-nowrap">
-                      Lộ trình
-                    </span>
-                  </div>
-                </div>
 
                 <div className="w-full py-2.5 px-4 rounded-xl bg-sky-50/80 group-hover:bg-primary group-hover:text-white text-primary font-bold text-xs sm:text-sm transition-all duration-300 flex items-center justify-center gap-1.5 border border-sky-100/90 group-hover:border-primary shadow-2xs">
                   <span>Học ngay</span>
@@ -450,34 +409,8 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Chân thẻ: 3 Cột thống kê & Nút CTA full-width */}
+              {/* Chân thẻ: Nút CTA full-width */}
               <div className="px-5 sm:px-6 pb-5 sm:pb-6 pt-2">
-                <div className="grid grid-cols-3 gap-2 mb-3.5">
-                  <div className="bg-slate-50/90 rounded-xl py-2 px-1 text-center border border-slate-100/70">
-                    <div className="text-[13px] sm:text-sm font-extrabold text-slate-900 leading-tight">
-                      850+
-                    </div>
-                    <span className="text-[10px] sm:text-[10.5px] text-slate-500 font-medium block mt-0.5 whitespace-nowrap">
-                      Đề thi
-                    </span>
-                  </div>
-                  <div className="bg-slate-50/90 rounded-xl py-2 px-1 text-center border border-slate-100/70">
-                    <div className="text-[13px] sm:text-sm font-extrabold text-blue-600 leading-tight">
-                      9+
-                    </div>
-                    <span className="text-[10px] sm:text-[10.5px] text-slate-500 font-medium block mt-0.5 whitespace-nowrap">
-                      Mục tiêu
-                    </span>
-                  </div>
-                  <div className="bg-slate-50/90 rounded-xl py-2 px-1 text-center border border-slate-100/70">
-                    <div className="text-[13px] sm:text-sm font-extrabold text-slate-900 leading-tight">
-                      Full
-                    </div>
-                    <span className="text-[10px] sm:text-[10.5px] text-slate-500 font-medium block mt-0.5 whitespace-nowrap">
-                      Chuyên đề
-                    </span>
-                  </div>
-                </div>
 
                 <div className="w-full py-2.5 px-4 rounded-xl bg-blue-50/80 group-hover:bg-blue-600 group-hover:text-white text-blue-700 font-bold text-xs sm:text-sm transition-all duration-300 flex items-center justify-center gap-1.5 border border-blue-100/90 group-hover:border-blue-600 shadow-2xs">
                   <span>Học ngay</span>
@@ -527,34 +460,8 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Chân thẻ: 3 Cột thống kê & Nút CTA full-width */}
+              {/* Chân thẻ: Nút CTA full-width */}
               <div className="px-5 sm:px-6 pb-5 sm:pb-6 pt-2">
-                <div className="grid grid-cols-3 gap-2 mb-3.5">
-                  <div className="bg-slate-50/90 rounded-xl py-2 px-1 text-center border border-slate-100/70">
-                    <div className="text-[13px] sm:text-sm font-extrabold text-slate-900 leading-tight">
-                      520+
-                    </div>
-                    <span className="text-[10px] sm:text-[10.5px] text-slate-500 font-medium block mt-0.5 whitespace-nowrap">
-                      Bài mẫu
-                    </span>
-                  </div>
-                  <div className="bg-slate-50/90 rounded-xl py-2 px-1 text-center border border-slate-100/70">
-                    <div className="text-[13px] sm:text-sm font-extrabold text-amber-700 leading-tight">
-                      2026
-                    </div>
-                    <span className="text-[10px] sm:text-[10.5px] text-slate-500 font-medium block mt-0.5 whitespace-nowrap">
-                      Format mới
-                    </span>
-                  </div>
-                  <div className="bg-slate-50/90 rounded-xl py-2 px-1 text-center border border-slate-100/70">
-                    <div className="text-[13px] sm:text-sm font-extrabold text-slate-900 leading-tight">
-                      100%
-                    </div>
-                    <span className="text-[10px] sm:text-[10.5px] text-slate-500 font-medium block mt-0.5 whitespace-nowrap">
-                      Dẫn chứng
-                    </span>
-                  </div>
-                </div>
 
                 <div className="w-full py-2.5 px-4 rounded-xl bg-amber-50/80 group-hover:bg-amber-600 group-hover:text-white text-amber-800 font-bold text-xs sm:text-sm transition-all duration-300 flex items-center justify-center gap-1.5 border border-amber-100/90 group-hover:border-amber-600 shadow-2xs">
                   <span>Học ngay</span>
@@ -604,34 +511,8 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Chân thẻ: 3 Cột thống kê & Nút CTA full-width */}
+              {/* Chân thẻ: Nút CTA full-width */}
               <div className="px-5 sm:px-6 pb-5 sm:pb-6 pt-2">
-                <div className="grid grid-cols-3 gap-2 mb-3.5">
-                  <div className="bg-slate-50/90 rounded-xl py-2 px-1 text-center border border-slate-100/70">
-                    <div className="text-[13px] sm:text-sm font-extrabold text-slate-900 leading-tight">
-                      920+
-                    </div>
-                    <span className="text-[10px] sm:text-[10.5px] text-slate-500 font-medium block mt-0.5 whitespace-nowrap">
-                      Đề thi
-                    </span>
-                  </div>
-                  <div className="bg-slate-50/90 rounded-xl py-2 px-1 text-center border border-slate-100/70">
-                    <div className="text-[13px] sm:text-sm font-extrabold text-emerald-700 leading-tight">
-                      Đúng/Sai
-                    </div>
-                    <span className="text-[10px] sm:text-[10.5px] text-slate-500 font-medium block mt-0.5 whitespace-nowrap">
-                      Format
-                    </span>
-                  </div>
-                  <div className="bg-slate-50/90 rounded-xl py-2 px-1 text-center border border-slate-100/70">
-                    <div className="text-[13px] sm:text-sm font-extrabold text-slate-900 leading-tight">
-                      VDC
-                    </div>
-                    <span className="text-[10px] sm:text-[10.5px] text-slate-500 font-medium block mt-0.5 whitespace-nowrap">
-                      Vận dụng
-                    </span>
-                  </div>
-                </div>
 
                 <div className="w-full py-2.5 px-4 rounded-xl bg-emerald-50/80 group-hover:bg-emerald-600 group-hover:text-white text-emerald-800 font-bold text-xs sm:text-sm transition-all duration-300 flex items-center justify-center gap-1.5 border border-emerald-100/90 group-hover:border-emerald-600 shadow-2xs">
                   <span>Học ngay</span>
@@ -681,34 +562,8 @@ export default function HomePage() {
                 </div>
               </div>
 
-              {/* Chân thẻ: 3 Cột thống kê & Nút CTA full-width */}
+              {/* Chân thẻ: Nút CTA full-width */}
               <div className="px-5 sm:px-6 pb-5 sm:pb-6 pt-2">
-                <div className="grid grid-cols-3 gap-2 mb-3.5">
-                  <div className="bg-slate-50/90 rounded-xl py-2 px-1 text-center border border-slate-100/70">
-                    <div className="text-[13px] sm:text-sm font-extrabold text-slate-900 leading-tight">
-                      460+
-                    </div>
-                    <span className="text-[10px] sm:text-[10.5px] text-slate-500 font-medium block mt-0.5 whitespace-nowrap">
-                      Đề thi
-                    </span>
-                  </div>
-                  <div className="bg-slate-50/90 rounded-xl py-2 px-1 text-center border border-slate-100/70">
-                    <div className="text-[13px] sm:text-sm font-extrabold text-purple-700 leading-tight">
-                      2 ĐHQG
-                    </div>
-                    <span className="text-[10px] sm:text-[10.5px] text-slate-500 font-medium block mt-0.5 whitespace-nowrap">
-                      HN &amp; HCM
-                    </span>
-                  </div>
-                  <div className="bg-slate-50/90 rounded-xl py-2 px-1 text-center border border-slate-100/70">
-                    <div className="text-[13px] sm:text-sm font-extrabold text-slate-900 leading-tight">
-                      Top 5%
-                    </div>
-                    <span className="text-[10px] sm:text-[10.5px] text-slate-500 font-medium block mt-0.5 whitespace-nowrap">
-                      Mục tiêu
-                    </span>
-                  </div>
-                </div>
 
                 <div className="w-full py-2.5 px-4 rounded-xl bg-purple-50/80 group-hover:bg-purple-600 group-hover:text-white text-purple-800 font-bold text-xs sm:text-sm transition-all duration-300 flex items-center justify-center gap-1.5 border border-purple-100/90 group-hover:border-purple-600 shadow-2xs">
                   <span>Học ngay</span>
@@ -822,7 +677,7 @@ export default function HomePage() {
               to="/courses"
               className="inline-flex items-center justify-center px-6 py-2.5 border border-slate-300 hover:border-primary text-xs sm:text-sm font-semibold rounded-lg text-slate-700 hover:text-primary transition-colors"
             >
-              Xem tất cả hơn 200+ khóa học &amp; phần mềm →
+              Xem tất cả khóa học →
             </Link>
           </div>
         </div>
@@ -852,7 +707,7 @@ export default function HomePage() {
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-xs shrink-0">✓</span>
-                  <span>Ngân hàng giải thích chi tiết 100%</span>
+                  <span>Giải thích đáp án chi tiết</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center font-bold text-xs shrink-0">✓</span>
@@ -878,7 +733,7 @@ export default function HomePage() {
                 {formSubmitted ? (
                   <div className="p-4 bg-emerald-50 border border-emerald-200 rounded-xl text-emerald-700 text-xs sm:text-sm font-semibold text-center space-y-1">
                     <div className="text-emerald-600 text-base font-bold">✓ Đăng ký thành công!</div>
-                    <p>EduVerse đã tiếp nhận thông tin và sẽ liên hệ hỗ trợ bạn trong vòng 15-30 phút.</p>
+                    <p>EduVerse đã tiếp nhận thông tin và sẽ liên hệ hỗ trợ bạn.</p>
                   </div>
                 ) : (
                   <form onSubmit={handleAdvisorySubmit} className="space-y-3">
@@ -1026,12 +881,12 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 👥 7. CỘNG ĐỒNG HƠN 500.000+ HỌC VIÊN (Chuẩn Study4 Community Section) */}
+      {/* 👥 7. CỘNG ĐỒNG HỌC VIÊN */}
       <section className="py-12 bg-white border-b border-slate-200" id="community">
         <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-8">
             <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900">
-              Luyện thi không giới hạn - và hơn 500,000 học viên hoạt động mỗi tháng
+              Học cùng cộng đồng học viên EduVerse
             </h2>
 
             {/* Avatars Stack (Study4 Style) */}
@@ -1057,13 +912,12 @@ export default function HomePage() {
                   </div>
                   <div>
                     <h4 className="font-bold text-xs sm:text-sm text-slate-900">Diễn đàn trao đổi bài tập</h4>
-                    <p className="text-[11px] text-slate-500">Hơn 12,000 câu hỏi được thảo luận mỗi ngày</p>
+                    <p className="text-[11px] text-slate-500">Trao đổi ngay trong từng bài học</p>
                   </div>
                 </div>
                 <div className="p-3 bg-white rounded-xl border border-slate-200/70 text-xs space-y-1.5">
                   <div className="font-bold text-slate-800">Câu 38: Phương pháp tọa độ hóa Oxyz...</div>
                   <p className="text-slate-500 text-[11px]">"Trợ giảng EduVerse đã hướng dẫn cách đặt trục cực nhanh tiết kiệm 3 phút làm bài!"</p>
-                  <span className="text-[10px] text-primary font-semibold">Đã có 18 lượt phản hồi hữu ích</span>
                 </div>
                 <div className="p-3 bg-white rounded-xl border border-slate-200/70 text-xs space-y-1.5">
                   <div className="font-bold text-slate-800">IELTS Writing Task 2: AI Scoring 7.5</div>
@@ -1081,7 +935,7 @@ export default function HomePage() {
                 </div>
                 <div>
                   <h4 className="font-bold text-slate-900 text-xs sm:text-sm">
-                    Cộng đồng học sinh và luyện thi sôi nổi với hơn 500,000 lượt truy cập
+                    Cộng đồng học sinh trao đổi và luyện thi cùng nhau
                   </h4>
                   <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
                     Học sinh các trường THPT Chuyên và đại học trên toàn quốc cùng học tập, thảo luận phương pháp học hiệu quả.
@@ -1095,10 +949,10 @@ export default function HomePage() {
                 </div>
                 <div>
                   <h4 className="font-bold text-slate-900 text-xs sm:text-sm">
-                    Đặt câu hỏi và nhận giải đáp từ trợ giảng chuyên môn sau 15-30 phút
+                    Đặt câu hỏi và nhận giải đáp từ giảng viên
                   </h4>
                   <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
-                    Đội ngũ trợ giảng IELTS 8.0+ và thủ khoa khối A00, D01 hỗ trợ giải đáp trực tiếp dưới từng câu hỏi trong đề thi.
+                    Giảng viên phụ trách lớp trả lời trực tiếp trong phần thảo luận của từng bài học.
                   </p>
                 </div>
               </div>
@@ -1144,87 +998,6 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* 🏆 8. BẢNG VINH DANH THÀNH TÍCH SĨ TỬ (Student Hall of Fame) */}
-      <section className="py-12 bg-slate-50">
-        <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-8">
-            <div className="text-xs font-bold text-primary uppercase tracking-wider mb-1">
-              Thành tích ấn tượng
-            </div>
-            <h2 className="text-xl sm:text-2xl font-extrabold text-slate-900">
-              Học viên EduVerse bứt phá điểm số
-            </h2>
-            <p className="text-slate-500 text-xs sm:text-sm mt-1">
-              Hàng nghìn học viên đã đạt mục tiêu IELTS 7.5+, 8.0+ và đỗ các trường Đại học Top đầu.
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-            {/* Review 1 */}
-            <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-2xs flex flex-col justify-between">
-              <div className="space-y-2">
-                <div className="flex items-center gap-1 text-amber-500 text-xs font-bold">
-                  ★★★★★
-                </div>
-                <p className="text-xs sm:text-[13px] text-slate-700 leading-relaxed italic">
-                  "Tính năng Dictation chép chính tả và phòng thi thử bấm giờ của EduVerse giống 100% thi thật trên máy. Mình tăng từ 6.5 lên 8.0 IELTS Listening chỉ sau 2 tháng luyện đề."
-                </p>
-              </div>
-              <div className="pt-4 mt-4 border-t border-slate-100 flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-blue-100 text-primary font-bold flex items-center justify-center text-xs">
-                  LN
-                </div>
-                <div>
-                  <div className="font-bold text-xs sm:text-sm text-slate-900">Lê Hoàng Nam</div>
-                  <div className="text-[11px] text-primary font-semibold">IELTS 8.0 Overall (L 8.5, R 8.5)</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Review 2 */}
-            <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-2xs flex flex-col justify-between">
-              <div className="space-y-2">
-                <div className="flex items-center gap-1 text-amber-500 text-xs font-bold">
-                  ★★★★★
-                </div>
-                <p className="text-xs sm:text-[13px] text-slate-700 leading-relaxed italic">
-                  "Ma trận đề thi Toán 12 theo format mới với câu hỏi đúng/sai và trả lời ngắn rất sát đề thi Bộ. Giải thích chi tiết từng câu giúp em không bị bỡ ngỡ khi làm bài thi chính thức."
-                </p>
-              </div>
-              <div className="pt-4 mt-4 border-t border-slate-100 flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-emerald-100 text-emerald-600 font-bold flex items-center justify-center text-xs">
-                  TT
-                </div>
-                <div>
-                  <div className="font-bold text-xs sm:text-sm text-slate-900">Nguyễn Thu Trang</div>
-                  <div className="text-[11px] text-emerald-600 font-semibold">Thủ khoa Khối A00 (Toán 9.8 - Lý 9.75)</div>
-                </div>
-              </div>
-            </div>
-
-            {/* Review 3 */}
-            <div className="bg-white p-5 rounded-xl border border-slate-200/80 shadow-2xs flex flex-col justify-between">
-              <div className="space-y-2">
-                <div className="flex items-center gap-1 text-amber-500 text-xs font-bold">
-                  ★★★★★
-                </div>
-                <p className="text-xs sm:text-[13px] text-slate-700 leading-relaxed italic">
-                  "Khóa HSA Master định hướng phần tư duy định lượng và giải quyết vấn đề cực kỳ thông minh. Cảm ơn EduVerse đã giúp em đạt 118/150 điểm ĐGNL ĐHQGHN để vào thẳng Bách Khoa."
-                </p>
-              </div>
-              <div className="pt-4 mt-4 border-t border-slate-100 flex items-center gap-3">
-                <div className="w-9 h-9 rounded-full bg-purple-100 text-purple-600 font-bold flex items-center justify-center text-xs">
-                  ĐM
-                </div>
-                <div>
-                  <div className="font-bold text-xs sm:text-sm text-slate-900">Trần Đức Minh</div>
-                  <div className="text-[11px] text-purple-600 font-semibold">Á khoa ĐGNL ĐHQGHN (HSA 118/150)</div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
     </div>
   );
 }

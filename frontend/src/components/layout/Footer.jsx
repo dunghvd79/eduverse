@@ -5,7 +5,7 @@ export default function Footer() {
   return (
     <footer className="bg-gradient-to-b from-[#0b4887] via-[#0e5aa5] to-[#093a6e] text-blue-100/80 text-sm pt-12 pb-8 border-t border-blue-400/20">
       <div className="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 pb-10 border-b border-white/10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 pb-10 border-b border-white/10">
           {/* EduVerse Info Col */}
           <div className="lg:col-span-2 space-y-4">
             <div className="flex items-center gap-2">
@@ -51,17 +51,6 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Links Col 3: Về EduVerse */}
-          <div>
-            <h4 className="text-white font-bold text-sm mb-3.5 uppercase tracking-wider">Về EduVerse</h4>
-            <ul className="space-y-2 text-xs sm:text-sm text-blue-100/75">
-              <li><Link className="hover:text-white transition-colors" to="/about">Giới thiệu về chúng tôi</Link></li>
-              <li><Link className="hover:text-white transition-colors" to="/privacy">Chính sách bảo mật</Link></li>
-              <li><Link className="hover:text-white transition-colors" to="/terms">Điều khoản dịch vụ</Link></li>
-              <li><Link className="hover:text-white transition-colors" to="/careers">Tuyển dụng Giảng viên &amp; Cố vấn</Link></li>
-              <li><Link className="hover:text-white transition-colors" to="/partners">Hợp tác Trường học &amp; Doanh nghiệp</Link></li>
-            </ul>
-          </div>
         </div>
 
         <div className="pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-blue-200/70 gap-4">

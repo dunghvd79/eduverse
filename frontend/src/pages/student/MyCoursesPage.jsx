@@ -34,7 +34,7 @@ export default function MyCoursesPage() {
   const [sort, setSort] = useState('recent');
   const [search, setSearch] = useState('');
   useUrlSearch(setSearch);
-  const [showEnroll, setShowEnroll] = useState(false);
+  const [showEnroll, setShowEnroll] = useState(() => new URLSearchParams(window.location.search).has('enroll'));
   const [code, setCode] = useState('');
   const [enrolling, setEnrolling] = useState(false);
 
