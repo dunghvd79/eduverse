@@ -237,6 +237,8 @@
 
 ### 2.4. Tạo khóa học mới
 
+> **Bổ sung 31/10/2026 — Trang giới thiệu khóa học:** `GET /courses/:idOrSlug` trả thêm `shortDescription`, `level`, `learningOutcomes` (mảng, rỗng `[]` nếu chưa có), `requirements` (mảng); `GET /courses` trả thêm `shortDescription`, `level` cho từng khóa. Giảng viên soạn ở tab **Trang giới thiệu** của trang soạn đề cương; trang chi tiết công khai và trang duyệt của Quản lý hiển thị các trường này.
+
 #### `POST /api/v1/courses`
 * **Mô tả chức năng:** Giảng viên tạo khung khóa học mới. Hệ thống tự động sinh `slug` từ tiêu đề và gán trạng thái ban đầu là `status: draft`.
 * **Quyền hạn:** `[Roles: teacher, admin]`
@@ -250,7 +252,11 @@
 | `title` | `string` | ✔️ | Tiêu đề khóa học (5 - 255 ký tự) |
 | `description` | `string` | ❌ | Mô tả chi tiết mục tiêu khóa học (tối đa 2000 ký tự) |
 | `thumbnailUrl` | `string` | ❌ | Đường dẫn ảnh đại diện khóa học trên S3 |
-| `price` | `number` | ❌ | Học phí (số dương $\ge 0$, mặc định `0`) |
+| `price` | `number` | ❌ | Học phí ($0 \le$ giá $\le 99.999.999$, mặc định `0`) |
+| `shortDescription` | `string` | ❌ | Mô tả ngắn, tối đa 160 ký tự; chuỗi rỗng lưu thành `null` (*bổ sung 31/10/2026*) |
+| `level` | `string` | ❌ | `beginner` \| `intermediate` \| `advanced` \| `all` hoặc `null` |
+| `learningOutcomes` | `string[]` | ❌ | "Bạn sẽ học được gì": tối đa 10 dòng, mỗi dòng 1–160 ký tự; mảng rỗng lưu thành `null` |
+| `requirements` | `string[]` | ❌ | "Yêu cầu đầu vào": ràng buộc như `learningOutcomes` |
 
 ```json
 {
@@ -284,7 +290,7 @@
 ### 2.5. Cập nhật thông tin khóa học
 
 #### `PATCH /api/v1/courses/:id`
-* **Mô tả chức năng:** Giảng viên chủ sở hữu (hoặc Admin) cập nhật tiêu đề, mô tả, ảnh bìa hoặc giá của khóa học. Nếu cập nhật tiêu đề, hệ thống tự động làm mới `slug`.
+* **Mô tả chức năng:** Giảng viên chủ sở hữu (hoặc Admin) cập nhật tiêu đề, mô tả, ảnh bìa, giá, hoặc các trường trang giới thiệu (`shortDescription`, `level`, `learningOutcomes`, `requirements` — cùng ràng buộc như mục 2.4, *bổ sung 31/10/2026*). Chỉ gửi trường cần đổi. Nếu cập nhật tiêu đề, hệ thống tự động làm mới `slug`. Khóa `pending`/`published` bị khóa sửa (409).
 * **Quyền hạn:** `[Roles: teacher, admin]`
 * **Headers:**
   * `Authorization: Bearer <access_token>`
@@ -635,7 +641,7 @@
 |---|---|:---:|---|
 | `title` | `string` | ✔️ | Tiêu đề bài học (2 - 255 ký tự) |
 | `lessonType` | `string` | ✔️ | Phân loại bài học (`theory`, `video`, `quiz`, `assignment`) |
-| `videoUrl` | `string` | ❌ | Đường dẫn video (bắt buộc nếu `lessonType = video`) |
+| `videoUrl` | `string` | ❌ | Link video, **bắt buộc nếu `lessonType = video`**. Chỉ nhận YouTube (`youtube.com/watch?v=`, `youtu.be/`, `/embed/`, `/shorts/`) hoặc Vimeo (`vimeo.com/<số>`), sai thì `400` — *"Link video phải là YouTube ... hoặc Vimeo ..."*. Trang học nhúng trình phát (YouTube qua `youtube-nocookie.com`). Quy tắc ở `backend/src/utils/videoUrl.js`, áp dụng cả khi sửa bài (*cập nhật 31/10/2026*; trước đây nhận URL bất kỳ, bài cũ có link khác vẫn xem được dạng mở tab mới) |
 | `contentText` | `string` | ❌ | Nội dung Markdown lý thuyết (bắt buộc nếu `lessonType = theory`) |
 | `orderIndex` | `number` | ❌ | Thứ tự hiển thị trong chương (tự tính nếu không truyền) |
 
@@ -643,7 +649,7 @@
 {
   "title": "Bài 1: Cài đặt và cấu hình Sequelize trong ExpressJS",
   "lessonType": "video",
-  "videoUrl": "https://s3.ap-southeast-1.amazonaws.com/eduverse/videos/express-sequelize-setup.mp4",
+  "videoUrl": "https://www.youtube.com/watch?v=qwPvkhemvHA",
   "contentText": "Trong bài học này chúng ta sẽ tìm hiểu cách kết nối ExpressJS với PostgreSQL qua Sequelize...",
   "orderIndex": 1
 }
@@ -660,7 +666,7 @@
     "chapterId": "ch3a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
     "title": "Bài 1: Cài đặt và cấu hình Sequelize trong ExpressJS",
     "lessonType": "video",
-    "videoUrl": "https://s3.ap-southeast-1.amazonaws.com/eduverse/videos/express-sequelize-setup.mp4",
+    "videoUrl": "https://www.youtube.com/watch?v=qwPvkhemvHA",
     "orderIndex": 1,
     "createdAt": "2026-09-24T11:00:00.000Z"
   },
@@ -688,7 +694,7 @@
     "chapterId": "ch3a2b3c-4d5e-6f7a-8b9c-0d1e2f3a4b5c",
     "title": "Bài 1: Cài đặt và cấu hình Sequelize trong ExpressJS",
     "lessonType": "video",
-    "videoUrl": "https://s3.ap-southeast-1.amazonaws.com/eduverse/videos/express-sequelize-setup.mp4",
+    "videoUrl": "https://www.youtube.com/watch?v=qwPvkhemvHA",
     "contentText": "# Hướng dẫn cài đặt Sequelize\n\nBước 1: Chạy lệnh `npm install @ExpressJS/Sequelize Sequelize pg`...",
     "orderIndex": 1,
     "updatedAt": "2026-09-24T11:00:00.000Z"

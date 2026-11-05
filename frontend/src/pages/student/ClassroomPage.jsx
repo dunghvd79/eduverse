@@ -8,6 +8,7 @@ import LessonMaterialsPanel from '../../components/course/LessonMaterialsPanel';
 import LessonDiscussion from '../../components/discussion/LessonDiscussion';
 import { toast } from '../../components/common/Toast';
 import { formatPercent } from '../../services/quizService';
+import { parseVideoUrl, VideoEmbed } from '../../utils/video';
 
 export default function ClassroomPage() {
   const { courseId, lessonId } = useParams();
@@ -137,12 +138,17 @@ export default function ClassroomPage() {
 
         <section className="space-y-4">
           {lesson.videoUrl ? (
-            <div className="video-player">
-              <a href={lesson.videoUrl} target="_blank" rel="noreferrer" className="play-circle">
-                <PlayCircle size={58}/>
-              </a>
-              <div className="video-label">EDUVERSE · VIDEO LESSON</div>
-            </div>
+            // YouTube/Vimeo: phát ngay trong trang học; link khác (dữ liệu cũ): mở ở tab mới như trước
+            parseVideoUrl(lesson.videoUrl) ? (
+              <VideoEmbed url={lesson.videoUrl} title={lesson.title} />
+            ) : (
+              <div className="video-player">
+                <a href={lesson.videoUrl} target="_blank" rel="noreferrer" className="play-circle" aria-label="Mở video ở tab mới">
+                  <PlayCircle size={58}/>
+                </a>
+                <div className="video-label">EDUVERSE · VIDEO LESSON</div>
+              </div>
+            )
           ) : (
             <Card className="lesson-content">
               <Badge>{lesson.lessonType === 'theory' ? 'LÝ THUYẾT' : lesson.lessonType.toUpperCase()}</Badge>
@@ -157,7 +163,7 @@ export default function ClassroomPage() {
             <Card className="lesson-content">
               <Badge>VIDEO BÀI GIẢNG</Badge>
               <h2>{lesson.title}</h2>
-              <p>{lesson.contentText || 'Xem video để hoàn thành bài học.'}</p>
+              <p className="whitespace-pre-wrap">{lesson.contentText || 'Xem video để hoàn thành bài học.'}</p>
             </Card>
           )}
 

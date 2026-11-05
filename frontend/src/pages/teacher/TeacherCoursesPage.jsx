@@ -32,8 +32,29 @@ import { toast } from '../../components/common/Toast';
 import { confirmModal } from '../../components/common/ConfirmModal';
 import uploadService, { checkImageFile } from '../../services/uploadService';
 import { useUrlSearch } from '../../utils/useUrlSearch';
+import AutoTextarea from '../../components/common/AutoTextarea';
 
 const EMPTY_FORM = { title: '', description: '', price: '0', categoryId: '' };
+const TITLE_MAX = 255;
+const DESCRIPTION_MAX = 2000;
+const PRICE_MAX = 99999999; // courses.price DECIMAL(10,2)
+
+// Học phí lưu dạng chữ số, hiển thị có dấu chấm phân cách nghìn (500.000)
+const onlyDigits = (value) => String(value || '').replace(/\D/g, '').replace(/^0+(?=\d)/, '');
+const formatVnd = (digits) => (digits ? Number(digits).toLocaleString('vi-VN') : '');
+
+// Kiểm tra giống courseValidation (backend) để báo lỗi ngay dưới từng ô
+const validateCourseForm = ({ title, description, price }) => {
+  const errors = {};
+  const name = title.trim();
+  if (name.length < 5) errors.title = 'Tên khóa học phải có ít nhất 5 ký tự.';
+  else if (name.length > TITLE_MAX) errors.title = `Tên khóa học tối đa ${TITLE_MAX} ký tự.`;
+  if (description.length > DESCRIPTION_MAX) errors.description = `Mô tả tối đa ${DESCRIPTION_MAX.toLocaleString('vi-VN')} ký tự.`;
+  if (Number(price || 0) > PRICE_MAX) errors.price = 'Học phí tối đa 99.999.999 ₫.';
+  return errors;
+};
+
+const FieldError = ({ message }) => (message ? <small className="mt-1 block text-xs font-medium text-red-600">{message}</small> : null);
 const isEditable = (course) => course.status === 'draft' || course.status === 'rejected';
 const isDeletable = (course) => course.status !== 'published';
 
@@ -241,6 +262,8 @@ export default function TeacherCoursesPage() {
   const [editingCourse, setEditingCourse] = useState(null);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
+  const [initialForm, setInitialForm] = useState(EMPTY_FORM);
+  const [formErrors, setFormErrors] = useState({});
   const [thumbnailFile, setThumbnailFile] = useState(null);
   const thumbnailInputRef = useRef(null);
   const thumbnailPreview = useMemo(() => (thumbnailFile ? URL.createObjectURL(thumbnailFile) : null), [thumbnailFile]);
@@ -327,18 +350,23 @@ export default function TeacherCoursesPage() {
     setEditingCourse(null);
     setThumbnailFile(null);
     setForm(EMPTY_FORM);
+    setInitialForm(EMPTY_FORM);
+    setFormErrors({});
     setShowForm(true);
   };
 
   const openEdit = (course) => {
     setEditingCourse(course);
     setThumbnailFile(null);
-    setForm({
+    const values = {
       title: course.title || '',
       description: course.description || '',
       price: String(Number(course.price) || 0),
       categoryId: course.category?.id || ''
-    });
+    };
+    setForm(values);
+    setInitialForm(values);
+    setFormErrors({});
     setShowForm(true);
   };
 
@@ -365,12 +393,34 @@ export default function TeacherCoursesPage() {
     }
   };
 
+  const setField = (key, value) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+    if (formErrors[key]) setFormErrors((prev) => ({ ...prev, [key]: undefined }));
+  };
+
+  const formDirty = Boolean(thumbnailFile) || JSON.stringify(form) !== JSON.stringify(initialForm);
+
+  // Đóng form khi đang nhập dở: hỏi lại để không mất nội dung
+  const closeForm = async () => {
+    if (saving) return;
+    if (formDirty) {
+      const ok = await confirmModal({
+        title: 'Bỏ các thay đổi chưa lưu?',
+        message: 'Nội dung bạn vừa nhập trong form sẽ bị mất.',
+        confirmText: 'Bỏ thay đổi',
+        cancelText: 'Tiếp tục nhập',
+        type: 'warning'
+      });
+      if (!ok) return;
+    }
+    setShowForm(false);
+  };
+
   const submitForm = async (event) => {
     event.preventDefault();
-    if (form.title.trim().length < 5) {
-      toast.error('Tên khóa học phải có ít nhất 5 ký tự.');
-      return;
-    }
+    const errors = validateCourseForm(form);
+    setFormErrors(errors);
+    if (Object.keys(errors).length > 0) return;
 
     try {
       setSaving(true);
@@ -938,34 +988,46 @@ export default function TeacherCoursesPage() {
               </div>
               <button
                 type="button"
-                onClick={() => setShowForm(false)}
+                onClick={closeForm}
                 className="grid h-8 w-8 place-items-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600"
               >
                 <X size={18} />
               </button>
             </div>
 
-            <div className="space-y-4">
-              <Field
-                label="Tên khóa học *"
-                value={form.title}
-                onChange={(e) => setForm({ ...form, title: e.target.value })}
-                placeholder="VD: [Toán 12] Tổng ôn ma trận đề thi 2026..."
-                required
-              />
+            <div className="space-y-4 max-h-[65vh] overflow-y-auto pr-1">
+              <label className="field !mb-0">
+                <span>Tên khóa học *</span>
+                <input
+                  value={form.title}
+                  maxLength={TITLE_MAX}
+                  onChange={(e) => setField('title', e.target.value)}
+                  onBlur={() => setFormErrors((prev) => ({ ...prev, title: validateCourseForm(form).title }))}
+                  placeholder="VD: Lập trình hướng đối tượng với Java"
+                  aria-invalid={Boolean(formErrors.title) || undefined}
+                  className={formErrors.title ? '!border-red-400' : ''}
+                  autoFocus
+                />
+                <FieldError message={formErrors.title} />
+              </label>
 
-              <Field
-                label="Mô tả khóa học"
-                value={form.description}
-                onChange={(e) => setForm({ ...form, description: e.target.value })}
-                placeholder="Mục tiêu đầu ra, lộ trình học và nội dung chính của khóa học..."
-              />
+              <label className="field !mb-0">
+                <span>Mô tả khóa học</span>
+                <AutoTextarea
+                  value={form.description}
+                  maxLength={DESCRIPTION_MAX}
+                  onChange={(e) => setField('description', e.target.value)}
+                  invalid={Boolean(formErrors.description)}
+                  placeholder="Khóa học dành cho ai, mục tiêu đầu ra, nội dung chính... Có thể xuống dòng để chia đoạn."
+                />
+                <FieldError message={formErrors.description} />
+              </label>
 
-              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
                 <Field label="Danh mục đào tạo">
                   <select
                     value={form.categoryId}
-                    onChange={(e) => setForm({ ...form, categoryId: e.target.value })}
+                    onChange={(e) => setField('categoryId', e.target.value)}
                     className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-xs font-medium text-slate-700 outline-none focus:border-[#1168bd]"
                   >
                     <option value="">— Chưa chọn danh mục —</option>
@@ -980,21 +1042,30 @@ export default function TeacherCoursesPage() {
                   </select>
                 </Field>
 
-                <Field
-                  label="Học phí niêm yết (VNĐ)"
-                  type="number"
-                  min="0"
-                  step="1000"
-                  value={form.price}
-                  onChange={(e) => setForm({ ...form, price: e.target.value })}
-                  placeholder="0 (Miễn phí)"
-                />
+                <label className="field !mb-0">
+                  <span>Học phí niêm yết</span>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      inputMode="numeric"
+                      value={formatVnd(form.price)}
+                      onChange={(e) => setField('price', onlyDigits(e.target.value) || '0')}
+                      placeholder="0"
+                      aria-invalid={Boolean(formErrors.price) || undefined}
+                      className={`!pr-8 ${formErrors.price ? '!border-red-400' : ''}`}
+                    />
+                    <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-sm text-slate-500">₫</span>
+                  </div>
+                  {formErrors.price
+                    ? <FieldError message={formErrors.price} />
+                    : <small className="mt-1 block text-xs text-slate-500">{Number(form.price) > 0 ? 'Hiện EduVerse miễn phí cho học viên; giá chỉ để niêm yết.' : 'Để 0 = Miễn phí'}</small>}
+                </label>
               </div>
 
               <div>
                 <span className="mb-1.5 block text-xs font-bold text-slate-600">Ảnh bìa khóa học</span>
                 <div className="flex items-center gap-3">
-                  <div className="h-16 w-24 flex-shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
+                  <div className="aspect-video h-16 flex-shrink-0 overflow-hidden rounded-lg border border-slate-200 bg-slate-50">
                     {thumbnailPreview || editingCourse?.thumbnailUrl ? (
                       <img src={thumbnailPreview || editingCourse.thumbnailUrl} alt="Ảnh bìa khóa học" className="h-full w-full object-cover" />
                     ) : (
@@ -1012,8 +1083,8 @@ export default function TeacherCoursesPage() {
                     <Button type="button" variant="secondary" onClick={() => thumbnailInputRef.current?.click()}>
                       Chọn ảnh từ máy
                     </Button>
-                    <p className="m-0 mt-1 truncate text-xs text-slate-500">
-                      {thumbnailFile ? thumbnailFile.name : 'JPG, PNG hoặc WEBP, tối đa 5MB.'}
+                    <p className="m-0 mt-1 text-xs text-slate-500">
+                      {thumbnailFile ? thumbnailFile.name : 'Tỉ lệ 16:9, khuyến nghị 1280×720. JPG, PNG hoặc WEBP, tối đa 5MB.'}
                     </p>
                   </div>
                 </div>
@@ -1021,7 +1092,7 @@ export default function TeacherCoursesPage() {
             </div>
 
             <div className="mt-6 flex items-center justify-end gap-2.5 border-t border-slate-100 pt-4">
-              <Button type="button" variant="secondary" onClick={() => setShowForm(false)}>
+              <Button type="button" variant="secondary" onClick={closeForm}>
                 Hủy bỏ
               </Button>
               <Button type="submit" disabled={saving} className="!bg-[#1168bd] !text-white">

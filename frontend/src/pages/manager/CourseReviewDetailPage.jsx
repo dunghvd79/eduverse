@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { CheckCircle2, FileText, XCircle, RefreshCw } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { PortalHeader, Button, Card, SectionTitle, Badge } from '../../components/portal/PortalUI';
-import courseService from '../../services/courseService';
+import courseService, { COURSE_LEVEL } from '../../services/courseService';
 import { toast } from '../../components/common/Toast';
 import LessonMaterialsPanel from '../../components/course/LessonMaterialsPanel';
 
@@ -139,7 +139,20 @@ export default function CourseReviewDetailPage() {
 
           <div className="review-section">
             <h3>Mô tả</h3>
-            <p>{course.description || 'Chưa có mô tả.'}</p>
+            {course.shortDescription && <p><b>{course.shortDescription}</b></p>}
+            <p className="whitespace-pre-line">{course.description || 'Chưa có mô tả.'}</p>
+            <p>Trình độ: <b>{COURSE_LEVEL[course.level] || 'Chưa chọn'}</b></p>
+          </div>
+
+          <div className="review-section">
+            <h3>Bạn sẽ học được gì</h3>
+            {course.learningOutcomes?.length
+              ? <ul className="list-disc pl-5 text-sm text-slate-600 space-y-1">{course.learningOutcomes.map((item) => <li key={item}>{item}</li>)}</ul>
+              : <p>Chưa có.</p>}
+            <h3 className="mt-4">Yêu cầu đầu vào</h3>
+            {course.requirements?.length
+              ? <ul className="list-disc pl-5 text-sm text-slate-600 space-y-1">{course.requirements.map((item) => <li key={item}>{item}</li>)}</ul>
+              : <p>Không yêu cầu.</p>}
           </div>
 
           <div className="review-section">
@@ -207,7 +220,8 @@ export default function CourseReviewDetailPage() {
           <Card>
             <SectionTitle title="Danh sách kiểm tra" />
             {[
-              ['Mục tiêu khóa học rõ ràng', !!course.description],
+              ['Có mô tả khóa học', !!course.description],
+              ['Có kết quả học tập (Bạn sẽ học được gì)', (course.learningOutcomes || []).length > 0],
               ['Có đề cương', (curriculum?.chapters || []).length > 0],
               ['Có bài học', (curriculum?.totalLessons || course.totalLessons || 0) > 0],
               ['Trạng thái hợp lệ để duyệt', course.status === 'pending']

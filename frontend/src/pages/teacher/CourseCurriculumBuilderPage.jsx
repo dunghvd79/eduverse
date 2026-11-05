@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from 'react';
-import { FileText, Plus, Save, Send, Trash2, Video, ClipboardCheck, FileQuestion, ChevronDown, Lock, RotateCcw } from 'lucide-react';
+import { FileText, Plus, Save, Send, Trash2, Video, ClipboardCheck, FileQuestion, Lock, RotateCcw } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { PortalHeader, Button, Card, Badge, Field } from '../../components/portal/PortalUI';
 import courseService from '../../services/courseService';
@@ -9,6 +9,9 @@ import AssignmentFormModal from '../../components/assignment/AssignmentFormModal
 import assignmentService from '../../services/assignmentService';
 import { toast } from '../../components/common/Toast';
 import { confirmModal } from '../../components/common/ConfirmModal';
+import CourseLandingEditor from '../../components/course/CourseLandingEditor';
+import AutoTextarea from '../../components/common/AutoTextarea';
+import { parseVideoUrl, VideoEmbed, VIDEO_URL_HINT } from '../../utils/video';
 
 
 const TYPE_LABEL = {
@@ -26,6 +29,76 @@ const STATUS_TEXT = {
 };
 
 const EMPTY_LESSON = { title: '', lessonType: 'theory', contentText: '', videoUrl: '' };
+
+// Ô nội dung có ý nghĩa khác nhau theo loại bài (học viên thấy ở trang học, ClassroomPage)
+const CONTENT_COPY = {
+  theory: { label: 'Nội dung bài học', placeholder: 'Nội dung học viên sẽ đọc. Xuống dòng để chia đoạn.', rows: 10 },
+  video: { label: 'Mô tả video (tùy chọn)', placeholder: 'Tóm tắt nội dung video, mốc thời gian quan trọng, tài liệu cần chuẩn bị...', rows: 3 },
+  quiz: { label: 'Hướng dẫn (tùy chọn)', placeholder: 'Lời dặn trước khi làm bài kiểm tra, hiện phía trên nút "Làm bài kiểm tra".', rows: 3 },
+  assignment: { label: 'Hướng dẫn (tùy chọn)', placeholder: 'Lời dặn chung, hiện phía trên nút "Xem đề & nộp bài". Đề chi tiết soạn ở "Tạo đề bài tập".', rows: 3 }
+};
+
+// Kiểm tra giống createLessonSchema (backend) để báo lỗi ngay dưới từng ô
+const validateLesson = ({ title, lessonType, videoUrl }) => {
+  const errors = {};
+  if (title.trim().length < 2) errors.title = 'Tiêu đề bài học phải có ít nhất 2 ký tự.';
+  if (lessonType === 'video') {
+    if (!videoUrl.trim()) errors.videoUrl = 'Bài học video cần có link video.';
+    else if (!parseVideoUrl(videoUrl)) errors.videoUrl = 'Link video phải là YouTube hoặc Vimeo.';
+  }
+  return errors;
+};
+
+// Gửi lên: chỉ bài video mới giữ link video
+const toLessonPayload = (form) => ({ ...form, title: form.title.trim(), videoUrl: form.lessonType === 'video' ? form.videoUrl.trim() : '' });
+
+const FieldError = ({ message }) => (message ? <small className="mt-1 block text-xs font-medium text-red-600">{message}</small> : null);
+
+/** Các ô của bài học, dùng chung cho form tạo mới và form sửa */
+function LessonFields({ form, onChange, errors = {}, disabled = false, readOnly = false }) {
+  const set = (key) => (e) => onChange(key, e.target.value);
+  const copy = CONTENT_COPY[form.lessonType] || CONTENT_COPY.theory;
+  return (
+    <>
+      <label className="field">
+        <span>Tiêu đề bài học *</span>
+        <input value={form.title} disabled={disabled} readOnly={readOnly} onChange={set('title')} placeholder="VD: Lập trình hướng đối tượng là gì?" className={errors.title ? '!border-red-400' : ''} />
+        <FieldError message={errors.title} />
+      </label>
+
+      <label className="field">
+        <span>Loại bài học</span>
+        <select value={form.lessonType} disabled={disabled || readOnly} onChange={set('lessonType')}>
+          {Object.entries(TYPE_LABEL).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
+        </select>
+      </label>
+
+      {form.lessonType === 'video' && (
+        <div className="field">
+          <span>Link video *</span>
+          <input value={form.videoUrl} disabled={disabled} readOnly={readOnly} onChange={set('videoUrl')} placeholder="https://www.youtube.com/watch?v=..." aria-label="Link video" className={errors.videoUrl ? '!border-red-400' : ''} />
+          {errors.videoUrl
+            ? <FieldError message={errors.videoUrl} />
+            : <small className="mt-1 block text-xs text-slate-500">{VIDEO_URL_HINT}</small>}
+          {parseVideoUrl(form.videoUrl) && <VideoEmbed url={form.videoUrl} title="Xem trước video" className="mt-3 max-w-xl" />}
+        </div>
+      )}
+
+      <label className="field">
+        <span>{copy.label}</span>
+        <AutoTextarea
+          key={form.lessonType}
+          minRows={copy.rows}
+          value={form.contentText || ''}
+          disabled={disabled}
+          readOnly={readOnly}
+          onChange={set('contentText')}
+          placeholder={copy.placeholder}
+        />
+      </label>
+    </>
+  );
+}
 
 const TYPE_ICON = {
   theory: FileText,
@@ -48,8 +121,10 @@ export default function CourseCurriculumBuilderPage() {
   const [lessonChapterId, setLessonChapterId] = useState(null);
   const [lessonForm, setLessonForm] = useState(EMPTY_LESSON);
   const [lessonLoading, setLessonLoading] = useState(false);
+  const [lessonErrors, setLessonErrors] = useState({});
   const [creatingQuiz, setCreatingQuiz] = useState(false);
   const [assignmentModal, setAssignmentModal] = useState(null); // null | 'create' | assignment
+  const [view, setView] = useState('outline'); // 'outline' (đề cương) | 'landing' (trang giới thiệu)
 
   // Khóa đang chờ duyệt / đã công khai: backend chặn mọi thao tác sửa (409) -> giao diện chỉ đọc
   const isLocked = course?.status === 'pending' || course?.status === 'published';
@@ -128,14 +203,18 @@ export default function CourseCurriculumBuilderPage() {
     }
   };
 
+  const updateLessonField = (key, value) => {
+    setLessonForm((prev) => ({ ...prev, [key]: value }));
+    if (lessonErrors[key]) setLessonErrors((prev) => ({ ...prev, [key]: undefined }));
+  };
+
   const addLesson = async (chapterId) => {
-    if (!lessonForm.title.trim()) {
-      toast.error('Nhập tiêu đề bài học.');
-      return;
-    }
+    const errors = validateLesson(lessonForm);
+    setLessonErrors(errors);
+    if (Object.keys(errors).length > 0) return;
 
     try {
-      const data = await courseService.createLesson(chapterId, lessonForm);
+      const data = await courseService.createLesson(chapterId, toLessonPayload(lessonForm));
       setChapters(prev => prev.map(chapter =>
         chapter.id === chapterId
           ? { ...chapter, lessons: [...(chapter.lessons || []), data] }
@@ -151,10 +230,13 @@ export default function CourseCurriculumBuilderPage() {
 
   const saveLesson = async () => {
     if (!selectedLesson || isLocked || lessonLoading) return;
+    const errors = validateLesson(lessonForm);
+    setLessonErrors(errors);
+    if (Object.keys(errors).length > 0) return;
 
     try {
       setSaving(true);
-      const updated = await courseService.updateLesson(selectedLesson.id, lessonForm);
+      const updated = await courseService.updateLesson(selectedLesson.id, toLessonPayload(lessonForm));
       setChapters(prev => prev.map(chapter => ({
         ...chapter,
         lessons: (chapter.lessons || []).map(lesson =>
@@ -252,7 +334,7 @@ export default function CourseCurriculumBuilderPage() {
                 <RotateCcw size={16} /> {course?.status === 'published' ? 'Chuyển về nháp để sửa' : 'Rút yêu cầu duyệt'}
               </Button>
             )}
-            {!isLocked && (
+            {!isLocked && view === 'outline' && (
               <Button variant="secondary" onClick={saveLesson} disabled={!selectedLesson || saving || lessonLoading}>
                 <Save size={16} /> Lưu bài học
               </Button>
@@ -288,32 +370,52 @@ export default function CourseCurriculumBuilderPage() {
         </div>
       )}
 
+      <div className="tabs-card">
+        <button type="button" className={`tab ${view === 'outline' ? 'active' : ''}`} onClick={() => setView('outline')}>Đề cương</button>
+        <button type="button" className={`tab ${view === 'landing' ? 'active' : ''}`} onClick={() => setView('landing')}>Trang giới thiệu</button>
+      </div>
+
+      {view === 'landing' ? (
+        <CourseLandingEditor
+          key={JSON.stringify([course?.shortDescription, course?.level, course?.learningOutcomes, course?.requirements])}
+          course={course}
+          locked={isLocked}
+          onSaved={load}
+        />
+      ) : (
       <div className="builder-layout">
         <aside className="builder-tree">
           <div className="builder-head">
             <b>Nội dung khóa học</b>
           </div>
 
-          {!isLocked && <div className="p-3 border-b border-slate-200 space-y-2">
+          {!isLocked && <div className="pb-3 border-b border-slate-200 space-y-2">
             <input
               value={newChapter}
               onChange={e => setNewChapter(e.target.value)}
-              placeholder="Tên chương mới..."
+              placeholder="Tên chương mới, VD: Tổng quan về OOP"
+              aria-label="Tên chương mới"
               className="w-full rounded-lg border border-slate-300 px-3 py-2 text-sm"
               onKeyDown={e => e.key === 'Enter' && addChapter()}
             />
             <Button onClick={addChapter} className="w-full">
               <Plus size={15} /> Thêm chương
             </Button>
+            <small className="block text-xs text-slate-500">Số thứ tự chương được đánh tự động, không cần gõ "Chương 1:".</small>
           </div>}
 
-          {chapters.map((chapter, index) => (
-            <div className="chapter" key={chapter.id}>
-              <div className="flex items-start gap-2">
-                <ChevronDown size={16} className="mt-1 text-slate-500" />
-                <div className="min-w-0">
-                  <b>{index + 1}. {chapter.title}</b>
-                  <small>{(chapter.lessons || []).length} bài học</small>
+          {chapters.map((chapter, index) => {
+            const lessonCount = (chapter.lessons || []).length;
+            return (
+            <div className="mt-3 rounded-xl border border-slate-200 bg-slate-50/60 p-3" key={chapter.id}>
+              {/* Đầu chương: số thứ tự tự động + tên (tối đa 2 dòng, rê chuột xem đủ) + số bài trên dòng riêng */}
+              <div className="flex items-start gap-2.5">
+                <span className="grid h-6 w-6 flex-none place-items-center rounded-md bg-[#eaf3ff] text-xs font-bold text-[#1168bd]">
+                  {index + 1}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <b className="text-sm font-semibold leading-snug text-slate-800 line-clamp-2" title={chapter.title}>{chapter.title}</b>
+                  <small className="mt-0.5 block text-xs text-slate-500">{lessonCount ? `${lessonCount} bài học` : 'Chưa có bài học'}</small>
                 </div>
               </div>
 
@@ -324,9 +426,10 @@ export default function CourseCurriculumBuilderPage() {
                     <button
                       type="button"
                       key={lesson.id}
-                      className={`lesson ${selectedLessonId === lesson.id ? 'selected' : ''}`}
+                      className={`lesson w-full ${selectedLessonId === lesson.id ? 'selected' : ''}`}
                       onClick={() => {
                         setShowLessonForm(false);
+                        setLessonErrors({});
                         setSelectedLessonId(lesson.id);
                       }}
                     >
@@ -340,10 +443,11 @@ export default function CourseCurriculumBuilderPage() {
                 {!isLocked && (
                   <button
                     type="button"
-                    className="mt-2 flex items-center gap-2 px-2 py-1.5 text-xs font-semibold text-primary"
+                    className="mt-2 flex w-full items-center justify-center gap-1.5 rounded-lg border border-dashed border-slate-300 bg-white py-2 text-xs font-semibold text-[#1168bd] hover:border-[#1168bd] hover:bg-[#f5f9ff]"
                     onClick={() => {
                       setShowLessonForm(true);
                       setSelectedLessonId(null);
+                      setLessonErrors({});
                       setLessonForm(EMPTY_LESSON);
                       setLessonChapterId(chapter.id);
                     }}
@@ -353,7 +457,8 @@ export default function CourseCurriculumBuilderPage() {
                 )}
               </div>
             </div>
-          ))}
+            );
+          })}
         </aside>
 
         <Card className="editor-card">
@@ -366,43 +471,7 @@ export default function CourseCurriculumBuilderPage() {
                 </div>
               </div>
 
-              <Field
-                label="Tiêu đề bài học"
-                value={lessonForm.title}
-                onChange={e => setLessonForm({ ...lessonForm, title: e.target.value })}
-                placeholder="VD: Nested Routes"
-              />
-
-              <label className="field">
-                <span>Loại bài học</span>
-                <select
-                  value={lessonForm.lessonType}
-                  onChange={e => setLessonForm({ ...lessonForm, lessonType: e.target.value })}
-                >
-                  {Object.entries(TYPE_LABEL).map(([value, label]) => (
-                    <option key={value} value={value}>{label}</option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="field">
-                <span>Nội dung</span>
-                <textarea
-                  rows="12"
-                  value={lessonForm.contentText}
-                  onChange={e => setLessonForm({ ...lessonForm, contentText: e.target.value })}
-                  placeholder="Nhập nội dung Markdown..."
-                />
-              </label>
-
-              {lessonForm.lessonType === 'video' && (
-                <Field
-                  label="Video URL"
-                  value={lessonForm.videoUrl}
-                  onChange={e => setLessonForm({ ...lessonForm, videoUrl: e.target.value })}
-                  placeholder="https://..."
-                />
-              )}
+              <LessonFields form={lessonForm} onChange={updateLessonField} errors={lessonErrors} />
 
               <div className="editor-actions">
                 <Button variant="secondary" onClick={() => setShowLessonForm(false)}>Hủy</Button>
@@ -421,46 +490,7 @@ export default function CourseCurriculumBuilderPage() {
                   : isLocked ? <Badge tone="orange">Chỉ xem</Badge> : null}
               </div>
 
-              <Field
-                label="Tiêu đề bài học"
-                value={lessonForm.title}
-                disabled={isLocked || lessonLoading}
-                onChange={e => setLessonForm({ ...lessonForm, title: e.target.value })}
-              />
-
-              <label className="field">
-                <span>Loại bài học</span>
-                <select
-                  disabled={isLocked || lessonLoading}
-                  value={lessonForm.lessonType}
-                  onChange={e => setLessonForm({ ...lessonForm, lessonType: e.target.value })}
-                >
-                  {Object.entries(TYPE_LABEL).map(([value, label]) => (
-                    <option key={value} value={value}>{label}</option>
-                  ))}
-                </select>
-              </label>
-
-              <label className="field">
-                <span>Nội dung</span>
-                <textarea
-                  rows="12"
-                  readOnly={isLocked}
-                  disabled={lessonLoading}
-                  value={lessonForm.contentText}
-                  onChange={e => setLessonForm({ ...lessonForm, contentText: e.target.value })}
-                />
-              </label>
-
-              {lessonForm.lessonType === 'video' && (
-                <Field
-                  label="Video URL"
-                  value={lessonForm.videoUrl}
-                  disabled={isLocked || lessonLoading}
-                  onChange={e => setLessonForm({ ...lessonForm, videoUrl: e.target.value })}
-                  placeholder="https://..."
-                />
-              )}
+              <LessonFields form={lessonForm} onChange={updateLessonField} errors={lessonErrors} disabled={lessonLoading} readOnly={isLocked} />
 
               {!isLocked && (
                 <div className="flex items-center justify-between">
@@ -528,6 +558,7 @@ export default function CourseCurriculumBuilderPage() {
           )}
         </Card>
       </div>
+      )}
 
       {assignmentModal && selectedLesson && (
         <AssignmentFormModal

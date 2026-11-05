@@ -95,9 +95,13 @@ Khung nội dung đào tạo tổng thể do Giảng viên tạo và Quản lý 
 | `category_id` | `uuid` | ✔️ | `NULL` | Khóa ngoại $\rightarrow$ `categories(id)` `ON DELETE RESTRICT` (Danh mục khóa học, bổ sung 09/10/2026) |
 | `title` | `varchar(255)` | ❌ | | Tên khóa học |
 | `slug` | `varchar(255)` | ❌ | | Đường dẫn thân thiện SEO (`UNIQUE`) |
-| `description` | `text` | ✔️ | `NULL` | Mô tả chi tiết nội dung khóa học |
+| `description` | `text` | ✔️ | `NULL` | Mô tả chi tiết nội dung khóa học (tối đa 2000 ký tự, giữ xuống dòng) |
+| `short_description` | `varchar(160)` | ✔️ | `NULL` | Mô tả ngắn một câu, hiện dưới tên khóa trên trang giới thiệu (*bổ sung 31/10/2026*) |
+| `level` | `varchar(20)` | ✔️ | `NULL` | Trình độ: `beginner` \| `intermediate` \| `advanced` \| `all` (*bổ sung 31/10/2026*) |
+| `learning_outcomes` | `jsonb` | ✔️ | `NULL` | Mảng chuỗi "Bạn sẽ học được gì", tối đa 10 dòng × 160 ký tự (*bổ sung 31/10/2026*) |
+| `requirements` | `jsonb` | ✔️ | `NULL` | Mảng chuỗi "Yêu cầu đầu vào", tối đa 10 dòng × 160 ký tự (*bổ sung 31/10/2026*) |
 | `thumbnail_url` | `varchar(500)` | ✔️ | `NULL` | Ảnh bìa khóa học trên S3 |
-| `price` | `decimal(10,2)`| ❌ | `0.00` | Giá khóa học (mặc định 0 để sẵn sàng mở rộng) |
+| `price` | `decimal(10,2)`| ❌ | `0.00` | Giá khóa học (mặc định 0 để sẵn sàng mở rộng; API giới hạn tối đa 99.999.999 để không tràn cột) |
 | `status` | `varchar(30)` | ❌ | `'draft'` | `draft`, `pending`, `published`, `rejected`, `archived` |
 | `approved_by` | `uuid` | ✔️ | `NULL` | Khóa ngoại $\rightarrow$ `users(id)` (Quản lý duyệt) |
 | `approved_at` | `timestamptz` | ✔️ | `NULL` | Thời điểm phê duyệt |
@@ -111,6 +115,7 @@ Khung nội dung đào tạo tổng thể do Giảng viên tạo và Quản lý 
 - `idx_courses_owner_id` ON `courses(owner_id)`
 - `idx_courses_status` ON `courses(status)`
 - `courses_category_id` ON `courses(category_id)`
+- 4 cột trang giới thiệu thêm bằng `backend/src/scripts/migrations/20261031-course-landing.js` (`npm run db:migrate:course-landing`, idempotent). **Phải chạy trước khi chạy code mới**, thiếu cột thì API khóa học báo lỗi.
 - **Khóa chỉnh sửa:** khi `status` là `pending` hoặc `published`, mọi thao tác sửa khóa học/chương/bài đều bị từ chối (`409`). Chỉ sửa được ở `draft` hoặc `rejected`.
 
 
@@ -463,4 +468,3 @@ Lưu câu hỏi và câu trả lời của học viên, giảng viên dưới m�
 - Không có ràng buộc UNIQUE (một người đăng được nhiều bài).
 
 **Migration:** `backend/src/scripts/migrations/20261025-lesson-discussions.js` (`npm run db:migrate:discussions`, idempotent) — chỉ tạo bảng mới, không đụng bảng cũ.
-

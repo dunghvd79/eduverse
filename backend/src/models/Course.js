@@ -28,6 +28,23 @@ export const Course = sequelize.define('courses', {
     type: DataTypes.TEXT,
     allowNull: true
   },
+  // Trang giới thiệu khóa học (bổ sung 31/10/2026, migration 20261031-course-landing.js)
+  short_description: {
+    type: DataTypes.STRING(160),
+    allowNull: true
+  },
+  level: {
+    type: DataTypes.STRING(20),
+    allowNull: true
+  },
+  learning_outcomes: {
+    type: DataTypes.JSONB,
+    allowNull: true
+  },
+  requirements: {
+    type: DataTypes.JSONB,
+    allowNull: true
+  },
   thumbnail_url: {
     type: DataTypes.STRING(500),
     allowNull: true

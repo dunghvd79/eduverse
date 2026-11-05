@@ -1,5 +1,13 @@
 import api from './api';
 
+// Trình độ khóa học (trang giới thiệu, docs/api/api-courses.md)
+export const COURSE_LEVEL = {
+  beginner: 'Cơ bản',
+  intermediate: 'Trung cấp',
+  advanced: 'Nâng cao',
+  all: 'Mọi trình độ'
+};
+
 export const courseService = {
   list: async (params = {}) => {
     const response = await api.get('/courses', { params });

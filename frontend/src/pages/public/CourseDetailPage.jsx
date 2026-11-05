@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import { ChevronDown, ChevronUp, LockKeyhole } from 'lucide-react';
-import courseService from '../../services/courseService';
+import { BarChart3, Check, ChevronDown, ChevronUp, LockKeyhole } from 'lucide-react';
+import courseService, { COURSE_LEVEL } from '../../services/courseService';
+
+const LESSON_TYPE = { theory: 'Lý thuyết', video: 'Video', quiz: 'Bài kiểm tra', assignment: 'Bài tập' };
 import { toast } from '../../components/common/Toast';
 
 export default function CourseDetailPage() {
@@ -64,9 +66,11 @@ export default function CourseDetailPage() {
             </Link>
           )}
           <h1 className="text-display text-slate-900">{course.title}</h1>
+          {course.shortDescription && <p className="text-lg text-slate-700">{course.shortDescription}</p>}
           <p className="text-slate-600">
             Giảng viên: <b>{course.owner?.fullName || 'Đội ngũ EduVerse'}</b>
             {' · '}{course.totalChapters || 0} chương · {course.totalLessons || 0} bài học
+            {course.level && <>{' · '}Trình độ: <b>{COURSE_LEVEL[course.level] || course.level}</b></>}
           </p>
         </div>
 
@@ -76,6 +80,35 @@ export default function CourseDetailPage() {
           <div className="w-full aspect-video rounded-2xl bg-slate-100 flex items-center justify-center text-slate-500">
             EduVerse Course
           </div>
+        )}
+
+        {course.learningOutcomes?.length > 0 && (
+          <section className="rounded-2xl border border-slate-200 bg-white p-5">
+            <h2 className="text-headline-md text-slate-900 mb-3">Bạn sẽ học được gì</h2>
+            <ul className="grid gap-x-6 gap-y-2.5 md:grid-cols-2">
+              {course.learningOutcomes.map((item) => (
+                <li key={item} className="flex items-start gap-2 text-body-md text-slate-700">
+                  <Check size={17} className="mt-0.5 flex-none text-emerald-600" />{item}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {course.requirements?.length > 0 && (
+          <section className="space-y-2">
+            <h2 className="text-headline-md text-slate-900">Yêu cầu đầu vào</h2>
+            <ul className="list-disc space-y-1 pl-5 text-body-md text-slate-700">
+              {course.requirements.map((item) => <li key={item}>{item}</li>)}
+            </ul>
+          </section>
+        )}
+
+        {course.description && (
+          <section className="space-y-2">
+            <h2 className="text-headline-md text-slate-900">Mô tả khóa học</h2>
+            <p className="whitespace-pre-line text-body-md leading-relaxed text-slate-700">{course.description}</p>
+          </section>
         )}
 
         <section className="space-y-3">
@@ -95,7 +128,7 @@ export default function CourseDetailPage() {
                     <li key={lesson.id} className="flex items-center gap-2">
                       <span className="text-primary">•</span>
                       <span>{lesson.title}</span>
-                      <span className="ml-auto text-xs text-slate-500">{lesson.lessonType}</span>
+                      <span className="ml-auto text-xs text-slate-500">{LESSON_TYPE[lesson.lessonType] || lesson.lessonType}</span>
                     </li>
                   ))}
                 </ul>
@@ -114,6 +147,7 @@ export default function CourseDetailPage() {
         </button>
         <ul className="text-body-md text-slate-600 space-y-2">
           <li>✓ {course.totalLessons || 0} bài học</li>
+          {course.level && <li><BarChart3 size={15} className="inline mr-1" /> Trình độ: {COURSE_LEVEL[course.level] || course.level}</li>}
           <li>✓ Học mọi lúc, mọi nơi</li>
           <li><LockKeyhole size={15} className="inline mr-1"/> Nội dung dành cho học viên đã ghi danh</li>
         </ul>

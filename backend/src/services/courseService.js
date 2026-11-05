@@ -37,6 +37,19 @@ export const assertCourseEditable = (course) => {
 };
 
 const CATEGORY_ATTRIBUTES = ['id', 'name', 'slug'];
+
+// Trang giới thiệu: chuỗi rỗng -> null; danh sách bỏ dòng trống, rỗng -> null
+const toNullableText = (value) => (value && value.trim() ? value.trim() : null);
+const toNullableList = (items) => {
+  const list = (items || []).map((item) => item.trim()).filter(Boolean);
+  return list.length ? list : null;
+};
+const landingDtoOf = (course) => ({
+  shortDescription: course.short_description,
+  level: course.level,
+  learningOutcomes: course.learning_outcomes || [],
+  requirements: course.requirements || []
+});
 const mapCategoryRef = (category) => (category ? { id: category.id, name: category.name, slug: category.slug } : null);
 
 /**
@@ -144,6 +157,8 @@ export const getCourses = async (query = {}, currentUser = null) => {
       title: plain.title,
       slug: plain.slug,
       description: plain.description,
+      shortDescription: plain.short_description,
+      level: plain.level,
       thumbnailUrl: plain.thumbnail_url,
       price: plain.price,
       status: plain.status,
@@ -229,6 +244,7 @@ export const getCourseByIdOrSlug = async (idOrSlug, currentUser = null) => {
     title: plain.title,
     slug: plain.slug,
     description: plain.description,
+    ...landingDtoOf(plain),
     thumbnailUrl: plain.thumbnail_url,
     price: plain.price,
     status: plain.status,
@@ -368,7 +384,7 @@ export const getCourseCurriculum = async (courseId, { classId = null, currentUse
  * 4. Tạo khóa học mới (Khởi tạo draft)
  */
 export const createCourse = async (data, ownerId) => {
-  const { title, description, thumbnailUrl, categoryId = null, price = 0 } = data;
+  const { title, description, thumbnailUrl, categoryId = null, price = 0, shortDescription, level = null, learningOutcomes, requirements } = data;
 
   await assertCategoryAssignable(categoryId);
   const slug = await generateUniqueSlug(title, Course);
@@ -381,7 +397,11 @@ export const createCourse = async (data, ownerId) => {
     thumbnail_url: thumbnailUrl || null,
     category_id: categoryId,
     price: Number(price) || 0.00,
-    status: 'draft'
+    status: 'draft',
+    short_description: toNullableText(shortDescription),
+    level,
+    learning_outcomes: toNullableList(learningOutcomes),
+    requirements: toNullableList(requirements)
   });
 
   return {
@@ -389,6 +409,7 @@ export const createCourse = async (data, ownerId) => {
     title: course.title,
     slug: course.slug,
     description: course.description,
+    ...landingDtoOf(course),
     thumbnailUrl: course.thumbnail_url,
     categoryId: course.category_id,
     price: course.price,
@@ -432,6 +453,10 @@ export const updateCourse = async (courseId, data, currentUser) => {
   if (data.price !== undefined) {
     course.price = Number(data.price) || 0.00;
   }
+  if (data.shortDescription !== undefined) course.short_description = toNullableText(data.shortDescription);
+  if (data.level !== undefined) course.level = data.level;
+  if (data.learningOutcomes !== undefined) course.learning_outcomes = toNullableList(data.learningOutcomes);
+  if (data.requirements !== undefined) course.requirements = toNullableList(data.requirements);
 
   await course.save();
   // Đổi hoặc gỡ ảnh bìa -> dọn tệp ảnh bìa cũ của chính khóa học này (lỗi dọn chỉ ghi log)
@@ -444,6 +469,7 @@ export const updateCourse = async (courseId, data, currentUser) => {
     title: course.title,
     slug: course.slug,
     description: course.description,
+    ...landingDtoOf(course),
     thumbnailUrl: course.thumbnail_url,
     categoryId: course.category_id,
     price: course.price,

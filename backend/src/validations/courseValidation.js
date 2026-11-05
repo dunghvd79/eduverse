@@ -1,4 +1,43 @@
 import Joi from 'joi';
+import { isSupportedVideoUrl } from '../utils/videoUrl.js';
+
+// Cột courses.price là DECIMAL(10,2): lớn hơn mức này Postgres báo tràn số (lỗi 500)
+const PRICE_MAX = 99999999;
+
+// Link video bài học: chỉ nhận YouTube/Vimeo để nhúng được trình phát trong trang học (utils/videoUrl.js)
+const videoUrlBase = Joi.string().trim().uri().max(500)
+  .custom((value, helpers) => (isSupportedVideoUrl(value) ? value : helpers.error('videoUrl.unsupported')))
+  .messages({
+    'string.uri': 'Đường dẫn video không đúng định dạng URL',
+    'string.base': 'Bài học video cần có link video',
+    'string.empty': 'Bài học video cần có link video',
+    'any.required': 'Bài học video cần có link video',
+    'videoUrl.unsupported': 'Link video phải là YouTube (youtube.com/watch?v=..., youtu.be/...) hoặc Vimeo (vimeo.com/...)'
+  });
+const videoUrlField = videoUrlBase.allow(null, '');
+
+// Trang giới thiệu khóa học (bổ sung 31/10/2026)
+export const COURSE_LEVELS = ['beginner', 'intermediate', 'advanced', 'all'];
+const LIST_ITEM_MAX = 160;
+const LIST_MAX_ITEMS = 10;
+const textList = (label) => Joi.array()
+  .items(Joi.string().trim().min(1).max(LIST_ITEM_MAX).messages({
+    'string.empty': `${label}: mỗi dòng không được để trống`,
+    'string.max': `${label}: mỗi dòng tối đa ${LIST_ITEM_MAX} ký tự`
+  }))
+  .max(LIST_MAX_ITEMS).allow(null).optional()
+  .messages({ 'array.max': `${label}: tối đa ${LIST_MAX_ITEMS} dòng` });
+
+const landingFields = {
+  shortDescription: Joi.string().trim().max(160).allow(null, '').optional().messages({
+    'string.max': 'Mô tả ngắn tối đa 160 ký tự'
+  }),
+  level: Joi.string().valid(...COURSE_LEVELS).allow(null).optional().messages({
+    'any.only': 'Trình độ phải là beginner, intermediate, advanced hoặc all'
+  }),
+  learningOutcomes: textList('Bạn sẽ học được gì'),
+  requirements: textList('Yêu cầu đầu vào')
+};
 
 /**
  * 1. Create Course Schema
@@ -19,9 +58,11 @@ export const createCourseSchema = Joi.object({
   categoryId: Joi.string().uuid().allow(null).optional().messages({
     'string.guid': 'Danh mục khóa học (categoryId) không hợp lệ'
   }),
-  price: Joi.number().min(0).optional().default(0).messages({
-    'number.min': 'Học phí phải lớn hơn hoặc bằng 0'
-  })
+  price: Joi.number().min(0).max(PRICE_MAX).optional().default(0).messages({
+    'number.min': 'Học phí phải lớn hơn hoặc bằng 0',
+    'number.max': 'Học phí tối đa 99.999.999 ₫'
+  }),
+  ...landingFields
 });
 
 /**
@@ -41,9 +82,11 @@ export const updateCourseSchema = Joi.object({
   categoryId: Joi.string().uuid().allow(null).optional().messages({
     'string.guid': 'Danh mục khóa học (categoryId) không hợp lệ'
   }),
-  price: Joi.number().min(0).optional().messages({
-    'number.min': 'Học phí phải lớn hơn hoặc bằng 0'
-  })
+  price: Joi.number().min(0).max(PRICE_MAX).optional().messages({
+    'number.min': 'Học phí phải lớn hơn hoặc bằng 0',
+    'number.max': 'Học phí tối đa 99.999.999 ₫'
+  }),
+  ...landingFields
 });
 
 /**
@@ -122,9 +165,8 @@ export const createLessonSchema = Joi.object({
   lessonType: Joi.string().valid('theory', 'video', 'quiz', 'assignment').default('theory').messages({
     'any.only': 'Loại bài học không hợp lệ (hỗ trợ: theory, video, quiz, assignment)'
   }),
-  videoUrl: Joi.string().uri().max(500).allow(null, '').optional().messages({
-    'string.uri': 'Đường dẫn video không đúng định dạng URL'
-  }),
+  // Bài học video bắt buộc có link; loại khác thì tùy chọn
+  videoUrl: Joi.when('lessonType', { is: 'video', then: videoUrlBase.required(), otherwise: videoUrlField.optional() }),
   contentText: Joi.string().allow(null, '').optional(),
   orderIndex: Joi.number().integer().min(0).optional()
 });
@@ -138,9 +180,7 @@ export const updateLessonSchema = Joi.object({
     'string.max': 'Tiêu đề bài học không được vượt quá 255 ký tự'
   }),
   lessonType: Joi.string().valid('theory', 'video', 'quiz', 'assignment').optional(),
-  videoUrl: Joi.string().uri().max(500).allow(null, '').optional().messages({
-    'string.uri': 'Đường dẫn video không đúng định dạng URL'
-  }),
+  videoUrl: videoUrlField.optional(),
   contentText: Joi.string().allow(null, '').optional(),
   orderIndex: Joi.number().integer().min(0).optional()
 });

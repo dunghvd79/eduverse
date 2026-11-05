@@ -228,18 +228,20 @@ def step1_teacher_creates_course(gv):
     log(f'   khóa học {ctx["courseId"]}')
 
     # Chương + 4 bài
-    p.get_by_placeholder('Tên chương mới...').fill(CHAPTER)
+    p.get_by_label('Tên chương mới').fill(CHAPTER)
     p.get_by_role('button', name='Thêm chương').click()
-    expect(p.get_by_text(f'1. {CHAPTER}')).to_be_visible()
+    expect(p.locator('.builder-tree b', has_text=CHAPTER)).to_be_visible()
 
     def add_lesson(title, kind, text='', video=''):
         p.get_by_role('button', name='Thêm bài học').first.click()
-        p.get_by_label('Tiêu đề bài học').fill(title)
+        p.get_by_label('Tiêu đề bài học *').fill(title)
         p.get_by_label('Loại bài học').select_option(label=kind)
-        if text:
-            p.get_by_label('Nội dung').fill(text)
         if video:
-            p.get_by_label('Video URL').fill(video)
+            p.get_by_label('Link video').fill(video)
+            expect(p.locator('.editor-card iframe')).to_have_count(1)  # xem trước video trong form
+        if text:
+            # Nhãn ô nội dung đổi theo loại bài: Nội dung bài học / Mô tả video / Hướng dẫn
+            p.get_by_label(re.compile(r'^(Nội dung bài học|Mô tả video|Hướng dẫn)')).fill(text)
         p.get_by_role('button', name='Tạo bài học').click()
         expect(p.locator('.chapter-lessons .lesson', has_text=title)).to_be_visible()
 
@@ -430,6 +432,9 @@ def step5_student_learns_and_asks(hv):
     p.wait_for_timeout(500)
     if L2 not in p.locator('body').inner_text():
         issue('dữ liệu', '"Bài tiếp theo" không chuyển sang bài video')
+    if p.locator('iframe[src*="youtube"]').count() != 1:
+        issue('dữ liệu', 'Bài video không nhúng trình phát YouTube trong trang học')
+    p.wait_for_timeout(3000)  # chờ trình phát YouTube tải xong để ảnh chụp có hình video
     hv.shot('hv-bai-video')
     p.get_by_role('button', name='Đánh dấu đã hoàn thành').click()
     expect(p.get_by_text('Đã hoàn thành bài học này')).to_be_visible()

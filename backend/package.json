@@ -15,7 +15,8 @@
     "db:migrate:quizzes": "node src/scripts/migrations/20261012-quiz-attempts.js",
     "db:migrate:assignments": "node src/scripts/migrations/20261013-assignments.js",
     "db:migrate:notifications": "node src/scripts/migrations/20261017-notifications.js",
-    "db:migrate:discussions": "node src/scripts/migrations/20261025-lesson-discussions.js"
+    "db:migrate:discussions": "node src/scripts/migrations/20261025-lesson-discussions.js",
+    "db:migrate:course-landing": "node src/scripts/migrations/20261031-course-landing.js"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.1149.0",
